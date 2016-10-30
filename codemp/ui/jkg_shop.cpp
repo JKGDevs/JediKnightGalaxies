@@ -4,6 +4,8 @@
 #include "jkg_inventory.h"
 #include <expat.h>
 
+using namespace std;
+
 struct
 {
     qboolean active;
@@ -12,8 +14,8 @@ struct
 	qboolean inventoryOpen;
 } shopState;
 
-static int UIunfilteredShopItems[256];	//This array contains all the item IDs in the shop. This should correspond to the serverside equivalent
-static int UIshopItems[128];			//This array contains all the item IDs in the shop after filters take place
+vector<itemInstance_t> UIunfilteredShopItems;
+vector<itemInstance_t> UIshopItems;
 static int UInumUnfilteredShopItems = 0;
 static int UInumShopItems = 0;			//Number of items in the shop at the time
 
@@ -85,52 +87,58 @@ void JKG_Shop_UpdateShopStuff(int filterVal)
 	listBoxDef_t *listPtr = item->typeData.listbox;
 	int numElements = listPtr->elementHeight;
 	int i;
-	cgItemData_t *lookupTable = (cgItemData_t *)cgImports->InventoryDataRequest(6);
+	itemData_t *lookupTable = (itemData_t *)cgImports->InventoryDataRequest(6);
 
 	//Clear the crapola
-	memset(UIshopItems, 0, sizeof(UIshopItems));
+	UIshopItems.clear();
 	UInumShopItems = 0;
 
 	//Update the filters, first and foremost
-	memcpy(UIunfilteredShopItems, cgImports->InventoryDataRequest( 4 ), sizeof(UIunfilteredShopItems));
-	UInumUnfilteredShopItems = (int)cgImports->InventoryDataRequest( 5 );
+	itemInstance_t* itemInstances = (itemInstance_t*)cgImports->InventoryDataRequest(4);
+	UIunfilteredShopItems.clear();
+	UInumUnfilteredShopItems = *(size_t*)cgImports->InventoryDataRequest( 5 );
+	for (int i = 0; i < UInumUnfilteredShopItems; i++) {
+		UIunfilteredShopItems.push_back(itemInstances[i]);
+	}
 
 	//if(ui_inventoryFilter.integer != JKGIFILTER_ALL)
 	{
 		for(i = 0; i < UInumUnfilteredShopItems; i++)
 		{
+			//int itemID = UIunfilteredShopItems[i].id->itemID;
 			switch(filterVal)
 			{
 				case JKGIFILTER_ALL:
-					UIshopItems[UInumShopItems++] = UIunfilteredShopItems[i];
+					UIshopItems.push_back(UIunfilteredShopItems[i]);
 					break;
 				case JKGIFILTER_ARMOR:
-					if(lookupTable[UIunfilteredShopItems[i]].itemType == ITEM_ARMOR || lookupTable[UIunfilteredShopItems[i]].itemType == ITEM_CLOTHING)
+					if(UIunfilteredShopItems[i].id->itemType == ITEM_ARMOR || UIunfilteredShopItems[i].id->itemType == ITEM_CLOTHING)
 					{
-						UIshopItems[UInumShopItems++] = UIunfilteredShopItems[i];
+						UIshopItems.push_back(UIunfilteredShopItems[i]);
 					}
 					break;
 				case JKGIFILTER_WEAPONS:
-					if(lookupTable[UIunfilteredShopItems[i]].itemType == ITEM_WEAPON)
+					if(UIunfilteredShopItems[i].id->itemType == ITEM_WEAPON)
 					{
-						UIshopItems[UInumShopItems++] = UIunfilteredShopItems[i];
+						UIshopItems.push_back(UIunfilteredShopItems[i]);
 					}
 					break;
 				case JKGIFILTER_CONSUMABLES:
-					if(lookupTable[UIunfilteredShopItems[i]].itemType == ITEM_BUFF)
+					if(UIunfilteredShopItems[i].id->itemType == ITEM_CONSUMABLE)
 					{
-						UIshopItems[UInumShopItems++] = UIunfilteredShopItems[i];
+						UIshopItems.push_back(UIunfilteredShopItems[i]);
 					}
 					break;
 				case JKGIFILTER_MISC:
-					if(lookupTable[UIunfilteredShopItems[i]].itemType == ITEM_UNKNOWN)
+					if(UIunfilteredShopItems[i].id->itemType == ITEM_UNKNOWN)
 					{
-						UIshopItems[UInumShopItems++] = UIunfilteredShopItems[i];
+						UIshopItems.push_back(UIunfilteredShopItems[i]);
 					}
 					break;
 			}
 		}
 	}
+	UInumShopItems = UIshopItems.size();
 
 	//Update all the shop items
 	for(i = 0; i < numElements; i++)
@@ -140,16 +148,11 @@ void JKG_Shop_UpdateShopStuff(int filterVal)
 			JKG_Shop_ClearSlot(i+1);
 			continue;	//If we're past our limit...don't draw stuff!
 		}
-		if(UIshopItems[shopMenuPosition+i] < 0)
-		{
-
-			continue; //Sketchy item ID...better skip.
-		}
 		item2 = Menu_FindItemByName(shopState.menu, va("shop_feederIMG%i", i+1));
 		if(item2)
 		{
 			//Image -> get the item icon for this item
-			item2->window.background = trap->R_RegisterShaderNoMip(lookupTable[UIshopItems[i+shopMenuPosition]].itemIcon); //TODO: precache me
+			item2->window.background = trap->R_RegisterShaderNoMip(UIshopItems[i+shopMenuPosition].id->visuals.itemIcon); //TODO: precache me
 			Menu_ShowItemByName(shopState.menu, va("shop_feederIMG%i", i+1), qtrue);
 		}
 
@@ -158,14 +161,14 @@ void JKG_Shop_UpdateShopStuff(int filterVal)
 		{
 			//Text-> First line (aka big line) is the name, second line is the cost
 			Menu_ShowItemByName(shopState.menu, va("shop_feederTXT%i", i+1), qtrue);
-			strcpy(item2->text, lookupTable[UIshopItems[i+shopMenuPosition]].displayName);
-			if(lookupTable[UIshopItems[i+shopMenuPosition]].cost == 0)
+			strcpy(item2->text, UIshopItems[i+shopMenuPosition].id->displayName);
+			if(UIshopItems[i+shopMenuPosition].id->baseCost == 0)
 			{
 				sprintf(item->text2, "Free");
 			}
 			else
 			{
-				sprintf(item2->text2, "Cost: %i", lookupTable[UIshopItems[i+shopMenuPosition]].cost);
+				sprintf(item2->text2, "Cost: %i", UIshopItems[i+shopMenuPosition].id->baseCost);
 			}
 			item2->textRect.w = 0;
 		}
@@ -180,8 +183,8 @@ void JKG_Shop_UpdateShopStuff(int filterVal)
 		item2 = Menu_FindItemByName(shopState.menu, va("shop_feederBO%i", i+1));
 		if(item2)
 		{
-			int credits = (int)cgImports->InventoryDataRequest( 3 );
-			if(credits < lookupTable[UIshopItems[i+shopMenuPosition]].cost)
+			int credits = *(int*)cgImports->InventoryDataRequest( 3 );
+			if(credits < UIshopItems[i+shopMenuPosition].id->baseCost)
 			{
 				Menu_ShowItemByName(shopState.menu, va("shop_feederBO%i", i+1), qtrue);
 			}
@@ -192,7 +195,7 @@ void JKG_Shop_UpdateShopStuff(int filterVal)
 		}
 	}
 	//Update the selection data
-	if(UIshopItems[shopState.selectedShopItem-1] > 0 && shopState.selectedShopItem > 0)
+	if(shopState.selectedShopItem > 0)
 	{
 		int shopSlotNumber = shopState.selectedShopItem-shopMenuPosition;
 		if(shopSlotNumber < 0)
@@ -232,13 +235,13 @@ hideItAll:
 		item2 = Menu_FindItemByName(shopState.menu, "shop_previewIcon");
 		if(item2)
 		{
-			item2->window.background = trap->R_RegisterShaderNoMip(lookupTable[UIshopItems[shopSlotNumber+shopMenuPosition-1]].itemIcon);
+			item2->window.background = trap->R_RegisterShaderNoMip(UIshopItems[shopSlotNumber+shopMenuPosition-1].id->visuals.itemIcon);
 		}
 
 		item2 = Menu_FindItemByName(shopState.menu, "shop_previewItemName");
 		if(item2)
 		{
-			strcpy(item2->text, lookupTable[UIshopItems[shopSlotNumber+shopMenuPosition-1]].displayName);
+			strcpy(item2->text, UIshopItems[shopSlotNumber+shopMenuPosition-1].id->displayName);
 			//Recalculate the positioning
 			item2->textRect.w = 0;
 		}
@@ -246,7 +249,7 @@ hideItAll:
 		item2 = Menu_FindItemByName(shopState.menu, "shop_previewItemCost");
 		if(item2)
 		{
-			sprintf(item2->text, va("Cost: %i", lookupTable[UIshopItems[shopSlotNumber+shopMenuPosition-1]].cost));
+			sprintf(item2->text, va("Cost: %i", UIshopItems[shopSlotNumber+shopMenuPosition-1].id->baseCost));
 			//Recalculate the positioning
 			item2->textRect.w = 0;
 		}
@@ -265,7 +268,7 @@ hideItAll:
 void JKG_Shop_UpdateCreditDisplay(void)
 {
 	itemDef_t *item = Menu_FindItemByName(shopState.menu, "shopmain_credits");
-	int credits = (int)cgImports->InventoryDataRequest( 3 );
+	int credits = *(int*)cgImports->InventoryDataRequest( 3 );
 	if(!item)
 	{
 		return;
@@ -286,7 +289,7 @@ void JKG_Shop_UpdateNotify(int msg)
 			shopState.menu = Menus_FindByName("jkg_shop");
 			if(shopState.menu && Menus_ActivateByName("jkg_shop"))
 			{
-				trap->Key_SetCatcher (trap->Key_GetCatcher() | KEYCATCH_UI & ~KEYCATCH_CONSOLE);
+				trap->Key_SetCatcher (trap->Key_GetCatcher() | KEYCATCH_UI /*& ~KEYCATCH_CONSOLE*/);
 			}
 			shopState.selectedShopItem = 0;
 			break;
@@ -326,10 +329,9 @@ void JKG_Shop_ItemSelect(char **args)
 {
 	itemDef_t *item = Menu_FindItemByName(shopState.menu, "shop_dummyFeeder");
 	listBoxDef_t *listPtr = item->typeData.listbox;
-	cgItemData_t *lookupTable = (cgItemData_t *)cgImports->InventoryDataRequest( 6 );
-	int credits = (int)cgImports->InventoryDataRequest( 3 );
+	itemData_t *lookupTable = (itemData_t *)cgImports->InventoryDataRequest( 6 );
+	int credits = *(int*)cgImports->InventoryDataRequest( 3 );
 	int arg0 = atoi(args[0]);
-	int desiredItemID = UIshopItems[shopMenuPosition+arg0-1];
 	if(arg0 <= 0)
 	{
 		//Not valid
@@ -338,6 +340,9 @@ void JKG_Shop_ItemSelect(char **args)
 	else if(arg0 > listPtr->elementHeight)
 	{
 		//Too high...bug?
+		return;
+	}
+	else if (shopMenuPosition + arg0 > UInumShopItems) {
 		return;
 	}
 
@@ -465,16 +470,16 @@ void JKG_Shop_BuyConfirm_Yes(char **args)
 {
 	//Buying the item
 	//Make sure we don't buy an item that we didn't mean to buy
-	int desiredItemID = UIshopItems[shopState.selectedShopItem-1];
+	int desiredItemID = UIshopItems[shopState.selectedShopItem-1].id->itemID;
 	int actualItemID;
 	Menu_ShowGroup(shopState.menu, "shop_buyconfirm", qfalse);
 	JKG_Shop_UpdateShopStuff(ui_inventoryFilter.integer);
-	actualItemID = UIshopItems[shopState.selectedShopItem-1];
+	actualItemID = UIshopItems[shopState.selectedShopItem-1].id->itemID;
 	if(actualItemID == desiredItemID)
 	{
 		// Here's a thought...why not send the item ID _instead_ of the selected index?
 		// 100% guaranteed to work then --eez
-		cgImports->SendClientCommand(va("buyVendor %i", UIshopItems[shopState.selectedShopItem-1]));
+		cgImports->SendClientCommand(va("buyVendor %i", shopState.selectedShopItem-1));
 	}
 	Menu_ItemDisable(shopState.menu, "shop_preview", qfalse);
 	Menu_ItemDisable(shopState.menu, "shop_feederSel", qfalse);
@@ -497,11 +502,10 @@ void JKG_Shop_BuyConfirm_Display(char **args)
 {
 	//This sets the text on the display
 	itemDef_t *item = Menu_FindItemByName(shopState.menu, "shop_buyconfirm_text");
-	cgItemData_t *lookupTable = (cgItemData_t *)cgImports->InventoryDataRequest( 6 );
+	//itemData_t *lookupTable = (itemData_t *)cgImports->InventoryDataRequest( 6 );
 	if(item)
 	{
-		int desiredItemID = UIshopItems[shopState.selectedShopItem-1];
-		strcpy(item->text, va("Buy this item for %i credits?", lookupTable[desiredItemID].cost));
+		strcpy(item->text, va("Buy this item for %i credits?", UIshopItems[shopState.selectedShopItem - 1].id->baseCost));
 		item->textRect.w = 0;
 	}
 }

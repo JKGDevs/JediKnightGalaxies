@@ -25,7 +25,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_local.h"
 #include "../ui/ui_shared.h"
 #include "../game/bg_saga.h"
-#include "jkg_chatbox.h"
 
 #define	SCOREBOARD_X		(0)
 
@@ -201,10 +200,7 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 		CG_FillRect( SB_SCORELINE_X - 5, y + 2, 640 - SB_SCORELINE_X * 2 + 10, largeFormat?SB_NORMAL_HEIGHT:SB_INTER_HEIGHT, hcolor );
 	}
 
-
-	vec4_t dummy;	//dummy float to pass into dumb function, because it's dumb.  
-	Text_DrawText(SB_NAME_X, y, ci->name, dummy, FONT_MEDIUM, -1, 0.9f*scale);	//new better way, allows us to use RBG colors
-	//CG_Text_Paint(SB_NAME_X, y, 0.9f * scale, colorWhite, ci->name, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM);	//old way of drawing scoreboard names
+	Text_DrawText(SB_NAME_X, y, ci->name, colorWhite, FONT_MEDIUM, -1, 0.9f*scale);	//draw scoreboard.  --futuza: new better way, allows us to use RBG colors
 
 	if ( score->ping != -1 )
 	{

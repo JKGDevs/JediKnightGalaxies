@@ -445,7 +445,7 @@ REFERENCE           MONTHS
 LANG_ENGLISH        "Jan\nFeb\nMar\nApr\nMay\nJun\nJul\nAug\nSep\nOct\nNov\nDec\n"
 
 REFERENCE           NET_SOURCES
-LANG_ENGLISH        "Local\nJKHub.org\nFavorites\nRaven Software\nQTracker\nRaven Software\nRaven Software\nRaven Software"
+LANG_ENGLISH        "Local\nInternet\nFavorites\n"
 
 REFERENCE           SERVER_FILTERS
 LANG_ENGLISH        "All\nJedi Knight 2\n"

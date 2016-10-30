@@ -287,10 +287,10 @@ NOTES				Always handled in seconds, not milliseconds
 LANG_ENGLISH		"Cook time: %.3f seconds"
 
 REFERENCE			WEP_SPEEDPENALTY
-LANG_ENGLISH		"Movement penalty: -%i%%"
+LANG_ENGLISH		"Movement penalty: %.0f%%"
 
 REFERENCE			WEP_SPEEDBONUS
-LANG_ENGLISH		"Movement bonus: +%i%%"
+LANG_ENGLISH		"Movement bonus: +%.0f%%"
 
 REFERENCE			WEP_AMMOTYPE 				// Not used?
 LANG_ENGLISH		"Accepts %s ammo"
@@ -302,23 +302,23 @@ REFERENCE			WEP_RECOIL
 LANG_ENGLISH		"Recoil: %s"
 
 REFERENCE			WEP_RECOIL_NONE
-LANG_ENGLISH		"Non-existent"
+LANG_ENGLISH		"Recoil: Non-existent"
 
 REFERENCE			WEP_RECOIL_LIGHT
 NOTES				For vertical recoil not exceeding 0.9
-LANG_ENGLISH		"Light"
+LANG_ENGLISH		"Recoil: Light"
 
 REFERENCE			WEP_RECOIL_MEDIUM
 NOTES				For vertical recoil between 0.9 and 1.5
-LANG_ENGLISH		"Medium"
+LANG_ENGLISH		"Recoil: Medium"
 
 REFERENCE			WEP_RECOIL_HEAVY
 NOTES				For vertical recoil between 1.5 and 3.0
-LANG_ENGLISH		"Heavy"
+LANG_ENGLISH		"Recoil: Heavy"
 
 REFERENCE			WEP_RECOIL_INTENSE
 NOTES				For vertical recoil above 3.0
-LANG_ENGLISH		"Intense"	
+LANG_ENGLISH		"Recoil: Intense"
 
 REFERENCE			EXPLANATION_ELECTRIC
 LANG_ENGLISH		"Electric Damage. Medium damage towards organic targets and armor, high damage towards droids and shields."
@@ -356,18 +356,19 @@ LANG_ENGLISH		"Ion damage. Completely ignores most armor, and extremely strong a
 REFERENCE			EXPLANATION_SONIC
 LANG_ENGLISH		"Sonic damage. Somewhat effective against armor, shields, and organic targets. Ineffective against droids."
 
+REFERENCE     WEAPON_STATS
+LANG_ENGLISH  "Weapon Stats"
+
 REFERENCE			PRIMARY_FIRE
-LANG_ENGLISH		"Primary Firing Mode"
+LANG_ENGLISH		"Primary Firing Mode (%s)"
 
 REFERENCE			SECONDARY_FIRE
-LANG_ENGLISH		"Secondary Firing Mode"
+LANG_ENGLISH		"Secondary Firing Mode (%s)"
 
 REFERENCE			TERTIARY_FIRE
-LANG_ENGLISH		"Tertiary Firing Mode"
+LANG_ENGLISH		"Tertiary Firing Mode (%s)"
 
 REFERENCE			FIRING_MODE
-LANG_ENGLISH		"Firing Mode %i"
+LANG_ENGLISH		"Firing Mode %i (%s)"
 
 ENDMARKER
-
-

@@ -26,6 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "qcommon/q_shared.h"
 #include "bg_public.h"
 #include "jkg_gangwars.h"
+#include <json/cJSON.h>
 
 #if defined(_GAME)
 	#include "g_local.h"
@@ -250,14 +251,14 @@ int forcePowerDarkLight[NUM_FORCE_POWERS] = //0 == neutral
 //Weapon and force power tables are also used in NPC parsing code and some other places.
 stringID_table_t WPTable[] =
 {
-	"NULL",WP_NONE,
+	{"NULL",WP_NONE},
 	ENUM2STRING(WP_NONE),
 	// Player weapons
 	ENUM2STRING(WP_STUN_BATON),
 	ENUM2STRING(WP_MELEE),
 	ENUM2STRING(WP_SABER),
 	ENUM2STRING(WP_BRYAR_PISTOL),
-	"WP_BLASTER_PISTOL", WP_BRYAR_PISTOL,
+	{"WP_BLASTER_PISTOL", WP_BRYAR_PISTOL},
 	ENUM2STRING(WP_BLASTER),
 	ENUM2STRING(WP_DISRUPTOR),
 	ENUM2STRING(WP_BOWCASTER),
@@ -272,7 +273,7 @@ stringID_table_t WPTable[] =
 	ENUM2STRING(WP_BRYAR_OLD),
 	ENUM2STRING(WP_EMPLACED_GUN),
 	ENUM2STRING(WP_TURRET),
-	"", 0
+	{"", 0}
 };
 
 stringID_table_t FPTable[] =
@@ -295,7 +296,7 @@ stringID_table_t FPTable[] =
 	ENUM2STRING(FP_SABER_OFFENSE),
 	ENUM2STRING(FP_SABER_DEFENSE),
 	ENUM2STRING(FP_SABERTHROW),
-	"",	-1
+	{"",	-1}
 };
 
 stringID_table_t HoldableTable[] =
@@ -314,16 +315,12 @@ stringID_table_t HoldableTable[] =
 	ENUM2STRING(HI_EWEB),
 	ENUM2STRING(HI_CLOAK),
 
-	"", -1
+	{"", -1}
 };
 
 stringID_table_t PowerupTable[] =
 {
 	ENUM2STRING(PW_NONE),
-#ifdef BASE_COMPAT
-	ENUM2STRING(PW_QUAD),
-	ENUM2STRING(PW_BATTLESUIT),
-#endif
 	ENUM2STRING(PW_PULL),
 	ENUM2STRING(PW_REDFLAG),
 	ENUM2STRING(PW_BLUEFLAG),
@@ -333,7 +330,7 @@ stringID_table_t PowerupTable[] =
 	ENUM2STRING(PW_SPEED),
 	ENUM2STRING(PW_CLOAKED),
 
-	"", -1
+	{"", -1}
 };
 
 //======================================
@@ -421,7 +418,7 @@ int BG_GetValueGroup(char *buf, char *group, char *outbuf)
 
 				isGroup = qfalse;
 
-				while (buf[i] && buf[i] == ' ' || buf[i] == '\t' || buf[i] == '\n' || buf[i] == '\r')
+				while (buf[i] && (buf[i] == ' ' || buf[i] == '\t' || buf[i] == '\n' || buf[i] == '\r'))
 				{ //parse to the next valid character
 					i++;
 				}
@@ -3811,3 +3808,30 @@ int BG_GetGametypeForString( const char *gametype )
 	else
 		return GT_TEAM;
 }
+
+void Q_FSBinaryDump( const char *filename, const void *buffer, size_t len ) {
+	fileHandle_t f = NULL_FILE;
+	trap->FS_Open( filename, &f, FS_WRITE );
+	trap->FS_Write( buffer, (int)len, f );
+	trap->FS_Close( f );
+	f = NULL_FILE;
+}
+
+// serialise a JSON object and write it to the specified file
+void Q_FSWriteJSON( void *root, fileHandle_t f ) {
+	const char *serialised = NULL;
+
+	serialised = cJSON_Serialize( (cJSON *)root, 1 );
+	trap->FS_Write( serialised, strlen( serialised ), f );
+	trap->FS_Close( f );
+
+	free( (void *)serialised );
+	cJSON_Delete( (cJSON *)root );
+}
+
+void Q_FSWriteString( fileHandle_t f, const char *msg ) {
+	if ( f != NULL_FILE ) {
+		trap->FS_Write( msg, strlen( msg ), f );
+	}
+}
+

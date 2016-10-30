@@ -26,7 +26,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "bg_saga.h"
 #include "qcommon/q_shared.h"
-#include "jkg_easy_items.h"
 
 // Include GLua
 #include "../GLua/glua.h"
@@ -726,12 +725,7 @@ void G_InitGentity( gentity_t *e ) {
 	// Jedi Knight Galaxies - Wipe spawnvars
 	JKG_Pairs_Clear(&g_spawnvars[e->s.number]);
 
-	// Mainly for the benefit of players. For players, inventories are created
-	// at ClientBegin time, but only freed at ClientDisconnect or G_ShutdownGame.
-	// ClientBegin is called every time a player changes team. To avoid leaks,
-	// we free the inventory here and then realloc it.
-	JKG_Easy_DIMA_FreeInventory( &e->inventory );
-	e->inventory = JKG_Easy_DIMA_AllocInventory();
+	e->inventory = new std::vector<itemInstance_t>();
 
 	trap->ICARUS_FreeEnt( (sharedEntity_t *)e );	//ICARUS information must be added after this point
 }
@@ -1157,9 +1151,7 @@ void G_FreeEntity( gentity_t *ed ) {
 	}
 	ed->UsesELS = 0;
 	ed->IDCode = 0;
-
-	JKG_Easy_DIMA_FreeInventory( &ed->inventory );
-
+	delete ed->inventory;
 	memset (ed, 0, sizeof(*ed));
 	ed->classname = "freed";
 	ed->freetime = level.time;
@@ -1712,10 +1704,9 @@ Try and use an entity in the world, directly ahead of us
 #define USE_DISTANCE_MAX	1024.0f	// Max distance for use
 
 extern void Touch_Button(gentity_t *ent, gentity_t *other, trace_t *trace );
-static vec3_t	playerMins = {-15, -15, DEFAULT_MINS_2};
-static vec3_t	playerMaxs = {15, 15, DEFAULT_MAXS_2};
+//static vec3_t	playerMins = {-15, -15, DEFAULT_MINS_2};
+//static vec3_t	playerMaxs = {15, 15, DEFAULT_MAXS_2};
 void GLua_NPCEV_OnUse(gentity_t *self, gentity_t *other, gentity_t *activator);
-extern void JKG_target_vendor_use(gentity_t *ent, gentity_t *other, gentity_t *activator);
 
 void TryUse( gentity_t *ent )
 {

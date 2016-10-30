@@ -2754,7 +2754,6 @@ void CinBuild_Visualize();
 
 int LastACRun = 0;
 void JKG_AntiDebug();
-extern cgItemData_t CGitemLookupTable[MAX_ITEM_TABLE_SIZE];
 void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
 	int		inwater;
 	const char *cstr;
@@ -2891,27 +2890,33 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		}
 		else
 		{
-			if(cg.playerACI[cg.weaponSelect] >= 0)
+			if (cg.weaponSelect >= MAX_ACI_SLOTS) {
+				cg.weaponSelect = 0;
+			}
+
+			if (cg.playerACI[cg.weaponSelect] >= cg.playerInventory->size()) {
+				// Destroyed the weapon we were carrying
+				cg.playerACI[cg.weaponSelect] = -1;
+				cg.weaponSelect = 0;
+			}
+
+			if(cg.playerACI[cg.weaponSelect] >= 0 && cg.playerInventory->size() > 0)
 			{
-				if(cg.weaponSelect >= MAX_ACI_SLOTS)
-				{
-					cg.weaponSelect = 0;
-				}
 				if(cg.playerACI[cg.weaponSelect] >= MAX_INVENTORY_ITEMS)
 				{
 					goto defaultCmd;
 				}
-				if(cg.playerInventory[cg.playerACI[cg.weaponSelect]].id)
+				if((*cg.playerInventory)[cg.playerACI[cg.weaponSelect]].id)
 				{
 					if(cg.holsterState && 
-						cg.playerInventory[cg.playerACI[cg.weaponSelect]].id->weapon != WP_SABER)
+						(*cg.playerInventory)[cg.playerACI[cg.weaponSelect]].id->weaponData.weapon != WP_SABER)
 					{
 						// Set us up using Melee if our holstered weapon is not a saber (and we're holstered)
 						trap->SetUserCmdValue( BG_GetWeaponIndex(WP_MELEE, 0), mSensitivity, mPitchOverride, mYawOverride, 0.0f, cg.forceSelect, cg.playerACI[cg.weaponSelect], qfalse );
 					}
 					else
 					{
-						trap->SetUserCmdValue( cg.playerInventory[cg.playerACI[cg.weaponSelect]].id->varID, mSensitivity, mPitchOverride, mYawOverride, 0.0f, cg.forceSelect, cg.playerACI[cg.weaponSelect], qfalse );
+						trap->SetUserCmdValue( (*cg.playerInventory)[cg.playerACI[cg.weaponSelect]].id->weaponData.varID, mSensitivity, mPitchOverride, mYawOverride, 0.0f, cg.forceSelect, cg.playerACI[cg.weaponSelect], qfalse );
 					}
 				}
 				else

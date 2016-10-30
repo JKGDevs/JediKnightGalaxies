@@ -5,6 +5,7 @@ Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
 Copyright (C) 2005 - 2015, ioquake3 contributors
 Copyright (C) 2013 - 2015, OpenJK contributors
+Copyright (C) 2016, Jedi Knight Galaxies Developers
 
 This file is part of the OpenJK source code.
 
@@ -27,17 +28,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // A user mod should never modify this file
 // Copyright (C) 1999-2000 Id Software, Inc., Copyright (c) 2013 Jedi Knight Galaxies
 
-
-#ifndef Q_SHARED_H
-#define Q_SHARED_H
-
 // Include Global Definitions Header...
 #include "../game/z_global_defines.h"
 #define PRODUCT_NAME		"jkgalaxies"
 
 #define CLIENT_WINDOW_TITLE "Jedi Knight Galaxies"
 #define CLIENT_CONSOLE_TITLE "Jedi Knight Galaxies Console"
-#define HOMEPATH_NAME_UNIX ".jkgalaxies"
+#define HOMEPATH_NAME_UNIX "jkgalaxies"
 #define HOMEPATH_NAME_WIN "JKGalaxies"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 
@@ -53,6 +50,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../qcommon/disablewarnings.h"
 
 #include "../game/teams.h" //npc team stuff
+
+#ifdef __cplusplus
+// For the random number generator
+#include <random>
+#include <cstdint>
+#endif
 
 #define MAX_WORLD_COORD		( 64 * 1024 )
 #define MIN_WORLD_COORD		( -64 * 1024 )
@@ -142,73 +145,26 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#define idppc	0
 #endif
 
-short ShortSwap( short l );
-int LongSwap( int l );
-float FloatSwap( const float *f );
-
-
 #include "qcommon/q_platform.h"
-
-// ================================================================
-// TYPE DEFINITIONS
-// ================================================================
-
-typedef unsigned char byte;
-typedef unsigned short word;
-typedef unsigned long ulong;
-
-#ifndef __cplusplus
-typedef enum {qfalse, qtrue}	qboolean;	// cuz apparently the engine still includes this in C files for some reason --eez
-#else
-typedef bool qboolean;
-#define qfalse false
-#define qtrue true
-#endif
 
 #define Q_min(x,y) ((x)<(y)?(x):(y))
 #define Q_max(x,y) ((x)>(y)?(x):(y))
 
 #if defined (_MSC_VER) && (_MSC_VER >= 1600)
-
-	#include <stdint.h>
-
 	// vsnprintf is ISO/IEC 9899:1999
 	// abstracting this to make it portable
 	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
 
 #elif defined (_MSC_VER)
 
-	#include <io.h>
-
-	typedef signed __int64 int64_t;
-	typedef signed __int32 int32_t;
-	typedef signed __int16 int16_t;
-	typedef signed __int8  int8_t;
-	typedef unsigned __int64 uint64_t;
-	typedef unsigned __int32 uint32_t;
-	typedef unsigned __int16 uint16_t;
-	typedef unsigned __int8  uint8_t;
-
 	// vsnprintf is ISO/IEC 9899:1999
 	// abstracting this to make it portable
 	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
 #else // not using MSVC
 
-	#include <stdint.h>
-
 	#define Q_vsnprintf vsnprintf
 
 #endif
-
-// 32 bit field aliasing
-typedef union byteAlias_u {
-	float f;
-	int32_t i;
-	uint32_t ui;
-	qboolean qb;
-	byte b[4];
-	char c[4];
-} byteAlias_t;
 
 typedef union fileBuffer_u {
 	void *v;
@@ -916,6 +872,7 @@ void		VectorInverse( vec3_t vec );
 void		CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
 float		DotProduct( const vec3_t vec1, const vec3_t vec2 );
 qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
+qboolean	VectorCompare4(const vec4_t vec1, const vec4_t vec2);
 void		SnapVector( float *v );
 
 #define		VectorAddM( vec1, vec2, vecOut )		((vecOut)[0]=(vec1)[0]+(vec2)[0], (vecOut)[1]=(vec1)[1]+(vec2)[1], (vecOut)[2]=(vec1)[2]+(vec2)[2])
@@ -1956,7 +1913,8 @@ typedef enum
 	GENCMD_BOW,
 	GENCMD_MEDITATE,
 	GENCMD_FLOURISH,
-	GENCMD_GLOAT
+	GENCMD_GLOAT,
+	GENCMD_RELOAD
 } genCmds_t;
 
 // usercmd_t is sent to the server each client frame
@@ -2112,6 +2070,7 @@ typedef struct trajectory_s {
 // The messages are delta compressed, so it doesn't really matter if
 // the structure size is fairly large
 
+#define SEED_MAX		65536
 typedef struct entityState_s {
 	int		number;			// entity index
 	int		eType;			// entityType_t
@@ -2287,6 +2246,8 @@ typedef struct entityState_s {
 	unsigned short	saberCrystal[2];
 
 	qboolean		sightsTransition;	// Are we in a sights transition? (Used for player animation)
+	
+	unsigned int	seed;
 } entityState_t;
 
 typedef enum {
@@ -2323,15 +2284,9 @@ typedef struct qtime_s {
 
 
 // server browser sources
-//[MasterServer]
 #define AS_LOCAL			0
-#define AS_FAVORITES		2
 #define AS_GLOBAL			1
-#define AS_GLOBAL2			3
-#define AS_GLOBAL3			4
-#define AS_GLOBAL4			5
-#define AS_GLOBAL5			6
-//[/MasterServer]
+#define AS_FAVORITES		2
 
 
 
@@ -2513,17 +2468,23 @@ void JKG_ClearGenericMemoryObject(GenericMemoryObject *gmo);
 void JKG_GenericMemoryObject_AddElement(GenericMemoryObject *gmo, void *element);
 void JKG_GenericMemoryObject_DeleteElement(GenericMemoryObject *gmo, unsigned int number);
 void Q_RGBCopy( vec4_t *output, vec4_t source );
-static qboolean ExtColor_IsValid(char chr);			//check if ^xRGB valid, returns -1 if not valid
+qboolean ExtColor_IsValid(char chr);			//check if ^xRGB valid, returns -1 if not valid
 //static float ExtColor_GetLevel(char chr);			//get color values for ^xRGB
 void Q_StripColor_Simple(char *text);				//simplifying strip mining operations
 char *JKG_xRBG_ConvertExtToNormal(const char *text);	//for converting ^xRGB names to regular ^1names return nonconst
 void Global_SanitizeString_MaxQPath(char *in, char *out);
 void Global_SanitizeString(char *in, char *out, int limit);
+void getGalacticTimeStamp(char* outStr);	//Gets current time    to use : char myarray[17]; getBuildTimeStamp(myarray); 
 qboolean Text_IsExtColorCode(const char *text);
 qboolean StringContainsWord(const char *haystack, const char *needle);
 qboolean Q_stratt( char *dest, unsigned int iSize, char *source );
 
+
+
+
+
 #ifndef ENGINE
+// FIXME
 typedef enum {
 	NA_BOT,
 	NA_BAD,					// an address lookup failed
@@ -2544,4 +2505,25 @@ typedef struct {
 } netadr_t;
 #endif // engine
 
-#endif	// __Q_SHARED_H
+#ifdef __cplusplus
+struct RNGenerator {
+private:
+	std::mt19937 pGenerator;
+public:
+	RNGenerator(uint_fast32_t nValue) : pGenerator(nValue) {}
+
+	void Reseed(const uint_fast32_t nValue) {
+		pGenerator.seed(nValue);
+	}
+
+	uint_fast32_t Irand(uint_fast32_t nMin, uint_fast32_t nMax) {
+		assert((nMax - nMin) < QRAND_MAX);
+		std::uniform_int_distribution<uint_fast32_t> gen(nMin, nMax);
+		return gen(pGenerator);
+	}
+
+	uint_fast32_t rand() {
+		return pGenerator();
+	}
+};
+#endif

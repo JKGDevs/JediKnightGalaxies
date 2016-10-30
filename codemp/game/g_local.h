@@ -31,7 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "bg_vehicles.h"
 #include "g_public.h"
 #include "bg_ammo.h"
-#include "jkg_items.h"
+#include "bg_items.h"
 
 #include "qcommon/game_version.h"
 
@@ -200,43 +200,8 @@ typedef struct {
 	unsigned int memAllocated;
 } assistStructure_t;
 
-//============================================================================
-// Treasure Class system
-
-class TreasureClass;
-typedef union { TreasureClass* tc; itemData_t* itm; } uTreasure;
-struct TreasureOdds {
-	uTreasure Treasure;
-	unsigned odds;
-	bool bTC;
-	bool bUnresolved;
-};
-
-class TreasureClass {
-protected:
-	std::vector<TreasureOdds> vTreasure;
-	std::string sName;
-	bool bValid;
-	unsigned totalChance;
-	unsigned numPicks;
-public:
-	TreasureClass(const char* fileName);
-	TreasureClass(void* json);
-	inv_t& GenerateLoot(inv_t& in, unsigned numPicks = 1);
-	const std::string& GetName() { return sName; }
-	bool IsValid() { return bValid; }
-	unsigned GetNumPicks() { return numPicks; }
-
-	void AddTo(const char* sRef, unsigned odds = 1);
-	void AddToNoEvaluate(const char* sRef, unsigned odds = 1);
-	//void DeleteFrom(const char* sRef);
-	//void ChangeOdds(const char* sRef, unsigned newOdds);
-
-	void EvaluateOdds();
-};
-
 #ifdef _GAME
-extern std::unordered_map<std::string, TreasureClass*> mTreasureRegistry;
+class TreasureClass;
 #endif
 
 //============================================================================
@@ -498,14 +463,16 @@ struct gentity_s {
 	int			grenadeWeapon;		// The cookable grenade type that has been set (it can explode in your pocket).
 	int			grenadeVariation;	// The cookable grenade variation that has been set (it can explode in your pocket).
 
+	char		treasureclass[MAX_QPATH];
+
 	// For scripted NPCs
 	char		*npcscript;
 
-	inv_t *inventory;
 	gentity_t  *currentLooter;
 	gentity_t  *currentlyLooting;
 	qboolean	isAtWorkbench;	//nw
-	vendorStruct_t vendorData;
+	const char* szTreasureClass;			// Used on death
+	const char* szVendorTreasureClass;		// Used for vendor stock
 	assistStructure_t	assistData;			// keeps a record of who hit us in this life
 
 	// For NPC waypoint following..
@@ -538,6 +505,15 @@ struct gentity_s {
 	int			next_rifle_butt_time;
 	int			next_flamer_time;
 	int			next_kick_time;
+
+	qboolean	bVendor;
+
+	/////////////////////////////////////////
+	// 
+	// EVERYTHING ABOVE THIS POINT MUST BE POD
+	//
+	/////////////////////////////////////////
+	std::vector<itemInstance_t>* inventory;
 };
 
 //used for objective dependancy stuff
@@ -1091,7 +1067,7 @@ struct gclient_s {
 	qboolean	didSaberOffSound;				// eez add
 	float		ironsightsBlend;			// only used in ~1 place, but it's used to prevent noscoping
 
-	gentity_t	*currentVendor;
+	gentity_t	*currentTrader;				// who we are currently trading with
 };
 
 //Interest points
@@ -1383,6 +1359,7 @@ void Cmd_ToggleSaber_f(gentity_t *ent);
 void Cmd_EngageDuel_f(gentity_t *ent);
 void G_LeaveVehicle( gentity_t *ent, qboolean ConCheck );
 void SanitizeString2( char *in, char *out );
+void Cmd_Reload_f(gentity_t *ent);
 
 void JKG_BindChatCommands( void );
 void CCmd_Cleanup();
@@ -1731,10 +1708,10 @@ void Svcmd_GameMem_f( void );
 //
 // g_session.c
 //
-void G_ReadSessionData( gclient_t *client );
-void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot );
-
-void G_InitWorldSession( void );
+void G_ReadClientSessionData( gclient_t *client );
+void G_WriteClientSessionData( const gclient_t *client );
+void G_InitClientSessionData( gclient_t *client, char *userinfo, qboolean isBot );
+void G_ReadSessionData( void );
 void G_WriteSessionData( void );
 
 // NPC_spawn.cpp
@@ -1924,13 +1901,16 @@ void G_RegisterCvars( void );
 void G_UpdateCvars( void );
 
 /**************************************************
-* jkg_items.c
+* jkg_vendor.cpp
 **************************************************/
-void JKG_VendorInit(void);
-void JKG_CreateNewVendor(gentity_t *ent, int desiredVendorID, qboolean random, qboolean refreshStock);
 void JKG_SP_target_vendor(gentity_t *ent);
-void JKG_Vendor_Buy(gentity_t *ent, gentity_t *targetVendor, int item);
-void JKG_CheckVendorReplenish(void);
+void JKG_target_vendor_use(gentity_t* self, gentity_t* other, gentity_t* activator);
+
+/**************************************************
+* jkg_treasureclass.cpp
+**************************************************/
+void JKG_TC_Init(const char* szTCDirectory);
+void JKG_TC_Shutdown();
 
 /**************************************************
 * jkg_astar.cpp - New A* Routing Implementation.
@@ -1945,12 +1925,8 @@ void NPC_ClearLookTarget( gentity_t *self );
 
 // Refactored included functions
 void SetTeamQuick(gentity_t *ent, int team, qboolean doBegin);
-void JKG_Easy_DIMA_Init(inv_t *inventory);
 void JKG_CBB_SendAll(int client);
 void JKG_PlayerIsolationClear(int client);
-void JKG_A_GiveEntItem( unsigned int itemIndex, int qualityOverride, inv_t *inventory, gclient_t *owner );
-void JKG_A_GiveEntItemForcedToACI( unsigned int itemIndex, int qualityOverride, inv_t *inventory, gclient_t *owner, unsigned int ACIslot );
-void JKG_A_RollItem( unsigned int itemIndex, int qualityOverride, inv_t *inventory );
 #endif
 
 extern gameImport_t *trap;

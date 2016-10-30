@@ -210,7 +210,7 @@ saberMoveData_t	saberMoveData[LS_MOVE_MAX] = {//							NB:randomized
 	{"Reflect LL",	BOTH_P1_S1_BL,		Q_R,	Q_BR,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TL2BR,		LS_A_BR2TL,		300	},	// LS_PARRY_LL,
 };
 
-
+//@FIXME TODO needs braces around each first dimension
 int transitionMove[Q_NUM_QUADS][Q_NUM_QUADS] = 
 {
 	LS_NONE,	//Can't transition to same pos!

@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "game/bg_saga.h"
 #include "game/bg_public.h"
 #include "jkg_cg_damagetypes.h"
+#include <json/cJSON.h>
 
 //[TrueView]
 //True View Camera Position Check Function
@@ -733,18 +734,9 @@ retryModel:
 		trap->G2API_SetSurfaceOnOff(ci->ghoul2Model, "torso_ljet", TURN_OFF);
 	}
 
-//	ent->s.radius = 90;
 
 	if (clientNum != -1)
 	{
-		/*
-		if (cg_entities[clientNum].ghoul2 && trap->G2_HaveWeGhoul2Models(cg_entities[clientNum].ghoul2))
-		{
-			trap->G2API_CleanGhoul2Models(&(cg_entities[clientNum].ghoul2));
-		}
-		trap->G2API_DuplicateGhoul2Instance(ci->ghoul2Model, &cg_entities[clientNum].ghoul2);	
-		*/
-
 		cg_entities[clientNum].ghoul2weapon = NULL;
 	}
 
@@ -772,6 +764,284 @@ retryModel:
 		}
 	}
 	return qtrue;
+}
+
+//.armour files -- These are purely clientside files that determine rendering data
+static qboolean JKG_CG_ParseArmorFile(const char *armorFilePath, cgArmorData_t *armorData)
+{
+	cJSON *json = NULL;
+	cJSON *jsonNode = NULL;
+	char error[MAX_STRING_CHARS];
+	const char *str = NULL;
+	int item;
+
+	char armorFileData[MAX_ITEM_FILE_LENGTH];
+	fileHandle_t f;
+	int fileLen = trap->FS_Open(armorFilePath, &f, FS_READ);
+
+	if (!f || fileLen == -1)
+	{
+		trap->Print("^1Unreadable or empty file: %s. Please report this to the developers.\n", armorFilePath);
+		return qfalse;
+	}
+
+	if ((fileLen + 1) >= MAX_ITEM_FILE_LENGTH)
+	{
+		trap->FS_Close(f);
+		trap->Print("^1%s item file too large. Please report this to the developers.\n", armorFilePath);
+		return qfalse;
+	}
+
+	trap->FS_Read(&armorFileData, fileLen, f);
+	armorFileData[fileLen] = '\0';
+
+	trap->FS_Close(f);
+
+	json = cJSON_ParsePooled(armorFileData, error, sizeof(error));
+	if (json == NULL)
+	{
+		trap->Print("^1%s: %s\n", armorFilePath, error);
+		return qfalse;
+	}
+
+	memset(armorData, 0, sizeof(*armorData));
+
+	jsonNode = cJSON_GetObjectItem(json, "id");
+	item = cJSON_ToNumber(jsonNode);
+	armorData->id = item;
+
+	jsonNode = cJSON_GetObjectItem(json, "model");
+	str = cJSON_ToString(jsonNode);
+	if (str && str[0]) Q_strncpyz(armorData->model, str, sizeof(armorData->model));
+
+	jsonNode = cJSON_GetObjectItem(json, "skin");
+	str = cJSON_ToString(jsonNode);
+	if (str && str[0]) Q_strncpyz(armorData->skin, str, sizeof(armorData->skin));
+
+	jsonNode = cJSON_GetObjectItem(json, "surf");
+	armorData->surfOff = (qboolean)cJSON_ToBoolean(jsonNode);
+
+	jsonNode = cJSON_GetObjectItem(json, "slot");
+	str = cJSON_ToString(jsonNode);
+	if (!Q_stricmp(str, "head")){
+		armorData->slot = ARMSLOT_HEAD;
+	}
+	else if (!Q_stricmp(str, "neck")){
+		armorData->slot = ARMSLOT_NECK;
+	}
+	else if (!Q_stricmp(str, "body") || !Q_stricmp(str, "torso")){
+		armorData->slot = ARMSLOT_TORSO;
+	}
+	else if (!Q_stricmp(str, "robe")){
+		armorData->slot = ARMSLOT_ROBE;
+	}
+	else if (!Q_stricmp(str, "legs")){
+		armorData->slot = ARMSLOT_LEGS;
+	}
+	else if (!Q_stricmp(str, "hands") || !Q_stricmp(str, "hand") || !Q_stricmp(str, "gloves")){
+		armorData->slot = ARMSLOT_GLOVES;
+	}
+	else if (!Q_stricmp(str, "boots") || !Q_stricmp(str, "foot") || !Q_stricmp(str, "feet")){
+		armorData->slot = ARMSLOT_BOOTS;
+	}
+	else if (!Q_stricmp(str, "shoulder") || !Q_stricmp(str, "pauldron") || !Q_stricmp(str, "pauldrons")){
+		armorData->slot = ARMSLOT_SHOULDER;
+	}
+	else if (!Q_stricmp(str, "implant") || !Q_stricmp(str, "implants")){
+		armorData->slot = ARMSLOT_IMPLANTS;
+	}
+
+	jsonNode = cJSON_GetObjectItem(json, "surfLower");
+	str = cJSON_ToString(jsonNode);
+	if (str && str[0]) Q_strncpyz(armorData->surfOffLowerString, str, sizeof(armorData->surfOffLowerString));
+
+	jsonNode = cJSON_GetObjectItem(json, "surfUpper");
+	str = cJSON_ToString(jsonNode);
+	if (str && str[0]) Q_strncpyz(armorData->surfOffThisString, str, sizeof(armorData->surfOffThisString));
+
+	jsonNode = cJSON_GetObjectItem(json, "surfOnUpper");
+	str = cJSON_ToString(jsonNode);
+	if (str && str[0]) Q_strncpyz(armorData->surfOnThisString, str, sizeof(armorData->surfOnThisString));
+
+	cJSON_Delete(json);
+
+	return qtrue;
+}
+
+static qboolean JKG_CG_LoadArmor(void)
+{
+	int i = 0;
+	char armorFiles[8192];
+	int numFiles = trap->FS_GetFileList("ext_data/armor/", ".armour", armorFiles, sizeof(armorFiles));
+	const char *armorFile = armorFiles;
+	int successful = 0, failed = 0;
+
+	trap->Print("Loading armor data...\n");
+	for (; i < numFiles; i++)
+	{
+		cgArmorData_t armor;
+		if (!JKG_CG_ParseArmorFile(va("ext_data/armor/%s", armorFile), &armor))
+		{
+			failed++;
+			continue;
+		}
+
+		if (armor.id > 0 && armor.id < MAX_ARMOR_PIECES)
+		{
+			successful++;
+		}
+		else
+		{
+			failed++;
+			continue;
+		}
+
+		if (armorMasterTable[armor.id].id)
+			trap->Print("^3Warning: Duplicate armor ID %i\n", armor.id);
+		armorMasterTable[armor.id] = armor;
+
+		armorFile += strlen(armorFile) + 1;
+	}
+	trap->Print("Armor Loaded: %i successful, %i failed\n", successful, failed);
+
+	return (qboolean)(successful > 0);
+}
+
+void JKG_CG_InitArmor(void)
+{
+	int i = 0, j = 0;
+	memset(armorMasterTable, 0, sizeof(armorMasterTable));
+
+	if (!JKG_CG_LoadArmor()){
+		Com_Error(ERR_FATAL, "armorMasterTable NULL");
+		return;
+	}
+
+	memset(&cgs.armorInformation, 0, sizeof(cgs.armorInformation));
+	for (i = 0; i < MAX_CLIENTS; i++)
+	{
+		for (j = 0; j < ARMSLOT_MAX; j++)
+			cg_entities[i].previousEquippedArmor[j] = 0;
+	}
+}
+
+void JKG_CG_Armor_GetPartFromSurfString(int token, const char *string, char *buffer)
+{
+	//eezstreet - This grabs a section of a comma-delimited string.
+	//For example: JKG_CG_Armor_GetPartFromSurfString(0, "blah,blah2") passes "blah" into buffer
+	int i = 0, count = 0, j = 0;
+	if (string)
+	{
+		while (string[i] != '\0')
+		{
+			if (string[i] == ','){
+				count++;
+				if (count > token)
+					break;
+			}
+			if (count == token && string[i] != ',')
+			{
+				buffer[j] = string[i];
+				j++;
+			}
+			i++;
+		}
+	}
+	buffer[j] = '\0'; //NULL terminate it just to be safe -- eez
+}
+
+void JKG_CG_SetModelSurfacesFlags(void *g2, const char *surfaces, int flags)
+{
+	char surfaceName[MAX_QPATH];
+	int i = 0;
+
+	if (!surfaces || !surfaces[0])
+	{
+		return;
+	}
+
+	while (1)
+	{
+		JKG_CG_Armor_GetPartFromSurfString(i, surfaces, surfaceName);
+		if (!surfaceName[0])
+			break;
+
+		trap->G2API_SetSurfaceOnOff(g2, surfaceName, flags);
+		i++;
+	}
+}
+
+//=========================================================
+// JKG_G2_GetNumberOfSurfaces
+//---------------------------------------------------------
+// Description: This retrieves the number of surfaces in
+// a GLM model. Use in conjunction with the G2 function,
+// trap->G2API_GetSurfaceName to get all the surface names
+// in the model. Surface names have a max length of
+// MAX_QPATH.
+//=========================================================
+int JKG_G2_GetNumberOfSurfaces(const char *modelPath)
+{
+	mdxmHeader_t header;
+	fileHandle_t f;
+	int fileLen = trap->FS_Open(modelPath, &f, FS_READ);
+	if (fileLen == -1 || !f)
+	{
+#ifdef _DEBUG
+		trap->Print("Failed to open the model %s.\n", modelPath);
+#endif
+		return 0;
+	}
+
+	if (fileLen < sizeof(mdxmHeader_t))
+	{
+#ifdef _DEBUG
+		trap->Print("Invalid model file %s.\n", modelPath);
+#endif
+		return 0;
+	}
+
+	trap->FS_Read(&header, sizeof(mdxmHeader_t), f);
+	trap->FS_Close(f);
+
+	return header.numSurfaces;
+}
+
+void JKG_CG_ShowOnlySelectedSurfaces(void *g2, const char *modelPath, const char *visibleSurfaces)
+{
+	int i;
+	char surfaceName[MAX_QPATH];
+	int numSurfaces;
+
+	if (!visibleSurfaces || !visibleSurfaces[0])
+	{
+		return;
+	}
+
+	numSurfaces = JKG_G2_GetNumberOfSurfaces(modelPath);
+
+	for (i = 0; i < numSurfaces; i++)
+	{
+		trap->G2API_GetSurfaceName(g2, i, 0, surfaceName);
+		if (surfaceName[0] == '*')
+		{
+			// this is actually the triangle for a bolt. Don't poke it! D;
+			continue;
+		}
+		trap->G2API_SetSurfaceOnOff(g2, surfaceName, 0x2);
+	}
+
+	i = 0;
+	//Now turn on the relevant surfaces
+	while (1)
+	{
+		JKG_CG_Armor_GetPartFromSurfString(i, visibleSurfaces, surfaceName);
+		if (!surfaceName[0])
+			break;
+
+		trap->G2API_SetSurfaceOnOff(g2, surfaceName, 0);
+		i++;
+	}
 }
 
 /*
@@ -898,6 +1168,45 @@ qboolean CG_RegisterClientArmorModelname( centity_t *cent, int armorNum, int cli
 	CG_ResetPlayerEntity(cent);
 
 	return qtrue;
+}
+
+void JKG_CG_EquipArmor(int client, int slot, int armorId)
+{
+	centity_t *cent = &cg_entities[client];
+
+	cgs.armorInformation[client][slot] = armorId;
+	cent->equippedArmor[slot] = armorId;
+
+	if (!armorId)
+	{
+		// Show surfaces which were hidden on the player model for the previous armor.
+		JKG_CG_SetModelSurfacesFlags(cent->ghoul2, armorMasterTable[cent->previousEquippedArmor[slot]].surfOffLowerString, 0);
+		cent->previousEquippedArmor[slot] = armorId;
+
+		if (cent->armorGhoul2[slot] && trap->G2_HaveWeGhoul2Models(cent->armorGhoul2[slot]))
+		{
+			trap->G2API_CleanGhoul2Models(&cent->armorGhoul2[slot]);
+			cent->armorGhoul2[slot] = NULL;
+		}
+		return;
+	}
+
+	if (!CG_RegisterClientArmorModelname(cent, armorId, client, slot))
+	{
+		trap->Print("Failed to equip armor model %s in slot %i", armorMasterTable[armorId].model, slot);
+		return;
+	}
+
+	// Show surfaces which were hidden on the player model for the previous armor.
+	JKG_CG_SetModelSurfacesFlags(cent->ghoul2, armorMasterTable[cent->previousEquippedArmor[slot]].surfOffLowerString, 0);
+
+	// Now disable surfaces on the player model which need to been hidden on the new armor.
+	JKG_CG_SetModelSurfacesFlags(cent->ghoul2, armorMasterTable[armorId].surfOffLowerString, G2SURFACEFLAG_OFF);
+
+	// Disable surfaces on the upper model as well
+	JKG_CG_SetModelSurfacesFlags(cent->armorGhoul2, armorMasterTable[armorId].surfOffThisString, G2SURFACEFLAG_OFF);
+
+	cent->previousEquippedArmor[slot] = armorId;
 }
 
 /*
@@ -4875,12 +5184,6 @@ static void CG_PlayerPowerups( centity_t *cent, refEntity_t *torso ) {
 	if ( !powerups ) {
 		return;
 	}
-
-	#ifdef BASE_COMPAT
-		// quad gives a dlight
-		if ( powerups & ( 1 << PW_QUAD ) )
-			trap->R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 0.2f, 0.2f, 1 );
-	#endif // BASE_COMPAT
 
 	if (cent->currentState.eType == ET_NPC)
 	{

@@ -51,37 +51,39 @@ static void CO_InventoryAttachToACI ( int itemNum, int slot, int attach )
 	}
 }
 
-extern cgItemData_t CGitemLookupTable[MAX_ITEM_TABLE_SIZE];
+static size_t tempSize = 0;
 static void *CO_InventoryDataRequest ( int data )
 {
 	if(data >= 50)
 	{
 		//HACK ALERT
-		if(cg.playerInventory[data-50].id && (data-50) >= 0 && (data-50) < MAX_INVENTORY_ITEMS)
+		if((*cg.playerInventory)[data-50].id && (data-50) >= 0 && (data-50) < MAX_INVENTORY_ITEMS)
 		{
-			return (void *)cg.playerInventory[data-50].id->itemIcon;
+			return (*cg.playerInventory)[data-50].id->visuals.itemIcon;
 		}
 		else
 		{
-			return NULL;
+			return nullptr;
 		}
 	}
     switch ( data )
     {	// FIXME: enumerable --eez
         case 0: // inventory count
-            return (void *)cg.numItemsInInventory;
-        case 1: // inventory list
-            return (void *)cg.playerInventory;
+			tempSize = cg.playerInventory->size();
+			return &tempSize;
+		case 1: // inventory list
+			return (void *)(&(*cg.playerInventory)[0]);	// feels like hack
         case 2:
-            return (void *)cg.playerACI;
+            return cg.playerACI;
 		case 3:
-			return (void *)cg.predictedPlayerState.credits;
+			return &cg.predictedPlayerState.credits;
 		case 4:
-			return (void *)shopItems;
+			return (void*)(&(*cg.otherTradeItems)[0]);
 		case 5:
-			return (void *)numShopItems;
+			tempSize = cg.otherTradeItems->size();
+			return &tempSize;
 		case 6:
-			return (void *)CGitemLookupTable;
+			return itemLookupTable;
         default:
             return NULL;
     }
@@ -98,7 +100,7 @@ static void *CO_PartyMngtDataRequest(int data) {
 	} else if (data == 1) {
 		return &cgs.partyList;
 	} else if (data == 2) {
-		return (void *)cgs.partyListTime;
+		return /*(void *)*/&cgs.partyListTime;
 	} else {
 		return 0;
 	}

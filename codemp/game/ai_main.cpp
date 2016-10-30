@@ -38,7 +38,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 #include "chars.h"
 #include "inv.h"
-#include "syn.h"
 
 extern void DOM_StandardBotAI(bot_state_t *bs, float thinktime);
 extern int PassLovedOneCheck(bot_state_t *bs, gentity_t *ent);

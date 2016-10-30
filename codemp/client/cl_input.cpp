@@ -108,7 +108,8 @@ void IN_GenCMD2( void )
 
 void IN_GenCMD3( void )
 {
-	return;
+	cl.gcmdSendValue = qtrue;
+	cl.gcmdValue = GENCMD_RELOAD;
 }
 
 void IN_GenCMD4( void )
@@ -1638,6 +1639,7 @@ void CL_InitInput( void ) {
 
 	Cmd_AddCommand ("sv_saberswitch", IN_GenCMD1);
 	Cmd_AddCommand ("engage_duel", IN_GenCMD2);
+	Cmd_AddCommand ("reload", IN_GenCMD3);
 	Cmd_AddCommand ("use_seeker", IN_GenCMD13);
 	Cmd_AddCommand ("use_field", IN_GenCMD14);
 	Cmd_AddCommand ("use_bacta", IN_GenCMD15);

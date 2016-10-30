@@ -279,7 +279,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	COM_StripExtension( file, sfile, sizeof( sfile ) );
 
 	std::string s = sfile;
-	transform(s.begin(), s.end(), s.begin(), ::tolower);
+	std::transform(s.begin(), s.end(), s.begin(), ::tolower);
 
 	Com_DPrintf("Registering effect : %s\n", sfile);
 
@@ -928,7 +928,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, matrix3_t axis, const int 
 
 				if ( sfx == NULL )
 				{
-					Com_Error (ERR_DROP, "ERROR: Failed to allocate EFX from memory pool.\n");
+					Com_Error (ERR_DROP, "ERROR: Failed to allocate EFX from memory pool.");
 					return;
 				}
 
@@ -1077,7 +1077,7 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 		{ //only render portal fx on the skyportal pass and vice versa
 			if (effect->mBoltNum == -1)
 			{// ok, are we spawning a bolt on effect or a normal one?
-				if ( effect->mEntNum != ENTITYNUM_NONE )
+				if ( effect->mEntNum != ENTITYNUM_NONE && effect->mEntNum != -1 )
 				{
 					// Find out where the entity currently is
 					TCGVectorData	*data = (TCGVectorData*)cl.mSharedMemory;

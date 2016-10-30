@@ -795,7 +795,7 @@ static BinOpr getbinopr (int op) {
     case '*': return OPR_MUL;
     case '/': return OPR_DIV;
     case '%': return OPR_MOD;
-    case '^': return OPR_POW;			//--futuza: --todo: investigate if important to ^xRGB
+    case '^': return OPR_POW;		
     case TK_CONCAT: return OPR_CONCAT;
     case TK_NE: return OPR_NE;
     case TK_EQ: return OPR_EQ;

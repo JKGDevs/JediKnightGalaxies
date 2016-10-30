@@ -7034,7 +7034,7 @@ static void PM_Weapon( void )
 	{ //riding a vehicle
 		veh = pm_entVeh;
 		if ( veh &&
-			(veh->m_pVehicle && veh->m_pVehicle->m_pVehicleInfo->type == VH_WALKER || veh->m_pVehicle && veh->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER) )
+			(veh->m_pVehicle && (veh->m_pVehicle->m_pVehicleInfo->type == VH_WALKER || veh->m_pVehicle && veh->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER)) )
 		{//riding a walker/fighter
 			//keep saber off, do no weapon stuff at all!
 			pm->ps->saberHolstered = 2;
@@ -10467,7 +10467,7 @@ qboolean BG_IsSprinting ( const playerState_t *ps, const usercmd_t *cmd, qboolea
 	
 	if( PMOVE )
 	{
-		if( !pml.groundPlane && (pm->cmd.serverTime - 150) > pm->cmd.serverTime )
+		if( !pml.groundPlane && (pm->cmd.serverTime - 350) > pm->cmd.serverTime )
 		{
 			return qfalse;
 		}

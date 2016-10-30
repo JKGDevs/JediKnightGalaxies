@@ -150,21 +150,10 @@ static void C_GetLerpData(void);
 static int	CG_RagCallback(int callType);
 static void C_ImpactMark(void);
 
-#define MAX_MISC_ENTS	4000
-
-//static refEntity_t	*MiscEnts = 0;
-//static float		*Radius = 0;
-static refEntity_t	MiscEnts[MAX_MISC_ENTS]; //statically allocated for now.
-static float		Radius[MAX_MISC_ENTS];
-static float		zOffset[MAX_MISC_ENTS]; //some models need a z offset for culling, because of stupid wrong model origins
-
-static int			NumMiscEnts = 0;
-
 extern autoMapInput_t cg_autoMapInput; //cg_view.c
 extern int cg_autoMapInputTime;
 extern vec3_t cg_autoMapAngle;
 
-void CG_MiscEnt(void);
 void CG_DoCameraShake( vec3_t origin, float intensity, int radius, int time );
 
 //do we have any force powers that we would normally need to cycle to?
@@ -2643,6 +2632,9 @@ Ghoul2 Insert Start
 	// Jedi Knight Galaxies
 	CinBuild_Init();
 	CG_SetupChatCmds();
+
+	/* The server needs to send our inventory to us. Tell us them that we're ready to receive it. */
+	trap->SendClientCommand("resendInv");
 /*
 Ghoul2 Insert End
 */
@@ -2691,31 +2683,13 @@ Ghoul2 Insert End
 	cg.forceHUDActive = qtrue;
 	cg.forceHUDTotalFlashTime = 0;
 	cg.forceHUDNextFlashTime = 0;
+	cg.playerInventory = new std::vector<itemInstance_t>();
+	cg.ourTradeItems = new std::vector<itemInstance_t>();
+	cg.otherTradeItems = new std::vector<itemInstance_t>();
 
-	cg.numItemsInInventory = 0;
-
-	//eezstreet add
-	JKG_CG_InitItems();
-	JKG_CG_InitArmor();
+	BG_InitItems();
 	BG_LoadDefaultWeaponItems();
-
-	/*i = WP_NONE+1;
-	while (i <= LAST_USEABLE_WEAPON)
-	{
-		item = BG_FindItemForWeapon(i);
-
-		if (item && item->icon && item->icon[0])
-		{
-			cgs.media.weaponIcons[i] = trap->R_RegisterShaderNoMip(item->icon);
-			cgs.media.weaponIcons_NA[i] = trap->R_RegisterShaderNoMip(va("%s_na", item->icon));
-		}
-		else
-		{ //make sure it is zero'd (default shader)
-			cgs.media.weaponIcons[i] = 0;
-			cgs.media.weaponIcons_NA[i] = 0;
-		}
-		i++;
-	}*/
+	JKG_CG_InitArmor();
 
 	trap->Cvar_VariableStringBuffer("com_buildscript", buf, sizeof(buf));
 	if (atoi(buf))
@@ -2986,6 +2960,9 @@ void CG_Shutdown( void )
 
 	// some mods may need to do cleanup work here,
 	// like closing files or archiving session data
+	delete cg.playerInventory;
+	delete cg.ourTradeItems;
+	delete cg.otherTradeItems;
 }
 
 /*
@@ -3153,20 +3130,6 @@ static qboolean CG_IncomingConsoleCommand( void ) {
 	//return qtrue if the command is ok. Otherwise, you can set char 0 on the command str to 0 and return
 	//qfalse to not execute anything, or you can fill conCommand in with something valid and return 0
 	//in order to have that string executed in place. Some example code:
-#if 0
-	TCGIncomingConsoleCommand *icc = &cg.sharedBuffer.icc;
-	if ( strstr( icc->conCommand, "wait" ) )
-	{ //filter out commands contaning wait
-		Com_Printf( "You can't use commands containing the string wait with MyMod v1.0\n" );
-		icc->conCommand[0] = 0;
-		return qfalse;
-	}
-	else if ( strstr( icc->conCommand, "blah" ) )
-	{ //any command containing the string "blah" is redirected to "quit"
-		strcpy( icc->conCommand, "quit" );
-		return qfalse;
-	}
-#endif
 	return qtrue;
 }
 
@@ -3260,7 +3223,6 @@ Q_EXPORT cgameExport_t* QDECL GetModuleAPI( int apiVersion, cgameImport_t *impor
 	cge.G2Trace					= C_G2Trace;
 	cge.G2Mark					= C_G2Mark;
 	cge.RagCallback				= CG_RagCallback;
-	cge.IncomingConsoleCommand	= CG_IncomingConsoleCommand;
 	cge.NoUseableForce			= CG_NoUseableForce;
 	cge.GetOrigin				= CG_GetOrigin;
 	cge.GetAngles				= CG_GetAngles;

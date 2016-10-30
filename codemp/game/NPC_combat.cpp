@@ -1017,7 +1017,6 @@ FIXME makes this so there's a delay from event that caused us to check to actual
 
 Added: hacks for Borg
 */
-void Cmd_Reload_f ( gentity_t *ent );
 void WeaponThink( qboolean inCombat ) 
 {
 	if ( client->ps.weaponstate == WEAPON_RAISING || client->ps.weaponstate == WEAPON_DROPPING || client->ps.weaponstate == WEAPON_RELOADING ) 

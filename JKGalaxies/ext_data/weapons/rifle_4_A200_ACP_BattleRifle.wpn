@@ -80,7 +80,7 @@
         "projectileclass": "repeater_proj",
         "meansofdeath": "MOD_REPEATER",
         "accuracy": {
-			"accuracyRating": 55,
+			"accuracyRating": 45,
 			"accuracyRatingPerShot": 4,
 			"msToDrainAccuracy": 70,
 			"maxAccuracyAdd": 85,

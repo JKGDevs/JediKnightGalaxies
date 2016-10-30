@@ -200,6 +200,7 @@ XCVAR_DEF( cg_drawHUD,							"1",					NULL,					CVAR_NONE )
 XCVAR_DEF( ui_hidehud,							"0",					NULL,					CVAR_INTERNAL )
 XCVAR_DEF( ui_blurbackground,					"0",					NULL,					CVAR_INTERNAL )
 XCVAR_DEF( jkg_simpleHUD,						"0",					NULL,					CVAR_ARCHIVE )
+XCVAR_DEF( jkg_safeTreasureClasses,				"0",					NULL,					CVAR_LATCH|CVAR_ARCHIVE )
 
 // TrueView
 XCVAR_DEF( cg_trueguns,							"0",					NULL,					CVAR_ARCHIVE )

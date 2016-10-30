@@ -14,7 +14,9 @@
 #include <encoding/base128.h>
 #include <encoding/bitstream.h>
 
+#ifdef _MSC_VER
 #pragma warning (disable : 4090) // Different 'const' qualifiers
+#endif
 
 // UI includes
 void Menu_ShowItemByName(menuDef_t *menu, const char *p, qboolean bShow);
@@ -324,7 +326,7 @@ void JKG_Slice_ProcessCommand_f(void)
 			Menus_CloseAll();
 			if (Menus_ActivateByName("jkg_slice"))
 			{
-				trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI & ~KEYCATCH_CONSOLE );
+				trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI /*& ~KEYCATCH_CONSOLE*/ );
 			}
 			Menu_ClearFocus(Menus_FindByName("jkg_slice"));
 

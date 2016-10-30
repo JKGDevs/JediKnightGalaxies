@@ -1997,7 +1997,7 @@ void DOM_IncreaseWaypointLinkCost(bot_state_t *bs)
 			if (bs->wpLast->neighbors[i].cost)
 				bs->wpLast->neighbors[i].cost *= 2;
 			else
-				bs->wpLast->neighbors[i].cost = 999999.9f;
+				bs->wpLast->neighbors[i].cost = 999999; // wtf 999999.9f
 
 			//trap->Print("BOT DEBUG: Increasing cost of wp %i link %i.\n", bs->wpLast->index, i);
 			break;
@@ -2243,7 +2243,7 @@ void DOM_UQ1_UcmdMoveForDir ( bot_state_t *bs, usercmd_t *cmd, vec3_t dir )
 	cmd->rightmove = DotProduct( right, dir ) * speed;
 
 	//cmd->upmove = abs(forward[3] ) * dir[3] * speed; // LOL BRO DO YOU EVEN VECTOR? --eez
-	cmd->upmove = abs(forward[2] ) * dir[2] * speed;
+	cmd->upmove = fabsf(forward[2] ) * dir[2] * speed;
 }
 
 void DOM_BotMove(bot_state_t *bs, vec3_t dest, qboolean wptravel, qboolean strafe)
@@ -2721,7 +2721,7 @@ int DOM_GetNearestVisibleWP_Goal(vec3_t org, int ignore, int badwp)
 				|| (gWPArray[i]->flags & WPFLAG_FORCEPULL) )
 			{//boost the distance for these waypoints so that we will try to avoid using them
 				//if at all possible
-				flLen =+ 500;
+				flLen += 500;
 			}
 
 			if (flLen < bestdist /*&& (g_RMG.integer || BotPVSCheck(org, gWPArray[i]->origin))*/ && OrgVisibleBox(org, mins, maxs, gWPArray[i]->origin, ignore))
@@ -2781,7 +2781,7 @@ int DOM_GetNearestVisibleWP(vec3_t org, int ignore, int badwp)
 				|| (gWPArray[i]->flags & WPFLAG_FORCEPULL) )
 			{//boost the distance for these waypoints so that we will try to avoid using them
 				//if at all possible
-				flLen =+ 500;
+				flLen += 500;
 			}
 
 			if (flLen < bestdist /*&& (g_RMG.integer || BotPVSCheck(org, gWPArray[i]->origin))*/ && OrgVisibleBox(org, mins, maxs, gWPArray[i]->origin, ignore))
@@ -2840,7 +2840,7 @@ int DOM_GetNearestVisibleWP_NOBOX(vec3_t org, int ignore, int badwp)
 				|| (gWPArray[i]->flags & WPFLAG_FORCEPULL) )
 			{//boost the distance for these waypoints so that we will try to avoid using them
 				//if at all possible
-				flLen =+ 500;
+				flLen += 500;
 			}
 
 			VectorCopy(gWPArray[i]->origin, wpOrg);
@@ -3147,7 +3147,7 @@ void DOM_BotMoveto(bot_state_t *bs, qboolean strafe)
 	qboolean recalcroute = qfalse;
 	qboolean findwp = qfalse;
 	int badwp = -2;
-	int destwp = -1;
+	//int destwp = -1;
 	float distthen, distnow;
 
 	if(!bs->wpCurrent || bs->wpCurrent <= 0)
@@ -4078,10 +4078,10 @@ float DOM_TargetDistance(bot_state_t *bs, gentity_t* target, vec3_t targetorigin
 
 	if(strcmp(target->classname, "misc_siege_item") == 0
 		|| strcmp(target->classname, "func_breakable") == 0 
-		|| target->client && target->client->NPC_class == CLASS_RANCOR) 
+		|| (target->client && target->client->NPC_class == CLASS_RANCOR)) 
 	{//flatten origin heights and measure
 		VectorCopy(targetorigin, enemyOrigin);
-		if(fabs(enemyOrigin[2] - bs->eye[2]) < 150)
+		if(fabsf(enemyOrigin[2] - bs->eye[2]) < 150)
 		{//don't flatten unless you're on the same relative plane
 			enemyOrigin[2] = bs->eye[2];
 		}
@@ -4094,9 +4094,9 @@ float DOM_TargetDistance(bot_state_t *bs, gentity_t* target, vec3_t targetorigin
 		{//assume this is a misc_siege_item.  These have absolute based mins/maxs.
 			//Scale for the entity's bounding box
 			float adjustor;
-			float x = fabs(bs->eye[0] - enemyOrigin[0]);
-			float y = fabs(bs->eye[1] - enemyOrigin[1]);
-			float z = fabs(bs->eye[2] - enemyOrigin[2]);
+			float x = fabsf(bs->eye[0] - enemyOrigin[0]);
+			float y = fabsf(bs->eye[1] - enemyOrigin[1]);
+			float z = fabsf(bs->eye[2] - enemyOrigin[2]);
 			
 			//find the general direction of the impact to determine which bbox length to
 			//scale with
@@ -5838,7 +5838,7 @@ void Update_DOM_Goal_Lists ( void )
 
 int DOM_Find_Goal_EntityNum ( int ignoreEnt, int ignoreEnt2, vec3_t current_org, int teamNum )
 {// Return standard goals only for soldiers...
-	gentity_t *goal = NULL;
+	//gentity_t *goal = NULL;
 	int loop = 0;
 
 	if (next_DOM_goal_update < level.time)
@@ -6378,7 +6378,7 @@ void DOM_objectiveType_Attack(bot_state_t *bs, gentity_t *target)
 		VectorSet(temp, -369, 858, -231);
 		if(Distance(bs->origin, temp) < DEFEND_MAXDISTANCE)
 		{//automatically see target.
-			int desiredweap = DOM_FavoriteWeapon(bs, target);
+			//int desiredweap = DOM_FavoriteWeapon(bs, target);
 			if(!(bs->cur_ps.stats[STAT_WEAPONS] & ( 1 << WP_DEMP2))
 				&& !(bs->cur_ps.stats[STAT_WEAPONS] & ( 1 << WP_ROCKET_LAUNCHER ))
 				&& !(bs->cur_ps.stats[STAT_WEAPONS] & ( 1 << WP_CONCUSSION ))
@@ -6681,7 +6681,7 @@ void DOM_objectiveType_Vehicle(bot_state_t *bs)
 		DOM_FindOrigin(bs->tacticEntity, objOrigin);
 
 		//RAFIXME:  Get rid of that crappy use stuff when we can.
-		bs->noUseTime =+ level.time + 5000;
+		bs->noUseTime += level.time + 5000;
 
 		bs->DestIgnore = bs->tacticEntity->s.number;
 		DOM_BotMove(bs, objOrigin, qfalse, qfalse);

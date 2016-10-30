@@ -28,11 +28,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // GLua include
 #include "../GLua/glua.h"
-#include "jkg_admin.h"
 #include "jkg_bans.h"
 #include "jkg_damagetypes.h"
 #include "jkg_utilityfunc.h"
-#include "jkg_easy_items.h"
 #include "qcommon/game_version.h"
 
 extern wpobject_t *gWPArray[MAX_WPARRAY_SIZE];
@@ -41,27 +39,6 @@ extern int gWPNum;
 // Warzone...
 extern void Calculate_Warzone_Flag_Spawns ( void );
 extern gentity_t *SelectWarzoneSpawnpoint ( gentity_t *ent );
-
-
-static const char	*NET_AdrToString (netadr_t a)
-{
-	static	char	s[64];
-
-	if (a.type == NA_LOOPBACK) {
-		Com_sprintf (s, sizeof(s), "loopback");
-	} else if (a.type == NA_BOT) {
-		Com_sprintf (s, sizeof(s), "bot");
-	} else if (a.type == NA_IP) {
-		Com_sprintf (s, sizeof(s), "%i.%i.%i.%i:%hu",
-			a.ip[0], a.ip[1], a.ip[2], a.ip[3], BigShort(a.port));
-	} else {
-		Com_sprintf (s, sizeof(s), "%02x%02x%02x%02x.%02x%02x%02x%02x%02x%02x:%hu",
-		a.ipx[0], a.ipx[1], a.ipx[2], a.ipx[3], a.ipx[4], a.ipx[5], a.ipx[6], a.ipx[7], a.ipx[8], a.ipx[9],
-		BigShort(a.port));
-	}
-
-	return s;
-}
 
 // g_client.c -- client functions that don't happen every frame
 
@@ -2187,10 +2164,11 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	}
 
 	value = Info_ValueForKey (userinfo, "clver");
-	
+#ifndef _DEBUG
 	if ( !isBot && Q_stricmp(value, JKG_VERSION)) {
 		return "Please update your client-side.";
 	}
+#endif
 
 	if ( !isBot && g_needpass.integer ) {
 		// check for a password
@@ -2263,9 +2241,9 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	ent->UsesELS = 1;
 	// read or initialize the session data
 	if ( firstTime || level.newSession ) {
-		G_InitSessionData( client, userinfo, isBot );
+		G_InitClientSessionData( client, userinfo, isBot );
 	}
-	G_ReadSessionData( client );
+	G_ReadClientSessionData( client );
 
 	if (!isBot && firstTime) {
 		client->sess.validated = 0;
@@ -2275,9 +2253,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		client->sess.validated = 1;
 		client->sess.noq3fill = 1;
 	}
-
-	// FIXME: Need to replace this
-	//Q_strncpyz(client->sess.IP, NET_AdrToString(svs->clients[clientNum].netchan.remoteAddress), sizeof(client->sess.IP));
 
 	if( isBot ) {
 		ent->r.svFlags |= SVF_BOT;
@@ -2329,8 +2304,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	return NULL;
 }
 
-void G_WriteClientSessionData( gclient_t *client );
-
 /*
 ===========
 ClientBegin
@@ -2358,12 +2331,6 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	// clear our inventory on ClientBegin because I forgot that this was a thing
 	trap->SendServerCommand(clientNum, "pInv clr");
 	ent->client->ps.credits = 0;
-
-	// eezstreet edit: set our item data
-	// TODO: fix this broken mess
-	memset(&ent->client->coreStats, 0, sizeof(ent->client->coreStats));
-	ent->client->coreStats.weight = MAX_INVENTORY_WEIGHT;
-	//eezstreet end
 	if ((ent->r.svFlags & SVF_BOT) && g_gametype.integer >= GT_TEAM)
 	{
 		if (allowTeamReset)
@@ -2396,7 +2363,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 			ent->client->ps.persistant[ PERS_TEAM ] = ent->client->sess.sessionTeam;
 
 			preSess = ent->client->sess.sessionTeam;
-			G_ReadSessionData( ent->client );
+			G_ReadClientSessionData( ent->client );
 			ent->client->sess.sessionTeam = (team_t)preSess;
 			G_WriteClientSessionData(ent->client);
 			if ( !ClientUserinfoChanged( clientNum ) )
@@ -2505,7 +2472,8 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	// Give this player Operator rights if he's 127.0.0.1
 	if (!Q_strncmp(client->sess.IP, "127.0.0.1:",10)) {
 		// He's localhost, give operator rights
-		client->sess.adminRank = ADMRANK_OPERATOR;
+		//client->sess.adminRank = ADMRANK_OPERATOR;
+		;	//temporary fix, do nothing since this defaults host to a cheating bastard --Futuza
 	}
 
 	if (g_gametype.integer == GT_POWERDUEL && client->sess.sessionTeam != TEAM_SPECTATOR &&
@@ -3339,11 +3307,6 @@ void ClientSpawn(gentity_t *ent, qboolean respawn) {
 	
     client->ps.weapon = 0;
     client->ps.weaponId = BG_GetWeaponIndexFromClass (client->ps.weapon, 0);
-
-	/*
-	client->ps.stats[STAT_HOLDABLE_ITEMS] |= ( 1 << HI_BINOCULARS );
-	client->ps.stats[STAT_HOLDABLE_ITEM] = BG_GetItemIndexByTag(HI_BINOCULARS, IT_HOLDABLE);
-	*/
 	
 	// MOAR OVERRIDING OF WEAPONS.
 	if ( respawn )
@@ -3380,27 +3343,25 @@ void ClientSpawn(gentity_t *ent, qboolean respawn) {
 			{
 				int itemID;
 				//FIXME: The below assumes that there is a valid weapon item
-				itemID = JKG_GetItemByWeaponIndex(BG_GetWeaponIndex((unsigned int)weapon->weaponBaseIndex, (unsigned int)weapon->weaponModIndex))->itemID;
+				itemID = BG_GetItemByWeaponIndex(BG_GetWeaponIndex((unsigned int)weapon->weaponBaseIndex, (unsigned int)weapon->weaponModIndex))->itemID;
 
-				//while ( i < MAX_INVENTORY_ITEMS && cmdent->inventory[i].id )
-				for(i = 0; i < ent->inventory->elements; i++)
-				{
-					if(ent->inventory->items[i].id)
-					{
-						if(ent->inventory->items[i].id->itemID == itemID)
-						{
-							haveItem = qtrue;	// FIXME: remove this nonsense
+				for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
+					if (it->id) {
+						if (it->id->itemID == itemID) {
+							haveItem = qtrue;
 							break;
 						}
 					}
 				}
-				if(!haveItem && ent->inventory->elements < 1)
+
+				if(!haveItem && ent->inventory->size() < 1)
 				{
 					// Don't have any sort of item in our inventory
 					if(ent->client->ps.credits < jkg_startingCredits.integer)
 					{
+						itemInstance_t item = BG_ItemInstance(itemID, 1);
 						ent->client->ps.credits = jkg_startingCredits.integer;
-						JKG_A_GiveEntItemForcedToACI(itemID, IQUAL_NORMAL, ent->inventory, ent->client, 0);
+						BG_GiveItem(ent, item, true);
 					}
 				}
 			}
@@ -3604,23 +3565,14 @@ void ClientSpawn(gentity_t *ent, qboolean respawn) {
 
 	// Loop through the items in our inventory to determine ammo count
 	memset(topAmmoValues, 0, sizeof(topAmmoValues));
-	for ( i = 0; i < ent->inventory->elements; i++ )
-	{
-		if(ent->inventory->items[i].id)
-		{
-			if(ent->inventory->items[i].id->itemType == ITEM_WEAPON)
-			{
-				itemInstance_t item = ent->inventory->items[i];
-				weaponData_t *wepData = GetWeaponData(item.id->weapon, item.id->variation);
-
-				if(wepData->ammoIndex > JKG_MAX_AMMO_INDICES)
-				{
-					continue;
-				}
-				if(topAmmoValues[wepData->ammoIndex] < wepData->ammoOnSpawn)
-				{
-					topAmmoValues[wepData->ammoIndex] = wepData->ammoOnSpawn;
-				}
+	for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
+		if (it->id && it->id->itemType == ITEM_WEAPON) {
+			weaponData_t* wepData = GetWeaponData(it->id->weaponData.weapon, it->id->weaponData.variation);
+			if (wepData->ammoIndex > JKG_MAX_AMMO_INDICES) {
+				continue;
+			}
+			if (topAmmoValues[wepData->ammoIndex] < wepData->ammoOnSpawn) {
+				topAmmoValues[wepData->ammoIndex] = wepData->ammoOnSpawn;
 			}
 		}
 	}
@@ -3729,7 +3681,6 @@ call trap->DropClient(), which will call this and do
 server system housekeeping.
 ============
 */
-extern void JKG_Easy_DIMA_CleanEntity(int entNum);
 void ClientDisconnect( int clientNum ) {
 	gentity_t	*ent;
 	gentity_t	*tent;
@@ -3746,7 +3697,7 @@ void ClientDisconnect( int clientNum ) {
 		return;
 	}
 
-	JKG_Easy_DIMA_FreeInventory( &ent->inventory );
+	ent->inventory->clear();
 	if( ent->assistData.memAllocated > 0 && ent->assistData.hitRecords )
 	{
 		free( ent->assistData.hitRecords );

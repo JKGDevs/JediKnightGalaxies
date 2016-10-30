@@ -22,6 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+#pragma once
+
 // for windows fastcall option
 #define QDECL
 #define QCALL
@@ -129,36 +131,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 	#define PATH_SEP '/'
 
+	#if !defined(ARCH_STRING)
+		#error ARCH_STRING should be defined by the build system
+	#endif
 
-	#if defined(__i386__)
-		#define ARCH_STRING "i386"
-	#elif defined(__x86_64__)
+	#if defined(__x86_64__)
 		#define idx64
-		#define ARCH_STRING "x86_64"
-	#elif defined(__powerpc64__)
-		#define ARCH_STRING "ppc64"
-	#elif defined(__powerpc__)
-		#define ARCH_STRING "ppc"
-	#elif defined(__s390__)
-		#define ARCH_STRING "s390"
-	#elif defined(__s390x__)
-		#define ARCH_STRING "s390x"
-	#elif defined(__ia64__)
-		#define ARCH_STRING "ia64"
-	#elif defined(__alpha__)
-		#define ARCH_STRING "alpha"
-	#elif defined(__sparc__)
-		#define ARCH_STRING "sparc"
-	#elif defined(__arm__)
-		#define ARCH_STRING "arm"
-	#elif defined(__cris__)
-		#define ARCH_STRING "cris"
-	#elif defined(__hppa__)
-		#define ARCH_STRING "hppa"
-	#elif defined(__mips__)
-		#define ARCH_STRING "mips"
-	#elif defined(__sh__)
-		#define ARCH_STRING "sh"
 	#endif
 
 	#if __FLOAT_WORD_ORDER == __BIG_ENDIAN
@@ -190,13 +168,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#define QINLINE inline
 	#define PATH_SEP '/'
 
-	#if defined(__i386__)
-		#define ARCH_STRING "i386"
-	#elif defined(__amd64__)
+	#if !defined(ARCH_STRING)
+		#error ARCH_STRING should be defined by the build system
+	#endif
+
+	#if defined(__amd64__)
 		#define idx64
-		#define ARCH_STRING "amd64"
-	#elif defined(__axp__)
-		#define ARCH_STRING "alpha"
 	#endif
 
 	#if BYTE_ORDER == BIG_ENDIAN
@@ -206,6 +183,50 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#endif
 
 	#define DLL_EXT ".so"
+#endif
+
+#if (defined( _MSC_VER ) && (_MSC_VER < 1900)) || (defined(__GNUC__))
+// VS2013, which for some reason we still support, does not support noexcept
+// GCC GNU has the same problem: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52869
+#define NOEXCEPT
+#define NOEXCEPT_IF(x)
+#define IS_NOEXCEPT(x) false
+#else
+#define NOEXCEPT noexcept
+#define NOEXCEPT_IF(x) noexcept(x)
+#define IS_NOEXCEPT(x) noexcept(x)
+#endif
+
+#if defined(__cplusplus)
+	#include <cstddef>
+
+	// gcc versions < 4.9 did not add max_align_t to the std:: namespace, but instead
+	// put it in the global namespace. Need this to provide uniform access to max_align_t
+	#if defined(__GNUC__) && ((__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 9))
+		typedef max_align_t qmax_align_t;
+	#else
+		typedef std::max_align_t qmax_align_t;
+	#endif
+#endif
+
+#if defined (_MSC_VER)
+	#if _MSC_VER >= 1600
+		#include <stdint.h>
+	#else
+		typedef signed __int64 int64_t;
+		typedef signed __int32 int32_t;
+		typedef signed __int16 int16_t;
+		typedef signed __int8  int8_t;
+		typedef unsigned __int64 uint64_t;
+		typedef unsigned __int32 uint32_t;
+		typedef unsigned __int16 uint16_t;
+		typedef unsigned __int8  uint8_t;
+	#endif
+#else // not using MSVC
+	#if !defined(__STDC_LIMIT_MACROS)
+		#define __STDC_LIMIT_MACROS
+	#endif
+	#include <stdint.h>
 #endif
 
 // catch missing defines in above blocks
@@ -226,11 +247,74 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #endif
 
 // endianness
-void CopyShortSwap( void *dest, void *src );
-void CopyLongSwap( void *dest, void *src );
-short ShortSwap( short l );
-int LongSwap( int l );
-float FloatSwap( const float *f );
+// Use compiler builtins where possible for maximum performance
+#include <stdint.h>
+#if !defined(__clang__) && (defined(__GNUC__) || defined(__GNUG__)) \
+            && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 403)
+// gcc >= 4.3
+
+static inline uint16_t ShortSwap(uint16_t v)
+{
+#if __GNUC_MINOR__ >= 8
+    return __builtin_bswap16(v);
+#else
+    return (v << 8) | (v >> 8);
+#endif // gcc >= 4.8
+}
+
+static inline uint32_t LongSwap(uint32_t v)
+{
+    return __builtin_bswap32(v);
+}
+#elif defined(_MSC_VER)
+// MSVC
+
+// required for _byteswap_ushort/ulong
+#include <stdlib.h>
+
+static uint16_t ShortSwap(uint16_t v)
+{
+    return _byteswap_ushort(v);
+}
+
+static uint32_t LongSwap(uint32_t v)
+{
+    return _byteswap_ulong(v);
+}
+
+#else
+// clang, gcc < 4.3 and others
+
+static inline uint16_t ShortSwap(uint16_t v)
+{
+    return (v << 8) | (v >> 8);
+}
+
+static inline uint32_t LongSwap(uint32_t v)
+{
+    return ((v & 0x000000FF) << 24) |
+           ((v & 0x0000FF00) << 8)  |
+           ((v & 0x00FF0000) >> 8)  |
+           ((v & 0xFF000000) >> 24);
+}
+#endif
+
+static QINLINE void CopyShortSwap( void *dest, const void *src )
+{
+    *(uint16_t*)dest = ShortSwap(*(uint16_t*)src);
+}
+
+static QINLINE void CopyLongSwap( void *dest, const void *src )
+{
+    *(uint32_t*)dest = LongSwap(*(uint32_t*)src);
+}
+
+static QINLINE float FloatSwap(float f)
+{
+    float out;
+    CopyLongSwap(&out, &f);
+    return out;
+}
 
 #if defined(Q3_BIG_ENDIAN) && defined(Q3_LITTLE_ENDIAN)
 	#error "Endianness defined as both big and little"
@@ -239,7 +323,7 @@ float FloatSwap( const float *f );
 	#define CopyLittleLong( dest, src )		CopyLongSwap( dest, src )
 	#define LittleShort( x )				ShortSwap( x )
 	#define LittleLong( x )					LongSwap( x )
-	#define LittleFloat( x )				FloatSwap( &x )
+	#define LittleFloat( x )				FloatSwap( x )
 	#define BigShort
 	#define BigLong
 	#define BigFloat
@@ -251,11 +335,33 @@ float FloatSwap( const float *f );
 	#define LittleFloat
 	#define BigShort( x )					ShortSwap( x )
 	#define BigLong( x )					LongSwap( x )
-	#define BigFloat( x )					FloatSwap( &x )
+	#define BigFloat( x )					FloatSwap( x )
 #else
 	#error "Endianness not defined"
 #endif
 
+typedef unsigned char byte;
+typedef unsigned short word;
+typedef unsigned long ulong;
+
+#ifndef __cplusplus
+typedef enum {qfalse, qtrue}	qboolean;	// cuz apparently the engine still includes this in C files for some reason --eez
+#else
+typedef bool qboolean;
+#define qfalse false
+#define qtrue true
+#endif
+//typedef enum { qfalse, qtrue } qboolean;
+
+// 32 bit field aliasing
+typedef union byteAlias_u {
+	float f;
+	int32_t i;
+	uint32_t ui;
+	qboolean qb;
+	byte b[4];
+	char c[4];
+} byteAlias_t;
 
 // platform string
 #if defined(NDEBUG)

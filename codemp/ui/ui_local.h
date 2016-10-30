@@ -407,6 +407,8 @@ qboolean UI_ServerCommand( const char *cmd_string );
 void JKG_UI_LoadStylesheet( const char *text );
 void JKG_UI_SetClass( const char *className, itemDef_t *item );
 
+void JKG_UI_InventoryFilterChanged();
+
 // new ui
 
 extern uiImport_t *trap;

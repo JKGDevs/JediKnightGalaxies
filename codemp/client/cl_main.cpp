@@ -91,11 +91,15 @@ cvar_t	*cl_inGameVideo;
 cvar_t	*cl_serverStatusResendTime;
 cvar_t	*cl_framerate;
 
+// cvar to enable sending a "ja_guid" player identifier in userinfo to servers
+// ja_guid is a persistent "cookie" that allows servers to track players across game sessions
+cvar_t	*cl_enableGuid;
 cvar_t	*cl_guidServerUniq;
 
 cvar_t	*cl_autolodscale;
 
 cvar_t	*cl_consoleKeys;
+cvar_t	*cl_consoleUseScanCode;
 
 cvar_t  *cl_lanForcePackets;
 
@@ -724,17 +728,32 @@ update cl_guid using QKEY_FILE and optional prefix
 */
 static void CL_UpdateGUID( const char *prefix, int prefix_len )
 {
-	fileHandle_t f;
-	int len;
+	if (cl_enableGuid->integer) {
+		fileHandle_t f;
+		int len;
 
-	len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
-	FS_FCloseFile( f );
+		len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
+		FS_FCloseFile( f );
 
-	if( len != QKEY_SIZE )
-		Cvar_Set( "ja_guid", "" );
-	else
-		Cvar_Set( "ja_guid", Com_MD5File( QKEY_FILE, QKEY_SIZE,
-			prefix, prefix_len ) );
+		// initialize the cvar here in case it's unset or was user-created
+		// while tracking was disabled (removes CVAR_USER_CREATED)
+		Cvar_Get( "ja_guid", "", CVAR_USERINFO | CVAR_ROM );
+
+		if( len != QKEY_SIZE ) {
+			Cvar_Set( "ja_guid", "" );
+		} else {
+			Cvar_Set( "ja_guid", Com_MD5File( QKEY_FILE, QKEY_SIZE,
+				prefix, prefix_len ) );
+		}
+	} else {
+		// Remove the cvar entirely if tracking is disabled
+		uint32_t flags = Cvar_Flags("ja_guid");
+		// keep the cvar if it's user-created, but destroy it otherwise
+		if (flags != CVAR_NONEXISTENT && !(flags & CVAR_USER_CREATED)) {
+			cvar_t *ja_guid = Cvar_Get("ja_guid", "", 0 );
+			Cvar_Unset(ja_guid);
+		}
+	}
 }
 
 /*
@@ -1079,9 +1098,8 @@ CL_Rcon_f
 void CL_Rcon_f( void ) {
 	char	message[MAX_RCON_MESSAGE];
 
-	if ( !rcon_client_password->string ) {
-		Com_Printf ("You must set 'rconpassword' before\n"
-					"issuing an rcon command.\n");
+	if ( !rcon_client_password->string[0] ) {
+		Com_Printf( "You must set 'rconpassword' before issuing an rcon command.\n" );
 		return;
 	}
 
@@ -1500,7 +1518,7 @@ Resend a connect message if the last one has timed out
 void CL_CheckForResend( void ) {
 	int		port;
 	char	info[MAX_INFO_STRING];
-	char	data[MAX_INFO_STRING];
+	char	data[MAX_INFO_STRING+10];
 
 	// don't send anything if playing back a demo
 	if ( clc.demoplaying ) {
@@ -2326,7 +2344,7 @@ static IHeapAllocator *GetG2VertSpaceServer( void ) {
 	return G2VertSpaceServer;
 }
 
-#define DEFAULT_RENDER_LIBRARY "rd-vanilla"
+#define DEFAULT_RENDER_LIBRARY "rd-galaxies"
 
 void CL_InitRef( void ) {
 	static refimport_t ri;
@@ -2350,7 +2368,7 @@ void CL_InitRef( void ) {
 	}
 
 	if ( !rendererLib ) {
-		Com_Error( ERR_FATAL, "Failed to load renderer" );
+		Com_Error( ERR_FATAL, "Failed to load renderer\n" );
 	}
 
 	memset( &ri, 0, sizeof( ri ) );
@@ -2597,34 +2615,36 @@ it by filling it with 2048 bytes of random data.
 
 static void CL_GenerateQKey(void)
 {
-	int len = 0;
-	unsigned char buff[ QKEY_SIZE ];
-	fileHandle_t f;
+	if (cl_enableGuid->integer) {
+		int len = 0;
+		unsigned char buff[ QKEY_SIZE ];
+		fileHandle_t f;
 
-	len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
-	FS_FCloseFile( f );
-	if( len == QKEY_SIZE ) {
-		Com_Printf( "QKEY found.\n" );
-		return;
-	}
-	else {
-		if( len > 0 ) {
-			Com_Printf( "QKEY file size != %d, regenerating\n",
-				QKEY_SIZE );
-		}
-
-		Com_Printf( "QKEY building random string\n" );
-		Com_RandomBytes( buff, sizeof(buff) );
-
-		f = FS_SV_FOpenFileWrite( QKEY_FILE );
-		if( !f ) {
-			Com_Printf( "QKEY could not open %s for write\n",
-				QKEY_FILE );
+		len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
+		FS_FCloseFile( f );
+		if( len == QKEY_SIZE ) {
+			Com_Printf( "QKEY found.\n" );
 			return;
 		}
-		FS_Write( buff, sizeof(buff), f );
-		FS_FCloseFile( f );
-		Com_Printf( "QKEY generated\n" );
+		else {
+			if( len > 0 ) {
+				Com_Printf( "QKEY file size != %d, regenerating\n",
+					QKEY_SIZE );
+			}
+
+			Com_Printf( "QKEY building random string\n" );
+			Com_RandomBytes( buff, sizeof(buff) );
+
+			f = FS_SV_FOpenFileWrite( QKEY_FILE );
+			if( !f ) {
+				Com_Printf( "QKEY could not open %s for write\n",
+					QKEY_FILE );
+				return;
+			}
+			FS_Write( buff, sizeof(buff), f );
+			FS_FCloseFile( f );
+			Com_Printf( "QKEY generated\n" );
+		}
 	}
 }
 
@@ -2727,10 +2747,12 @@ void CL_Init( void ) {
 
 	cl_lanForcePackets = Cvar_Get ("cl_lanForcePackets", "1", CVAR_ARCHIVE);
 
+	cl_enableGuid = Cvar_Get("cl_enableGuid", "1", CVAR_ARCHIVE);
 	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE);
 
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
+	cl_consoleUseScanCode = Cvar_Get( "cl_consoleUseScanCode", "1", CVAR_ARCHIVE );
 
 	// userinfo
 	Cvar_Get ("name", "Mysterious Soldier", CVAR_USERINFO | CVAR_ARCHIVE );
@@ -2825,8 +2847,11 @@ void CL_Shutdown( void ) {
 	}
 	recursive = qtrue;
 
-	delete G2VertSpaceClient;
-	G2VertSpaceClient = NULL;
+	if (G2VertSpaceClient)
+	{
+		delete G2VertSpaceClient;
+		G2VertSpaceClient = 0;
+	}
 
 	CL_Disconnect( qtrue );
 

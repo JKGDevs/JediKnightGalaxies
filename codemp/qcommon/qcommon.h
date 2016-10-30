@@ -215,7 +215,7 @@ PROTOCOL
 ==============================================================
 */
 
-#define	PROTOCOL_VERSION	26
+#define	PROTOCOL_VERSION	27
 
 #define	UPDATE_SERVER_NAME			"updatejk3.ravensoft.com"
 #define MASTER_SERVER_NAME			"masterjk3.ravensoft.com"
@@ -489,6 +489,8 @@ void 	Cvar_WriteVariables( fileHandle_t f );
 
 void	Cvar_Init( void );
 
+cvar_t *Cvar_Unset(cvar_t *cv);
+
 char	*Cvar_InfoString( int bit );
 char	*Cvar_InfoString_Big( int bit );
 // returns an info string containing all the cvars that have the given bit set
@@ -559,8 +561,6 @@ void FS_Rmdir( const char *osPath, qboolean recursive );
 void FS_HomeRmdir( const char *homePath, qboolean recursive );
 
 qboolean FS_FileExists( const char *file );
-
-int		FS_LoadStack();
 
 char   *FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 qboolean FS_CompareZipChecksum(const char *zipfile);
@@ -675,6 +675,8 @@ qboolean FS_CheckDirTraversal(const char *checkdir);
 qboolean FS_idPak( char *pak, char *base );
 qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring );
 void FS_Rename( const char *from, const char *to );
+
+qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **tempFileName );
 
 
 /*
@@ -1023,6 +1025,10 @@ inline int Round(float value)
 // Persistent data store API
 bool PD_Store ( const char *name, const void *data, size_t size );
 const void *PD_Load ( const char *name, size_t *size );
+
+uint32_t ConvertUTF8ToUTF32( char *utf8CurrentChar, char **utf8NextChar );
+
+#include "sys/sys_public.h"
 
 #endif
 #endif // QCOMMON_H

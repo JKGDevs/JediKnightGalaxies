@@ -1,0 +1,119 @@
+// Note to translators:
+// If a sentence is the same in your language then please change it to "#same"
+//
+// eg:
+// LANG_ENGLISH  "HALT"
+// LANG_GERMAN   "#same"
+//
+// (This is so we can tell which strings have been signed-off as ok to be the same words for QA
+//  and because we do not store duplicate strings, which will then get exported again next time
+//  as being untranslated.)
+//
+VERSION             "1"
+CONFIG              "W:\bin\stringed.cfg"
+FILENOTES           "Text for the inventory menu (@JKG_WEAPONS_)"
+
+REFERENCE           FIREMODE_SEMI
+LANG_ENGLISH        "Semi"
+
+REFERENCE           FIREMODE_BURST
+LANG_ENGLISH        "Burst"
+
+REFERENCE           FIREMODE_AUTO
+LANG_ENGLISH        "Auto"
+
+REFERENCE           FIREMODE_CHARGE
+LANG_ENGLISH        "Charge"
+
+REFERENCE           FIREMODE_REPEATER
+LANG_ENGLISH        "Repeater"
+
+REFERENCE           FIREMODE_TRIPLE
+LANG_ENGLISH        "Triple"
+
+REFERENCE           FIREMODE_PRIMARY
+LANG_ENGLISH        "Primary"
+
+REFERENCE           FIREMODE_SECONDARY
+LANG_ENGLISH        "Secondary"
+
+REFERENCE           FIREMODE_LAUNCHER
+LANG_ENGLISH        "Launcher"
+
+REFERENCE           FIREMODE_SMOKE_LAUNCHER
+LANG_ENGLISH        "Smoke Launcher"
+
+REFERENCE           FIREMODE_BLASTER
+LANG_ENGLISH        "Blaster"
+
+REFERENCE           FIREMODE_STUN
+LANG_ENGLISH        "Stun"
+
+REFERENCE           FIREMODE_FLARE
+LANG_ENGLISH        "Flare"
+
+REFERENCE           FIREMODE_DISRUPTOR
+LANG_ENGLISH        "Disruptor"
+
+REFERENCE           FIREMODE_BOUNCE
+LANG_ENGLISH        "Bounce"
+
+REFERENCE           FIREMODE_PLACE
+LANG_ENGLISH        "Place"
+
+REFERENCE           FIREMODE_DETONATE
+LANG_ENGLISH        "Detonate"
+
+REFERENCE           FIREMODE_SUSTAINED
+LANG_ENGLISH        "Sustained"
+
+REFERENCE           FIREMODE_JET
+LANG_ENGLISH        "Jet"
+
+REFERENCE           FIREMODE_CHARGED
+LANG_ENGLISH        "Charged"
+
+REFERENCE           FIREMODE_STREAMED
+LANG_ENGLISH        "Streamed"
+
+REFERENCE           FIREMODE_THROW
+LANG_ENGLISH        "Throw"
+
+REFERENCE           FIREMODE_ROLL
+LANG_ENGLISH        "Roll"
+
+REFERENCE           FIREMODE_REGULAR
+LANG_ENGLISH        "Regular"
+
+REFERENCE           FIREMODE_CLUSTER
+LANG_ENGLISH        "Cluster"
+
+REFERENCE           FIREMODE_CONCUSSION
+LANG_ENGLISH        "Concussion"
+
+REFERENCE           FIREMODE_BEAM
+LANG_ENGLISH        "Beam"
+
+REFERENCE           FIREMODE_SLOW
+LANG_ENGLISH        "Slow"
+
+REFERENCE           FIREMODE_FAST
+LANG_ENGLISH        "Fast"
+
+REFERENCE           FIREMODE_WIDE
+LANG_ENGLISH        "Wide"
+
+REFERENCE           FIREMODE_CONCENTRATED
+LANG_ENGLISH        "Concentrated"
+
+REFERENCE           FIREMODE_POWERSHOT
+LANG_ENGLISH        "Power Shot"
+
+REFERENCE           FIREMODE_BLAST
+LANG_ENGLISH        "Blast"
+
+REFERENCE           FIREMODE_HEAVY
+LANG_ENGLISH        "Heavy"
+
+REFERENCE           FIREMODE_LIGHT
+LANG_ENGLISH        "Light"

@@ -29,13 +29,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "qcommon/q_shared.h"
 #include "rd-common/tr_types.h"
+#include "game/bg_items.h"
 #include "game/bg_public.h"
 #include "cg_public.h"
 
 #include "cg_weapons.h"
 
 //eezstreet edit
-#include "jkg_cg_items.h"
 #include "jkg_cg_damagetypes.h"
 #include "game/jkg_gangwars.h"
 
@@ -1054,7 +1054,6 @@ Ghoul2 Insert End
 		ragCallbackBoneInSolid_t	rcbBoneInSolid;
 		ragCallbackTraceLine_t		rcbTraceLine;
 		TCGMiscEnt					miscEnt;
-		TCGIncomingConsoleCommand	icc;
 		autoMapInput_t				autoMapInput;
 		TCGCameraShake				cameraShake;
 	} sharedBuffer;
@@ -1126,10 +1125,15 @@ Ghoul2 Insert End
 	float               ironsightsBlend;
 	float				sprintBlend;
 
-	//eezstreet edit
-	cgItemInstance_t	playerInventory[MAX_INVENTORY_ITEMS];
-	int                 numItemsInInventory;
+	// inventory
+	std::vector<itemInstance_t>* playerInventory;
 	int					playerACI[MAX_ACI_SLOTS];
+
+	// trade
+	std::vector<itemInstance_t>* ourTradeItems;			// Items that we have up to trade - only used for PvP trade
+	std::vector<itemInstance_t>* otherTradeItems;		// Items that the other player/NPC/container has up to trade
+	int							currentlyTradingWith;	// Entity number of the other ent that we are trading with
+	int							otherTradeCredits;		// How many credits the other player is offering us
 
 	// assist data / VERSUS ONLY / kinda anyway
 	notificationItem_t		notificationBox[MAX_MESSAGE_NOTIFICATIONS];
@@ -1168,8 +1172,6 @@ Ghoul2 Insert End
 	char spawnVarChars[MAX_SPAWN_VARS_CHARS];
 
 } cg_t;
-
-extern cgItemData_t CGitemLookupTable[MAX_ITEM_TABLE_SIZE];
 
 #define MAX_TICS	14
 
@@ -1989,6 +1991,8 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized );
 sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName );
 void CG_PlayerShieldHit(int entitynum, vec3_t angles, int amount);
 qboolean TeamFriendly( int player );
+void JKG_CG_InitArmor(void);
+void JKG_CG_EquipArmor(int client, int slot, int armorId);
 
 //
 // cg_predict.c
@@ -2068,6 +2072,11 @@ void CG_AddPlayerWeapon( refEntity_t *parent, playerState_t *ps, centity_t *cent
 void CG_AddWeaponWithPowerups( refEntity_t *gun, int powerups );
 void CG_DrawIconBackground(void);
 void CG_AnimateViewWeapon ( const playerState_t *ps );
+void JKG_CG_FillACISlot(int itemNum, int slot);
+void JKG_CG_ClearACISlot(int slot);
+void JKG_CG_ACICheckRemoval(int itemNumber);
+void JKG_CG_EquipItem(int newItem, int oldItem);
+void JKG_CG_UnequipItem(int inventorySlot);
 //
 // cg_marks.c
 //

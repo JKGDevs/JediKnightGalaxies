@@ -1,0 +1,20 @@
+{
+	"classes": [
+		"Trandoshan": {
+			"Array_ACP": 				4,
+			"carbine_LT-60_C": 			4,
+			"carbine_LT-60_S":			5, 
+			"carbine_LT-60":			5,
+			"launcher_Stouker":			2,
+			"pistol_Suppressor": 		8,
+			"pistol_Suppressor_adv": 	5,
+			"pistol_ACP":				4,
+			"repeater_LS-180":			2,
+			"rifle_ACP_BR_Launcher":	3,
+			"rifle_ACP_BR":				4,
+			"rifle_Bowcaster_C":		1,
+			"sniper_Bowcaster_H_S":		1,
+			"sniper_ACP":				2
+		}
+	]
+}

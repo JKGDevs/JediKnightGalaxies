@@ -22,8 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "sys_local.h"
 #include <direct.h>
 #include <io.h>
-#include <ShlObj.h>
-#include <Windows.h>
+#include <shlobj.h>
+#include <windows.h>
 
 #define MEM_THRESHOLD (128*1024*1024)
 
@@ -167,7 +167,7 @@ char *Sys_DefaultHomePath( void )
 		if( !SUCCEEDED( SHGetFolderPath( NULL, CSIDL_PERSONAL, NULL, 0, homeDirectory ) ) )
 		{
 			Com_Printf( "Unable to determine your home directory.\n" );
-			return false;
+			return NULL;
 		}
 
 		Com_sprintf( homePath, sizeof( homePath ), "%s%cMy Games%c", homeDirectory, PATH_SEP, PATH_SEP );
@@ -379,6 +379,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 	intptr_t	findhandle;
 	int			flag;
 	int			i;
+	int			extLen;
 
 	if (filter) {
 
@@ -412,6 +413,8 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 		flag = _A_SUBDIR;
 	}
 
+	extLen = strlen( extension );
+
 	Com_sprintf( search, sizeof(search), "%s\\*%s", directory, extension );
 
 	// search
@@ -425,6 +428,14 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 
 	do {
 		if ( (!wantsubs && flag ^ ( findinfo.attrib & _A_SUBDIR )) || (wantsubs && findinfo.attrib & _A_SUBDIR) ) {
+			if (*extension) {
+				if ( strlen( findinfo.name ) < extLen ||
+					Q_stricmp(
+						findinfo.name + strlen( findinfo.name ) - extLen,
+						extension ) ) {
+					continue; // didn't match
+				}
+			}
 			if ( nfiles == MAX_FOUND_FILES - 1 ) {
 				break;
 			}
@@ -490,43 +501,33 @@ LOAD/UNLOAD DLL
 //file back out again so it can be loaded is a library. If the read
 //fails then the dll is probably not in the pk3 and we are running
 //a pure server -rww
-bool Sys_UnpackDLL(const char *name)
+UnpackDLLResult Sys_UnpackDLL(const char *name)
 {
+	UnpackDLLResult result = {};
 	void *data;
-	fileHandle_t f;
 	int len = FS_ReadFile(name, &data);
 
-	if (len < 1)
-	{ //failed to read the file (out of the pk3 if pure)
-		return false;
+	if (len >= 1)
+	{
+		if (FS_FileIsInPAK(name, NULL) == 1)
+		{
+			char *tempFileName;
+			if ( FS_WriteToTemporaryFile(data, len, &tempFileName) )
+			{
+				result.tempDLLPath = tempFileName;
+				result.succeeded = true;
+			}
+		}
 	}
 
-	if (FS_FileIsInPAK(name, NULL) == -1)
-	{ //alright, it isn't in a pk3 anyway, so we don't need to write it.
-		//this is allowable when running non-pure.
-		FS_FreeFile(data);
-		return true;
-	}
-
-	f = FS_FOpenFileWrite( name, qfalse );
-	if ( !f )
-	{ //can't open for writing? Might be in use.
-		//This is possibly a malicious user attempt to circumvent dll
-		//replacement so we won't allow it.
-		FS_FreeFile(data);
-		return false;
-	}
-
-	if (FS_Write( data, len, f ) < len)
-	{ //Failed to write the full length. Full disk maybe?
-		FS_FreeFile(data);
-		return false;
-	}
-
-	FS_FCloseFile( f );
 	FS_FreeFile(data);
 
-	return true;
+	return result;
+}
+
+bool Sys_DLLNeedsUnpacking()
+{
+	return Cvar_VariableIntegerValue("sv_pure") != 0;
 }
 
 /*

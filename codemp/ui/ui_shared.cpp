@@ -3893,7 +3893,7 @@ static int Text_ExtColorCodes(const char *text, vec4_t color) {
 	return 1;
 }
 
-static void Text_DrawText(int x, int y, const char *text, const float* rgba, int iFontIndex, const int limit, float scale) {
+void Text_DrawText(int x, int y, const char *text, const float* rgba, int iFontIndex, const int limit, float scale) {
 	// Custom draw algo to ensure proper spacing in compliance with Text_GetWidth
 	char s[2];
 	const char *t = (char *)text;
@@ -9649,7 +9649,7 @@ qboolean ItemParse_cvarStrList( itemDef_t *item, int handle ) {
 		}
 
 		//a normal StringAlloc ptr
-		if ((int)psString > 0)	
+		if (psString)	
 		{
 			if (*psString == '}') {
 				return qtrue;
@@ -9712,7 +9712,7 @@ qboolean ItemParse_cvarFloatList( itemDef_t *item, int handle )
 		}
 			
 		//a normal StringAlloc ptr
-		if ((int)string > 0)	
+		if (string)	
 		{
 			if (*string == '}') 
 			{
@@ -11152,7 +11152,7 @@ static qboolean Menu_OverActiveItem(menuDef_t *menu, float x, float y) {
 					Rect_ContainsPoint(&menu->items[i]->window.selectionZone, x, y) &&
 					menu->items[i]->type != ITEM_TYPE_SLIDER) {
 					itemDef_t *overItem = menu->items[i];
-					if (overItem->type == ITEM_TYPE_TEXT && overItem->text) {
+					if (overItem->type == ITEM_TYPE_TEXT && *overItem->text) {
 						if (Rect_ContainsPoint(&overItem->window.selectionZone, x, y)) {
 							return qtrue;
 						} else {
@@ -11164,7 +11164,7 @@ static qboolean Menu_OverActiveItem(menuDef_t *menu, float x, float y) {
 				}
 				else if (Rect_ContainsPoint(&menu->items[i]->window.rect, x, y)) {
 					itemDef_t *overItem = menu->items[i];
-					if (overItem->type == ITEM_TYPE_TEXT && overItem->text) {
+					if (overItem->type == ITEM_TYPE_TEXT && *overItem->text) {
 						if (Rect_ContainsPoint(&overItem->window.rect, x, y)) {
 							return qtrue;
 						} else {

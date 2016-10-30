@@ -1106,19 +1106,6 @@ int VEH_LoadVehicle( const char *vehicleName )
 #endif
 	}
 
-#ifdef BASE_COMPAT
-	// Fix for broken swoop vehicle et
-	if( vehicle->skin && vehicle->skin[0] )
-	{
-		// Register all of the skins, we're going to need to use them all
-
-	}
-	else
-	{
-		trap->R_RegisterSkin( va( "models/players/%s/model_default.skin", vehicle->model) );
-	}
-#endif
-
 #ifndef _GAME
 	if ( vehicle->skin
 		&& vehicle->skin[0] )

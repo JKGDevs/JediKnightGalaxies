@@ -802,11 +802,6 @@ typedef enum {
 typedef enum {
 	PW_NONE,
 
-	#ifdef BASE_COMPAT
-		PW_QUAD,
-		PW_BATTLESUIT,
-	#endif // BASE_COMPAT
-
 	PW_PULL,
 
 	PW_REDFLAG,
@@ -996,18 +991,12 @@ typedef enum {
 	EV_MISSILE_HIT,
 	EV_MISSILE_MISS,
 	EV_MISSILE_MISS_METAL,
-	EV_BULLET,				// otherEntity is the shooter
 
 	EV_PAIN,
 	EV_DEATH1,
 	EV_DEATH2,
 	EV_DEATH3,
 	EV_OBITUARY,
-
-	#ifdef BASE_COMPAT
-		EV_POWERUP_QUAD,
-		EV_POWERUP_BATTLESUIT,
-	#endif // BASE_COMPAT
 
 	EV_FORCE_DRAINED,
 
@@ -1129,7 +1118,6 @@ typedef enum {
 	EV_GRENADE_COOK,
 	EV_EXPLOSIVE_ARM,
 	EV_MISSILE_DIE,
-	EV_ITEM_BREAK,		//Item gets broken due to loss of durability
 #ifdef __MMO__
 	EV_GOTO_ACI,		//Go to specific ACI slot (inexpensive)
 	EV_HITMARKER_ASSIST,
@@ -2117,6 +2105,10 @@ int BG_GetPairedValue(char *buf, char *key, char *outbuf);
 extern const char *gametypeStringShort[GT_MAX_GAME_TYPE];
 const char *BG_GetGametypeString( int gametype );
 int BG_GetGametypeForString( const char *gametype );
+
+void Q_FSBinaryDump( const char *filename, const void *buffer, size_t len );
+void Q_FSWriteJSON( void *root, fileHandle_t f );
+void Q_FSWriteString( fileHandle_t f, const char *msg );
 
 bool JKG_ParseHiltFiles( void );
 void JKG_CleanSaberHilts( void );

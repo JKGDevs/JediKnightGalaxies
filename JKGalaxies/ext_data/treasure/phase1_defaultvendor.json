@@ -1,0 +1,100 @@
+{
+"classes": {
+	"genericvendor": {
+		"numberPicksMin": 8,
+		"numberPicksMax": 16,
+		"uniquePicks": true,
+		"picks": {
+			"genericvendor-basic": 10,
+			"genericvendor-mid": 10,
+			"genericvendor-late": 5,
+			"genericvendor-rare": 1
+		}
+	},
+	"genericvendor-basic": {
+		"numberPicksMin": 1,
+		"numberPicksMax": 1,
+		"picks": {
+			"pistol_KYD-21": 1,
+			"pistol_Suppressor_Adv": 1,
+			"pistol_Q2": 1,
+			"Grenade_C-14A": 2,
+			"Grenade_Plasma": 2,
+			"carbine_LT-60": 2,
+			"carbine_LT-60_S": 2,
+			"pistol_ELG-3A": 1,
+			"pistol_Suppressor": 1,
+			"pistol_ACP": 1,
+			"pistol_L8": 1
+			
+		}
+	},
+	"genericvendor-mid": {
+		"numberPicksMin": 1,
+		"numberPicksMax": 1,
+		"picks": {
+			"Mine_LaserTrip1": 2,
+			"carbine_LT-60_C": 2,
+			"Grenade_C22Frag": 2,
+			"pistol_DE-10": 1,
+			"pistol_DE-10_Snub": 1,
+			"pistol_Bryar": 1,
+			"pistol_ACP": 1,
+			"pistol_FWG-5": 2,
+			"pistol_DH-17": 1,
+			"Grenade_Smoke": 1,
+			"Grenade_Stun": 1,
+			"Grenade_FlashBang": 1,
+			"array_ACP": 3,
+			"array_bryar": 3,
+			"carbine_DXR6": 3,
+			"Carbine_e-11": 4,
+			"carbine_Proton": 3,
+			"rifle_Dressy": 3,
+			"rifle_E-11": 4,
+			"rifle_Bowcaster_C": 4,
+			"rifle_Bryar": 2,
+			"rifle_ACP_BR": 3,
+			"rifle_ACP_BR_Launcher": 3,
+			"rifle_E-11A": 4,
+			"sniper_Bryar": 2,
+			"sniper_Dressy": 2
+		}
+	},
+	"genericvendor-late": {
+		"numberPicksMin": 1,
+		"numberPicksMax": 1,
+		"picks": {
+			"Grenade_CodeKey": 1,
+			"Grenade_Thermal-E": 2,
+			"Grenade_Thermal-C": 1,
+			"Mine_LaserTrip2": 2,
+			"launcher_mortar": 3,
+			"launcher_E-60R": 3,
+			"array_pulse": 5,
+			"repeater_DC-15A": 4,
+			"repeater_DC-15A_S": 4,
+			"repeater_LS-180": 5,
+			"repeater_pulse": 5,
+			"sniper_DLT-19": 4,
+			"sniper_Bowcaster": 2,
+			"sniper_Bowcaster_H": 2,
+			"sniper_Bowcaster_H_S": 2,
+			"sniper_DXR6": 2,
+			"sniper_DLT-19_SB": 4,
+			"sniper_ACP": 1
+		}
+	},
+	"genericvendor-rare": {
+		"numberPicksMin": 1,
+		"numberPicksMax": 1,
+		"picks": {
+			"Grenade_Thermal-A": 1,
+			"launcher_W-90": 5,
+			"chem_CR-24": 10,
+			"launcher_Stouker": 5,
+			"Grenade_CryoBan": 2
+		}
+	}
+}
+}

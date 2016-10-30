@@ -37,11 +37,11 @@ static void DefineBaselineConstants(void)
 
 static void ParseConstantsFile ( const char *fileText )
 {
-	int i = 0;
+	//int i = 0;
     cJSON *json = NULL;
     char jsonError[MAX_STRING_CHARS] = { 0 };
 	cJSON *jsonNode;
-    const char *string = NULL;
+    //const char *string = NULL;
 
     json = cJSON_ParsePooled (fileText, jsonError, sizeof (jsonError));
     if ( json == NULL )

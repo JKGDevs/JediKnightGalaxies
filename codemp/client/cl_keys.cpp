@@ -490,20 +490,21 @@ void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor,
 Field_Paste
 ================
 */
+void Field_CharEvent( field_t *edit, int ch );
 void Field_Paste( field_t *edit ) {
-	char	*cbd;
-	int		pasteLen, i;
+	char	*cbd, *c;
 
-	cbd = Sys_GetClipboardData();
+	c = cbd = Sys_GetClipboardData();
 
 	if ( !cbd ) {
 		return;
 	}
 
 	// send as if typed, so insert / overstrike works properly
-	pasteLen = strlen( cbd );
-	for ( i = 0 ; i < pasteLen ; i++ ) {
-		Field_CharEvent( edit, cbd[i] );
+	while( *c )
+	{
+		uint32_t utf32 = ConvertUTF8ToUTF32( c, &c );
+		Field_CharEvent( edit, ConvertUTF32ToExpectedCharset( utf32 ) );
 	}
 
 	Z_Free( cbd );
@@ -684,28 +685,8 @@ void Console_Key( int key ) {
 		// print executed command
 		Com_Printf( "%c%s\n", CONSOLE_PROMPT_CHAR, g_consoleField.buffer );
 
-		// check if cgame wants to eat the command...?
-		if ( cls.cgameStarted && cl.mSharedMemory ) {
-			TCGIncomingConsoleCommand *icc = (TCGIncomingConsoleCommand *)cl.mSharedMemory;
-
-			Q_strncpyz( icc->conCommand, g_consoleField.buffer, sizeof( icc->conCommand ) );
-
-			if ( CGVM_IncomingConsoleCommand() ) {
-				// valid command
-				Cbuf_AddText( g_consoleField.buffer );
-				Cbuf_AddText( "\n" );
-			}
-			else if ( icc->conCommand[0] ) {
-				// cgame ate it and substituted their own
-				Cbuf_AddText( icc->conCommand );
-				Cbuf_AddText( "\n" );
-			}
-		}
-		else {
-			// cgame didn't eat it, execute it
-			Cbuf_AddText( g_consoleField.buffer );
-			Cbuf_AddText( "\n" );
-		}
+		Cbuf_AddText( g_consoleField.buffer );
+		Cbuf_AddText( "\n" );
 
 		if (!g_consoleField.buffer[0])
 		{
@@ -1260,29 +1241,8 @@ void CL_ParseBinding( int key, qboolean down, unsigned time )
 		{
 			// normal commands only execute on key press
 			if ( allCommands || CL_BindUICommand( p ) ) {
-				// down-only command
-				if ( cls.cgameStarted && cl.mSharedMemory ) {
-					// don't do this unless cgame is inited and shared memory is valid
-					TCGIncomingConsoleCommand *icc = (TCGIncomingConsoleCommand *)cl.mSharedMemory;
-
-					Q_strncpyz( icc->conCommand, p, sizeof(icc->conCommand) );
-
-					if ( CGVM_IncomingConsoleCommand() ) {
-						//rww - let mod authors filter client console messages so they can cut them off if they want.
-						Cbuf_AddText( p );
-						Cbuf_AddText( "\n" );
-					}
-					else if ( icc->conCommand[0] ) {
-						//the vm call says to execute this command in place
-						Cbuf_AddText( icc->conCommand );
-						Cbuf_AddText( "\n" );
-					}
-				}
-				else {
-					//otherwise just add it
-					Cbuf_AddText( p );
-					Cbuf_AddText( "\n" );
-				}
+				Cbuf_AddText( p );
+				Cbuf_AddText( "\n" );
 			}
 		}
 		if( !end )

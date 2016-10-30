@@ -1,0 +1,52 @@
+{
+"classes": {
+	"base": {
+		"numberPicksMin": 1,
+		"numberPicksMax": 5,
+		"picks": {
+			"high-quality": 1,
+			"med-quality": 4,
+			"junk": 10
+			}
+	},
+
+	"high-quality": {
+		"numberPicksMin": 1,
+		"numberPicksMax": 1,
+		"picks": {
+			"launcher_W-90": 4,
+			"chem_CR-24": 7
+		}
+	},
+
+	"med-quality": {
+		"numberPicksMin": 1,
+		"numberPicksMax": 1,
+		"picks": {
+			"rifle_E-11": 8,
+			"carbine_E-11": 12,
+			"Mine_LaserTrip1": 2
+		}
+	},
+
+	"junk": {
+		"numberPicksMin": 1,
+		"numberPicksMax": 1,
+			"picks": {
+				"pistol_Suppressor": 5,
+				"pistol_DL-18": 3,
+				"pistol_Q2": 4
+			}
+	},
+
+	"test-vendor": {
+		"numberPicksMin": 3,
+		"numberPicksMax": 5,
+		"picks": {
+			"junk": 2,
+			"med-quality": 5,
+			"high-quality": 1
+		}
+	}
+}
+}

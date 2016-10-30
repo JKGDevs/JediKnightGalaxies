@@ -1679,11 +1679,9 @@ static int GLua_Player_PossessingItem(lua_State *L)
 	if(!ply) return 0;
 
 	ent = &g_entities[ply->clientNum];
-	for(i = 0; i < ent->inventory->elements; i++)
-	{
-		if(ent->inventory->items[i].id && ent->inventory->items[i].id->itemID == itemID)
-		{
-			lua_pushboolean(L, 1);	// return qtrue
+	for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
+		if (it->id->itemID == itemID) {
+			lua_pushboolean(L, 1);
 			return 1;
 		}
 	}
@@ -1704,16 +1702,13 @@ static int GLua_Player_PossessingWeapon(lua_State *L)
 	ent = &g_entities[ply->clientNum];
 	if(!ent) return 0;
 
-	for(i = 0; i < ent->inventory->elements; i++)
-	{
-		if( ent->inventory->items[i].id )
-		{
-			if( ent->inventory->items[i].id->weapon == weapon &&
-				ent->inventory->items[i].id->variation == variation )
-			{
-				lua_pushboolean(L, 1); // return qtrue
-				return 1;
-			}
+	for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
+		if (it->id->itemType != ITEM_WEAPON) {
+			continue;
+		}
+		if (it->id->weaponData.weapon == weapon && it->id->weaponData.variation == variation) {
+			lua_pushboolean(L, 1);
+			return 1;
 		}
 	}
 	lua_pushboolean(L, 0);	// return qfalse

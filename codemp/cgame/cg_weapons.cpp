@@ -83,10 +83,15 @@ float JKG_CalculateSprintPhase( const playerState_t *ps )
 {
 	double phase;
     unsigned int time = ps->sprintTime & ~SPRINT_MSB;
+	float newBlend;
+
     if ( ps->sprintTime & SPRINT_MSB )
     {
         phase = CubicBezierInterpolate (Q_min (cg.time - time, SPRINT_TIME) / (double)SPRINT_TIME, 0.0, 0.0, 1.0, 1.0);
-        cg.sprintBlend = Q_min (1.0f, Q_max (0.0f, phase));
+		newBlend = Q_min(1.0f, Q_max(0.0f, phase));
+		if (newBlend >= cg.sprintBlend) {
+			cg.sprintBlend = newBlend;
+		}
     }
     else
     {
@@ -1258,12 +1263,9 @@ WEAPON SELECTION
 void CG_DrawIconBackground(void)
 {
 	int				height,xAdd,x2,y2,t;
-//	int				prongLeftX,prongRightX;
 	float			inTime = cg.invenSelectTime+WEAPON_SELECT_TIME;
 	float			wpTime = cg.weaponSelectTime+WEAPON_SELECT_TIME;
 	float			fpTime = cg.forceSelectTime+WEAPON_SELECT_TIME;
-//	int				drawType = cgs.media.weaponIconBackground;
-//	int				yOffset = 0;
 
 	// don't display if dead
 	if ( cg.snap->ps.stats[STAT_HEALTH] <= 0 ) 
@@ -1279,23 +1281,17 @@ void CG_DrawIconBackground(void)
 	x2 = 30;
 	y2 = SCREEN_HEIGHT-70;
 
-	//prongLeftX =x2+37; 
-	//prongRightX =x2+544; 
-
 	if (inTime > wpTime)
 	{
-//		drawType = cgs.media.inventoryIconBackground;
 		cg.iconSelectTime = cg.invenSelectTime;
 	}
 	else
 	{
-//		drawType = cgs.media.weaponIconBackground;
 		cg.iconSelectTime = cg.weaponSelectTime;
 	}
 
 	if (fpTime > inTime && fpTime > wpTime)
 	{
-//		drawType = cgs.media.forceIconBackground;
 		cg.iconSelectTime = cg.forceSelectTime;
 	}
 
@@ -1316,8 +1312,6 @@ void CG_DrawIconBackground(void)
 			xAdd = (int) 8*cg.iconHUDPercent;
 
 			height = (int) (60.0f*cg.iconHUDPercent);
-			//CG_DrawPic( x2+60, y2+30+yOffset, 460, -height, drawType);	// Top half
-			//CG_DrawPic( x2+60, y2+30-2+yOffset, 460, height, drawType);	// Bottom half
 
 		}
 		else
@@ -1327,8 +1321,6 @@ void CG_DrawIconBackground(void)
 
 		return;
 	}
-	//prongLeftX =x2+37; 
-	//prongRightX =x2+544; 
 
 	if (!cg.iconHUDActive)
 	{
@@ -1350,37 +1342,8 @@ void CG_DrawIconBackground(void)
 	{
 		cg.iconHUDPercent=1;
 	}
-
-	//trap->R_SetColor( colorTable[CT_WHITE] );					
-	//height = (int) (60.0f*cg.iconHUDPercent);
-	//CG_DrawPic( x2+60, y2+30+yOffset, 460, -height, drawType);	// Top half
-	//CG_DrawPic( x2+60, y2+30-2+yOffset, 460, height, drawType);	// Bottom half
-
-	// And now for the prongs
-/*	if ((cg.inventorySelectTime+WEAPON_SELECT_TIME)>cg.time)	
-	{
-		cgs.media.currentBackground = ICON_INVENTORY;
-		background = &cgs.media.inventoryProngsOn;
-	}
-	else if ((cg.weaponSelectTime+WEAPON_SELECT_TIME)>cg.time)	
-	{
-		cgs.media.currentBackground = ICON_WEAPONS;
-	}
-	else 
-	{
-		cgs.media.currentBackground = ICON_FORCE;
-		background = &cgs.media.forceProngsOn;
-	}
-*/
-	// Side Prongs
-//	trap->R_SetColor( colorTable[CT_WHITE]);					
-//	xAdd = (int) 8*cg.iconHUDPercent;
-//	CG_DrawPic( prongLeftX+xAdd, y2-10, 40, 80, background);
-//	CG_DrawPic( prongRightX-xAdd, y2-10, -40, 80, background);
-
 }
 
-extern cgItemData_t CGitemLookupTable[MAX_ITEM_TABLE_SIZE];
 /*
 ===============
 CG_WeaponSelectable
@@ -1396,7 +1359,7 @@ static qboolean CG_WeaponSelectable( int i )
 	if(cg.playerACI[i] < 0)
 		return qfalse;
 
-	if( !cg.playerInventory[cg.playerACI[i]].id->weapon)
+	if( (*cg.playerInventory)[cg.playerACI[i]].id->weaponData.weapon == WP_NONE)
 		return qfalse;
 
 	return qtrue;
@@ -1428,7 +1391,7 @@ void CG_NextWeapon_f( void )
 		return;
 	}
 
-	// sprint check --eez
+	// Don't let us switch weapons while we're sprinting.
 	int current = trap->GetCurrentCmdNumber();
 	usercmd_t ucmd;
 	trap->GetUserCmd(current, &ucmd);
@@ -1449,11 +1412,11 @@ void CG_NextWeapon_f( void )
 			numIterations++;
 			continue;
 		}
-		if(!cg.playerInventory[cg.playerACI[desiredWeaponSelect]].id)
+		if(!(*cg.playerInventory)[cg.playerACI[desiredWeaponSelect]].id)
 		{
 			desiredWeaponSelect++;
 		}
-		else if(cg.playerInventory[cg.playerACI[desiredWeaponSelect]].id->itemType != ITEM_WEAPON)
+		else if((*cg.playerInventory)[cg.playerACI[desiredWeaponSelect]].id->itemType != ITEM_WEAPON)
 		{
 			desiredWeaponSelect++;
 		}
@@ -1479,7 +1442,7 @@ void CG_NextWeapon_f( void )
 
 		if( doWeaponNotify ) 
 		{
-			CG_Notifications_Add(cg.playerInventory[cg.playerACI[cg.weaponSelect]].id->displayName, qtrue);
+			CG_Notifications_Add((*cg.playerInventory)[cg.playerACI[cg.weaponSelect]].id->displayName, qtrue);
 		}
 	}
 	else
@@ -1515,7 +1478,7 @@ void CG_PrevWeapon_f( void )
 		return;
 	}
 
-	// sprint check --eez
+	// Don't allow us to switch weapons while we're sprinting.
 	int current = trap->GetCurrentCmdNumber();
 	usercmd_t ucmd;
 	trap->GetUserCmd(current, &ucmd);
@@ -1536,11 +1499,11 @@ void CG_PrevWeapon_f( void )
 			numIterations++;
 			continue;
 		}
-		if(!cg.playerInventory[cg.playerACI[desiredWeaponSelect]].id)
+		if(!(*cg.playerInventory)[cg.playerACI[desiredWeaponSelect]].id)
 		{
 			desiredWeaponSelect--;
 		}
-		else if(cg.playerInventory[cg.playerACI[desiredWeaponSelect]].id->itemType != ITEM_WEAPON)
+		else if((*cg.playerInventory)[cg.playerACI[desiredWeaponSelect]].id->itemType != ITEM_WEAPON)
 		{
 			desiredWeaponSelect--;
 		}
@@ -1561,7 +1524,7 @@ void CG_PrevWeapon_f( void )
 		cg.weaponSelect = desiredWeaponSelect;
 		if( doWeaponNotify )
 		{
-			CG_Notifications_Add(cg.playerInventory[cg.playerACI[cg.weaponSelect]].id->displayName, qtrue);
+			CG_Notifications_Add((*cg.playerInventory)[cg.playerACI[cg.weaponSelect]].id->displayName, qtrue);
 		}
 	}
 	else
@@ -1570,6 +1533,7 @@ void CG_PrevWeapon_f( void )
 	}
 	cg.weaponSelectTime = cg.time;
 }
+
 
 /*
 ===============
@@ -1585,15 +1549,105 @@ int JKG_FindNewACISlot( int slotNum )
 	{
 		return -1;
 	}
-	slotID = cg.playerInventory[cg.playerACI[slotNum]].id->itemID;
-	for(i = 0; cg.playerInventory[i].id && cg.playerInventory[i].id->itemID > 0; i++)
+	slotID = (*cg.playerInventory)[cg.playerACI[slotNum]].id->itemID;
+	for(i = 0; (*cg.playerInventory)[i].id && (*cg.playerInventory)[i].id->itemID > 0; i++)
 	{
-		if(cg.playerInventory[i].id->itemID == slotID && i != cg.playerACI[slotNum])
+		if((*cg.playerInventory)[i].id->itemID == slotID && i != cg.playerACI[slotNum])
 		{
 			return i;
 		}
 	}
 	return -1;
+}
+
+void JKG_CG_FillACISlot(int itemNum, int slot)
+{
+	itemData_t *item;
+
+	if (itemNum < 0 || itemNum >= cg.playerInventory->size())
+	{
+		return;
+	}
+
+	if (slot >= MAX_ACI_SLOTS)
+	{
+		return;
+	}
+
+	// Find out if we have the item already in our ACI
+	for (int i = 0; i < MAX_ACI_SLOTS; i++) {
+		if (cg.playerACI[i] == itemNum) {
+			cg.playerACI[i] = -1;
+		}
+	}
+
+	// A slot of -1 means that we pick the first available one
+	if (slot == -1) {
+		for (int i = 0; i < MAX_ACI_SLOTS; i++) {
+			if (cg.playerACI[i] == -1) {
+				slot = i;
+				break;
+			}
+		}
+	}
+
+	if (slot == -1) {
+		trap->Print("Couldn't assign %i to ACI, ACI is full\n", itemNum);
+		return;
+	}
+
+	item = (*cg.playerInventory)[itemNum].id;
+	if (!item)
+	{
+		return;
+	}
+	if (!item->itemID)
+	{
+		return;
+	}
+
+
+	cg.playerACI[slot] = itemNum;
+}
+
+void JKG_CG_ClearACISlot(int slot)
+{
+	if (slot < 0 || slot >= MAX_ACI_SLOTS)
+	{
+		return;
+	}
+
+	cg.playerACI[slot] = -1;
+}
+
+void JKG_CG_ACICheckRemoval(int itemNumber)
+{
+	int i;
+	for (i = 0; i < MAX_ACI_SLOTS; i++)
+	{
+		if (cg.playerACI[i] < 0)
+		{
+			continue;
+		}
+		else if (cg.playerACI[i] > itemNumber)
+		{
+			cg.playerACI[i]--;
+		}
+	}
+}
+
+void JKG_CG_EquipItem(int newItem, int oldItem)
+{
+	(*cg.playerInventory)[newItem].equipped = qtrue;
+	if (oldItem != -1)
+	{
+		(*cg.playerInventory)[oldItem].equipped = qfalse;
+	}
+}
+
+void JKG_CG_UnequipItem(int inventorySlot)
+{
+	(*cg.playerInventory)[inventorySlot].equipped = qfalse;
 }
 
 /*
@@ -1637,11 +1691,11 @@ void CG_Weapon_f( void ) {
 	{
 		return;
 	}
-	if(!cg.playerInventory[cg.playerACI[num]].id)
+	if(!(*cg.playerInventory)[cg.playerACI[num]].id)
 	{
 		return;
 	}
-	itemType = cg.playerInventory[cg.playerACI[num]].id->itemType;
+	itemType = (*cg.playerInventory)[cg.playerACI[num]].id->itemType;
 
 	if (itemType != ITEM_WEAPON)
 	{
@@ -1649,15 +1703,8 @@ void CG_Weapon_f( void ) {
 		switch(itemType)
 		{
 			case ITEM_CONSUMABLE:
-			case ITEM_UNKNOWN:
 				{
-					if(cg.playerInventory[cg.playerACI[num]].id->pSpell[0] < PSPELL_MAX && cg.playerInventory[cg.playerACI[num]].id->pSpell[0] > PSPELL_NONE)
-					{
-						CG_Notifications_Add(cg.playerInventory[cg.playerACI[num]].id->displayName, qtrue);
-						trap->SendClientCommand(va("inventoryUse %i", cg.playerACI[num]));
-						cg.playerACI[num] = JKG_FindNewACISlot(num);
-						return;
-					}
+					BG_ConsumeItem(cg.playerACI[num]);
 				}
 				break;
 		}
@@ -1666,7 +1713,8 @@ void CG_Weapon_f( void ) {
 	// JKG - Manual saber detection
 	if(num == cg.weaponSelect)
 	{
-		if(cg.playerInventory[cg.playerACI[num]].id->varID == BG_GetWeaponIndex(WP_SABER, cg.playerInventory[cg.playerACI[num]].id->variation))
+		if((*cg.playerInventory)[cg.playerACI[num]].id->weaponData.varID == 
+			BG_GetWeaponIndex(WP_SABER, (*cg.playerInventory)[cg.playerACI[num]].id->weaponData.variation))
 		{
 			trap->SendClientCommand("togglesaber");
 		}
@@ -1681,7 +1729,7 @@ void CG_Weapon_f( void ) {
 		cg.weaponSelect = num;
 		if(doWeaponNotify)
 		{
-			CG_Notifications_Add(cg.playerInventory[cg.playerACI[num]].id->displayName, qtrue);
+			CG_Notifications_Add((*cg.playerInventory)[cg.playerACI[num]].id->displayName, qtrue);
 		}
 	}
 	else
@@ -1721,14 +1769,14 @@ void CG_WeaponClean_f( void ) {
 
 	num = atoi( CG_Argv( 1 ) );
 
-	if(!cg.playerInventory[cg.playerACI[num]].id)
+	if(!(*cg.playerInventory)[cg.playerACI[num]].id)
 	{
 		return;
 	}
 
 	if(num == cg.weaponSelect)
 	{
-		if(cg.playerInventory[cg.playerACI[num]].id->varID == BG_GetWeaponIndex(WP_SABER, 0))
+		if((*cg.playerInventory)[cg.playerACI[num]].id->weaponData.varID == BG_GetWeaponIndex(WP_SABER, 0))
 		{
 			trap->SendClientCommand("togglesaber");
 		}
@@ -1741,7 +1789,7 @@ void CG_WeaponClean_f( void ) {
 		cg.weaponSelect = num;
 		if(doWeaponNotify)
 		{
-			CG_Notifications_Add(cg.playerInventory[cg.playerACI[num]].id->displayName, qtrue);
+			CG_Notifications_Add((*cg.playerInventory)[cg.playerACI[num]].id->displayName, qtrue);
 		}
 	}
 }
@@ -1822,14 +1870,6 @@ void CG_FireWeapon( centity_t *cent, qboolean altFire ) {
 			return;
 		}
 	}
-
-	#ifdef BASE_COMPAT
-	// play quad sound if needed
-	if ( cent->currentState.powerups & ( 1 << PW_QUAD ) ) {
-		//trap->S_StartSound (NULL, cent->currentState.number, CHAN_ITEM, cgs.media.quadSound );
-	}
-	#endif // BASE_COMPAT
-
 
 	// play a sound
 	if (altFire)
@@ -2346,7 +2386,14 @@ static void JKG_FireBlaster ( centity_t *cent, const weaponDrawData_t *weaponDat
     if ( s->number == cg.snap->ps.clientNum )
     {
 		//float pitchRecoil = thisWeaponData->firemodes[altFire].recoil;
+		int current = trap->GetCurrentCmdNumber();
+		usercmd_t ucmd;
+		trap->GetUserCmd(current, &ucmd);
+
 		float pitchRecoil = thisWeaponData->firemodes[cg.snap->ps.firingMode].recoil;
+		if (ucmd.upmove < 0) {
+			pitchRecoil /= 2.0f;	// Half recoil when we are crouched
+		}
 
 		if ( pitchRecoil )
 		{
@@ -2614,10 +2661,7 @@ static __inline void JKG_RenderChargingEffect ( centity_t *cent, const vec3_t mu
     }
     else
     {
-    	trap->FX_PlayBoltedEffectID (
-            chargingEffect,
-            cent->lerpOrigin, cent->ghoul2, 0, cent->currentState.number, 1, 0, qfalse
-        );
+		trap->FX_PlayEntityEffectID(chargingEffect, const_cast<float *>(muzzlePosition), axis, cent->boltInfo, cent->currentState.number, -1, -1);
         //trap->FX_PlayEffectID (chargingEffect, muzzlePosition, axis[0], -1, -1);
     }
 
@@ -2643,11 +2687,14 @@ void JKG_RenderGenericWeaponWorld ( centity_t *cent, const weaponDrawData_t *wea
 	    {
 	        hasMuzzleLocation = qtrue;
             JKG_GetMuzzleLocation (cent, angles, flashOrigin, flashDirection);
+
+			matrix3_t flashAxis;
+			AnglesToAxis(cent->lerpAngles, flashAxis);
             
             JKG_RenderChargingEffect (
                 cent,
                 flashOrigin,
-                &flashDirection,
+                flashAxis,
                 weaponData->weaponRender.generic.chargingEffect,
                 isLocalPlayer,
                 qfalse,
@@ -3454,20 +3501,6 @@ void JKG_ChargeWeapon ( const centity_t *cent, qboolean altFire )
     
     weapon = CG_WeaponInfo (weaponNum, variation);
     
-    /*if ( !altFire )
-    {
-        if ( weapon->primaryEventsHandler && weapon->primaryEventsHandler->WeaponCharge )
-        {
-            weapon->primaryEventsHandler->WeaponCharge (cent, &weapon->primDrawData);
-        }
-    }
-    else
-    {
-        if ( weapon->altEventsHandler && weapon->altEventsHandler->WeaponCharge )
-        {
-            weapon->altEventsHandler->WeaponCharge (cent, &weapon->altDrawData);
-        }
-    }*/
 	if ( weapon->eventsHandler[cent->currentState.firingMode] && weapon->eventsHandler[cent->currentState.firingMode]->WeaponCharge )
 	{
 		weapon->eventsHandler[cent->currentState.firingMode]->WeaponCharge(cent, &weapon->drawData[cent->currentState.firingMode]);
@@ -3479,20 +3512,6 @@ void JKG_BlowExplosive ( const centity_t *cent, qboolean altFire )
     const entityState_t *s = &cent->currentState;
     const weaponInfo_t *weapon = CG_WeaponInfo (s->weapon, s->weaponVariation);
     
-    /*if ( !altFire )
-    {
-        if ( weapon->primaryEventsHandler && weapon->primaryEventsHandler->ExplosiveBlow )
-        {
-            weapon->primaryEventsHandler->ExplosiveBlow (cent, &weapon->primDrawData);
-        }
-    }
-    else
-    {
-        if ( weapon->altEventsHandler && weapon->altEventsHandler->ExplosiveBlow )
-        {
-            weapon->altEventsHandler->ExplosiveBlow (cent, &weapon->altDrawData);
-        }
-    }*/
 	if ( weapon->eventsHandler[s->firingMode] && weapon->eventsHandler[s->firingMode] )
 	{
 		weapon->eventsHandler[s->firingMode]->ExplosiveBlow (cent, &weapon->drawData[s->firingMode]);
@@ -3526,20 +3545,6 @@ void JKG_FireWeapon ( centity_t *cent, qboolean altFire )
 	}
     
     weapon = CG_WeaponInfo (s->weapon, s->weaponVariation);
-    /*if ( !altFire )
-    {
-        if ( weapon->primaryEventsHandler && weapon->primaryEventsHandler->WeaponFire )
-        {
-            weapon->primaryEventsHandler->WeaponFire (cent, &weapon->primDrawData, qfalse);
-        }
-    }
-    else
-    {
-        if ( weapon->altEventsHandler && weapon->altEventsHandler->WeaponFire )
-        {
-            weapon->altEventsHandler->WeaponFire (cent, &weapon->altDrawData, qtrue);
-        }
-    }*/
 
 	if ( weapon->eventsHandler[s->firingMode] && weapon->eventsHandler[s->firingMode]->WeaponFire )
 	{

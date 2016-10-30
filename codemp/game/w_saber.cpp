@@ -8833,13 +8833,13 @@ void JKG_NetworkSaberCrystals( playerState_t *ps, int invId, int weaponId )
 
 	gentity_t *ent = &g_entities[entNum];
 	ent->client->didSaberOffSound = false;
-	if( invId >= ent->inventory->size )
+	if( invId >= ent->inventory->size() )
 	{
 		// Not quite valid since it's bigger.
 		return;
 	}
 
-	itemInstance_t *itm = &ent->inventory->items[invId];
+	itemInstance_t *itm = &(*ent->inventory)[invId];
 	if( !itm->id )
 	{
 		// NOPE.avi
@@ -8852,20 +8852,20 @@ void JKG_NetworkSaberCrystals( playerState_t *ps, int invId, int weaponId )
 		return;
 	}
 
-	if( itm->id->weapon != WP_SABER )
+	if( itm->id->weaponData.weapon != WP_SABER )
 	{
 		// still-NOPE.avi
 		return;
 	}
 
-	if( itm->id->varID != weaponId )
+	if( itm->id->weaponData.varID != weaponId )
 	{
 		// ultimate way of checking to be ABSOLUTELY SURE --eez
 		return;
 	}
 
 	// ok go
-	ps->saberCrystal[0] = itm->calc1;	// FIXME: need stuff for akimbo...
+	//ps->saberCrystal[0] = itm->calc1;	// FIXME: need stuff for akimbo...
 }
 
 void JKG_DoubleCheckWeaponChange( usercmd_t *cmd, playerState_t *ps )
@@ -8874,10 +8874,10 @@ void JKG_DoubleCheckWeaponChange( usercmd_t *cmd, playerState_t *ps )
 
 	gentity_t *ent = &g_entities[ps->clientNum];
 
-	if( ent->inventory->elements <= invSel || invSel < 0 )
+	if( ent->inventory->size() <= invSel || invSel < 0 )
 	{
 		cmd->weapon = 0;
 	} else {
-		cmd->weapon = ent->inventory->items[invSel].id->varID;
+		cmd->weapon = (*ent->inventory)[invSel].id->weaponData.varID;
 	}
 }

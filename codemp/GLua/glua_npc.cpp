@@ -1363,13 +1363,6 @@ static int GLua_NPC_SetCurrentLooter(lua_State *L) {
 	npc->currentLooter = &g_entities[luaL_checkinteger(L, 2)];
 	return 0;
 }
-
-static int GLua_NPC_GetVendorIndex(lua_State *L) {
-	/*gentity_t *npc = GLua_CheckNPC(L, 1);
-	if(!npc) return 0;
-	npc->vendorData*/
-	return 0;
-}
 /*
 eezstreet end
 */
@@ -1563,14 +1556,15 @@ static int GLua_NPC_SetAnimHoldTime(lua_State *L) {
 static int GLua_NPC_SetAsVendor(lua_State *L) {
 	gentity_t *npc = GLua_CheckNPC(L, 1);
 	if(!npc) return 0;
-	JKG_CreateNewVendor(npc, -1, qtrue, qtrue);
+	npc->bVendor = true;
 	return 0;
 }
 
 static int GLua_NPC_RefreshVendorStock(lua_State *L) {
 	gentity_t *npc = GLua_CheckNPC(L, 1);
 	if(!npc) return 0;
-	JKG_CreateNewVendor(npc, npc->vendorData.ourID, qtrue, qtrue);
+	npc->s.seed = Q_irand(0, QRAND_MAX-1);
+	npc->bVendor = true;
 	return 0;
 }
 

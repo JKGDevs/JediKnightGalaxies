@@ -513,13 +513,13 @@ static const char *Pazaak_GetNeutralCardValue(int ID) {
 		case PZCARD_FLIP_4:
 		case PZCARD_FLIP_5:
 		case PZCARD_FLIP_6:
-			return va("±%i", (ID - PZCARD_FLIP_1) + 1);
+			return va("Â±%i", (ID - PZCARD_FLIP_1) + 1);
 		case PZCARD_TIEBREAKER:
-			return "±1T";
+			return "Â±1T";
 		case PZCARD_DOUBLE:
 			return "D";
 		case PZCARD_FLIP12:
-			return "±1/2";
+			return "Â±1/2";
 		case PZCARD_2N4:
 			return "2&4";
 		case PZCARD_3N6:
@@ -1346,7 +1346,7 @@ void JKG_ProcessPazaak_f() {
 			Menus_CloseAll();
 			if (Menus_ActivateByName("jkg_pazaakholo"))
 			{
-				trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI & ~KEYCATCH_CONSOLE );
+				trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI /*& ~KEYCATCH_CONSOLE*/ );
 			}
 			Menu_ClearFocus(Menus_FindByName("jkg_pazaakholo"));
 			activeBoard = 1;
@@ -1356,7 +1356,7 @@ void JKG_ProcessPazaak_f() {
 			Menus_CloseAll();
 			if (Menus_ActivateByName("jkg_cardselholo"))
 			{
-				trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI & ~KEYCATCH_CONSOLE );
+				trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI /*& ~KEYCATCH_CONSOLE*/ );
 			}
 			Menu_ClearFocus(Menus_FindByName("jkg_cardselholo"));
 			activeBoard = 2;

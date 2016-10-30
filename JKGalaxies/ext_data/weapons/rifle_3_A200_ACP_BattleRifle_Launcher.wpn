@@ -18,7 +18,7 @@
         },
         
         "gunposition":      "7.0 -4.0 -6.0", // cg_gunx 9
-        "ironsightsposition": "6.0 0.0 -6.4",
+        "ironsightsposition": "6.0 0.0 -6.44",
         "ironsightsfov": "70",
 		"barrelCount": "2",
     
@@ -101,7 +101,7 @@
         "projectileclass": "repeater_proj",
         "meansofdeath": "MOD_REPEATER",
             "accuracy": {
-        "accuracyRating": 60,
+        "accuracyRating": 45,
         "accuracyRatingPerShot": 4,
         "msToDrainAccuracy": 74,
         "maxAccuracyAdd": 80,

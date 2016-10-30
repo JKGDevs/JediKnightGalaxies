@@ -44,7 +44,9 @@
 // All instances of sprintf are change to snprintf to avoid buffer overflows
 // On windows, it's called sprintf_s instead of snprintf, so we'll do a little define here
 #ifdef WIN32
+#if (_MSC_VER < 1900)		//No longer necessary in vs2015  --Futuza
 #define snprintf sprintf_s
+#endif
 #endif
 
 #include <string.h>

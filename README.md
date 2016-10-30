@@ -10,16 +10,17 @@ Downloads:
 Forum: http://www.tinyurl.com/JKGJKH
 
 
+Forum: https://jkhub.org/forum/117-jedi-knight-galaxies/
 
 Please use discretion when making issue requests on GitHub. The forum is a better place for larger discussions on changes that aren't actually bugs.
 
 ## Build Guide ##
-http://jkhub.org/topic/5600-compilation-guide/
+https://jkhub.org/topic/5600-compilation-guide/
 
 ## Installation of Game ##
 JKG is currently only available on Windows, but we have a mac version being worked on and hopefully a linux one soon.
 
-First, you need Jedi Academy installed. If you don't already own the game you can buy it from online stores such as [Steam](http://store.steampowered.com/app/6020/), [Amazon](http://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [Play](http://www.play.com/Games/PC/4-/127805/Star-Wars-Jedi-Knight-Jedi-Academy/Product.html?searchstring=jedi+academy&searchsource=0&searchtype=allproducts&urlrefer=search). 
+First, you need Jedi Academy installed. If you don't already own the game you can buy it from online stores such as [Steam](http://store.steampowered.com/app/6020/), [Amazon](http://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [Play](http://www.play.com/Games/PC/4-/127805/Star-Wars-Jedi-Knight-Jedi-Academy/Product.html?searchstring=jedi+academy&searchsource=0&searchtype=allproducts&urlrefer=search).
 
 There are a few ways to actually install JKG itself, the simplest is to just get the [binaries](http://jkhub.org/files/file/2544-jedi-knight-galaxies-binaries/) and [assets](http://jkhub.org/files/file/2543-jedi-knight-galaxies-assets/), and then follow the directions in the readme included.  Please note that while we try to keep these relatively up to date, the github will always contain the most current version of the assets and binaries and you can always compile and pack the pk3s yourself to get a more up to date version.
 
@@ -63,7 +64,7 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 These are very much subject to change, especially phases later than Versus.
 
 ### Phase 1:  Versus (current iteration). ###
-* The goal here is to have a functioning arena based shooter (similar to games such as Call of Duty or Unreal Tournament) with the beginnings of some later RPG elements such as armor, pazaak card game, etc.  There are two major milestones currently being worked on: [Milestone 2](https://github.com/JKGDevs/JediKnightGalaxies/issues?q=issue+milestone%3A%22Versus+Revision+2%22) and [Milestone 3](https://github.com/JKGDevs/JediKnightGalaxies/issues?q=issue+milestone%3A%22Versus+Revision+3%22).  Milestone 2 mainly features smaller bug fixes needed to make the game stable, while Milestone 3 includes new features like better melee, fixed saber systems, armor, shields, etc. in addition to some bug fixes not addressed in Milestone 2.
+* The goal here is to have a functioning arena based shooter (similar to games such as Call of Duty or Unreal Tournament) with the beginnings of some later RPG elements such as armor, pazaak card game, etc.  There are three major milestones currently being worked on: [Milestone 2](https://github.com/JKGDevs/JediKnightGalaxies/issues?q=issue+milestone%3A%22Versus+Revision+2%22), [Milestone 3](https://github.com/JKGDevs/JediKnightGalaxies/issues?q=issue+milestone%3A%22Versus+Revision+3%22) and [Milestone 4](https://github.com/JKGDevs/JediKnightGalaxies/issues?q=is%3Aopen+is%3Aissue+milestone%3A%22Versus+Revision+4%22).  Milestone 2 mainly features smaller bug fixes needed to make the game stable, while Milestone 3 includes new features like better melee, armor, shields, etc. in addition to some bug fixes not addressed in Milestone 2. Milestone 4 primarily focuses on the all new saber system and related features such as duel mode.
 
 #### Phase 2: Coop ####
 * The main features that are added here include the NPC system and fleshing out of the dialogue system. They also include overhauls to the chat systems and more.  We may also attempt some MoBA like features (still needs discussion).

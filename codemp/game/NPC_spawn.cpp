@@ -1897,7 +1897,8 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 			if(!Q_stricmp(found->classname, "jkg_target_vendor"))
 			{
 				// Vendor. So let's make it a vendor!
-				JKG_CreateNewVendor( newent, -1, qtrue, qtrue );
+				newent->bVendor = true;
+				newent->s.seed = Q_irand(0, QRAND_MAX-1);
 			}
 		}
 	}

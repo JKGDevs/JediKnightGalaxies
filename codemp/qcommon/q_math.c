@@ -24,6 +24,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // q_math.c -- stateless support routines that are included in each code module
 #include "q_shared.h"
+#ifdef __cplusplus
+#include <cmath>
+#else
+#include <math.h>
+#endif
 
 vec3_t		vec3_origin = {0,0,0};
 matrix3_t	axisDefault = { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
@@ -995,6 +1000,12 @@ qboolean VectorCompare( const vec3_t vec1, const vec3_t vec2 ) {
 	return qtrue;
 }
 
+qboolean VectorCompare4(const vec4_t vec1, const vec4_t vec2) {
+	if (vec1[0] != vec2[0] || vec1[1] != vec2[1] || vec1[2] != vec2[2] || vec1[3] != vec2[3])
+		return qfalse;
+	return qtrue;
+}
+
 void SnapVector( float *v ) {
 #if defined(_MSC_VER) && !defined(idx64)
 	// pitiful attempt to reduce _ftol2 calls -rww
@@ -1297,7 +1308,11 @@ qboolean Q_isnan (float f)
 #ifdef _WIN32
 	return (qboolean)(_isnan (f) != 0);
 #else
+#ifdef __cplusplus
+return (qboolean)(std::isnan (f) != 0);
+#else
 	return (qboolean)(isnan (f) != 0);
+#endif
 #endif
 }
 

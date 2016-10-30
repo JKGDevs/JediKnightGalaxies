@@ -962,6 +962,7 @@ netField_t	entityStateFields[] =
 { NETF(saberCrystal[0]), 16 },
 
 { NETF(sightsTransition), 1 },
+{ NETF(seed), 32 },
 };
 
 // if (int)f == f and (int)f + ( 1<<(FLOAT_INT_BITS-1) ) < ( 1 << FLOAT_INT_BITS )
@@ -1842,7 +1843,7 @@ netField_t	playerStateFields[] =
 #endif//_OPTIMIZED_VEHICLE_NETWORKING
 //=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
 
-typedef struct bitStorage_s bitStorage_t;
+/*typedef struct bitStorage_s bitStorage_t;
 
 struct bitStorage_s
 {
@@ -1851,7 +1852,7 @@ struct bitStorage_s
 };
 
 static bitStorage_t		*g_netfBitStorage = NULL;
-static bitStorage_t		*g_psfBitStorage = NULL;
+static bitStorage_t		*g_psfBitStorage = NULL;*/
 
 //MAKE SURE THIS MATCHES THE ENUM IN BG_PUBLIC.H!!!
 //This is in caps, because it is important.

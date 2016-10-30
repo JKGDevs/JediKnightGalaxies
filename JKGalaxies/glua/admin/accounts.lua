@@ -195,6 +195,10 @@ local function InitAccountList ( )
 		jObjectItem = json.GetObjectItem( jObject, "password" )
 		account["password"] = json.ToString( jObjectItem )
 
+		if account["password"] == "password" then
+			print "^1***** SECURITY WARNING *****: Detected an admin account with default password. Change it in server/accountlist.json."
+		end
+
 		jObjectItem = json.GetObjectItem( jObject, "rank" )
 		account["rank"] = json.ToString( jObjectItem )
 

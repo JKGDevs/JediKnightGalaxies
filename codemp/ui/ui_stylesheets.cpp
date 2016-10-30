@@ -96,8 +96,8 @@ void JKG_UI_LoadStylesheet( const char *text )
 			item.selectionNext = cJSON_ToString(cJSON_GetObjectItem(classObject, "selectionNext"));
 			item.selectionPrev = cJSON_ToString(cJSON_GetObjectItem(classObject, "selectionPrev"));
 			item.special = cJSON_ToNumber(cJSON_GetObjectItem(classObject, "special"));
-			if (textTemp = cJSON_ToString(cJSON_GetObjectItem(classObject, "text"))) Q_strncpyz(item.text, textTemp, sizeof(item.text));
-			if (textTemp = cJSON_ToString(cJSON_GetObjectItem(classObject, "text2"))) Q_strncpyz(item.text2, textTemp, sizeof(item.text2));
+			if ((textTemp = cJSON_ToString(cJSON_GetObjectItem(classObject, "text")))!=nullptr) Q_strncpyz(item.text, textTemp, sizeof(item.text));
+			if ((textTemp = cJSON_ToString(cJSON_GetObjectItem(classObject, "text2")))!=nullptr) Q_strncpyz(item.text2, textTemp, sizeof(item.text2));
 			item.text2alignment = cJSON_ToInteger(cJSON_GetObjectItem(classObject, "text2alignment")); // FIXME: use enum
 			item.text2alignx = cJSON_ToNumber(cJSON_GetObjectItem(classObject, "text2alignx")); // FIXME: allow for percentages
 			item.text2aligny = cJSON_ToNumber(cJSON_GetObjectItem(classObject, "text2aligny")); // FIXME: allow for percentages

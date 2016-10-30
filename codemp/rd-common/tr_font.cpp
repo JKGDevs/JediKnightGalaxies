@@ -1355,6 +1355,52 @@ CFontInfo *GetFont(int index)
 	return pFont;
 }
 
+//Jedi Knight Galaxies - extended ^xRGB color code functions  --futuza
+
+//returns a -1 if invalid, otherwise returns float color similar to how g_color_table() works
+float ExtColor_GetLevel(char chr) 
+{
+	if (chr >= '0' && chr <= '9') 
+	{
+		return ((float)(chr - '0') / 15.0f);
+	}
+	if (chr >= 'A' && chr <= 'F') 
+	{
+		return ((float)(chr - 'A' + 10) / 15.0f);
+	}
+	if (chr >= 'a' && chr <= 'f') 
+	{
+		return ((float)(chr - 'a' + 10) / 15.0f);
+	}
+	return -1;
+}
+
+//return 0 if invalid RGB color, otherwise return a 1 and modify color to contain appropriate colors
+int Text_ExtColorCodes(const char *text, vec4_t color) 
+{
+	const char *r, *g, *b;
+	float red, green, blue;
+	r = text + 1;
+	g = text + 2;
+	b = text + 3;
+	// Get the color levels (if the numbers are invalid, it'll return -1, which we can use to validate)
+	red = ExtColor_GetLevel(*r);
+	green = ExtColor_GetLevel(*g);
+	blue = ExtColor_GetLevel(*b);
+	// Determine if all 3 are valid - if value less than 0
+	if (red < 0 || green < 0 || blue < 0) {
+		return 0;
+	}
+
+	// We're clear to go, lets construct our color
+	color[0] = red;
+	color[1] = green;
+	color[2] = blue;
+	color[3] = 1.0f;
+	return 1;
+}
+
+// end
 
 int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float fScale)
 {
@@ -1515,26 +1561,26 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 //	// test code only
 //	if (GetLanguageEnum() == eTaiwanese)
 //	{
-//		psText = "Wp:¶}·F§a ¿p·G´µ¡A§Æ±æ§A¹³¥L­Ì»¡ªº¤@¼Ë¦æ¡C";
+//		psText = "Wp:Â¶}Â·FÂ§a Â¿pÂ·GÂ´ÂµÂ¡AÂ§Ã†Â±Ã¦Â§AÂ¹Â³Â¥LÂ­ÃŒÂ»Â¡ÂªÂºÂ¤@Â¼Ã‹Â¦Ã¦Â¡C";
 //	}
 //	else
 //	if (GetLanguageEnum() == eChinese)
 //	{
-//		//psText = "Ó¶±øÕ½³¡II  Ô¼º²?ÄªÁÖË¹  ÈÎÎñÊ§°Ü  ÄãÒªÌ×ÓÃ»­ÃæÉè¶¨µÄ±ä¸üÂð£¿  Ô¤Éè,S3 Ñ¹Ëõ,DXT1 Ñ¹Ëõ,DXT5 Ñ¹Ëõ,16 Bit,32 Bit";
-//		psText = "Ó¶±øÕ½³¡II";
+//		//psText = "Ã“Â¶Â±Ã¸Ã•Â½Â³Â¡II  Ã”Â¼ÂºÂ²?Ã„ÂªÃÃ–Ã‹Â¹  ÃˆÃŽÃŽÃ±ÃŠÂ§Â°Ãœ  Ã„Ã£Ã’ÂªÃŒÃ—Ã“ÃƒÂ»Â­ÃƒÃ¦Ã‰Ã¨Â¶Â¨ÂµÃ„Â±Ã¤Â¸Ã¼Ã‚Ã°Â£Â¿  Ã”Â¤Ã‰Ã¨,S3 Ã‘Â¹Ã‹Ãµ,DXT1 Ã‘Â¹Ã‹Ãµ,DXT5 Ã‘Â¹Ã‹Ãµ,16 Bit,32 Bit";
+//		psText = "Ã“Â¶Â±Ã¸Ã•Â½Â³Â¡II";
 //	}
 //	else
 //	if (GetLanguageEnum() == eThai)
 //	{
-//		//psText = "ÁÒµÃ°Ò¹¼ÅÔµÀÑ³±ìÍØµÊÒË¡ÃÃÁÃËÑÊÊÓËÃÑºÍÑ¡¢ÃÐä·Â·Õèãªé¡Ñº¤ÍÁ¾ÔÇàµÍÃì";
-//		psText = "ÁÒµÃ°Ò¹¼ÅÔµ";
-//		psText = "ÃËÑÊÊÓËÃÑº";
-//		psText = "ÃËÑÊÊÓËÃÑº   ÍÒ_¡Ô¹_¤ÍÃì·_1415";
+//		//psText = "ÃÃ’ÂµÃƒÂ°Ã’Â¹Â¼Ã…Ã”ÂµÃ€Ã‘Â³Â±Ã¬ÃÃ˜ÂµÃŠÃ’Ã‹Â¡ÃƒÃƒÃÃƒÃ‹Ã‘ÃŠÃŠÃ“Ã‹ÃƒÃ‘ÂºÃÃ‘Â¡Â¢ÃƒÃÃ¤Â·Ã‚Â·Ã•Ã¨Ã£ÂªÃ©Â¡Ã‘ÂºÂ¤ÃÃÂ¾Ã”Ã‡Ã ÂµÃÃƒÃ¬";
+//		psText = "ÃÃ’ÂµÃƒÂ°Ã’Â¹Â¼Ã…Ã”Âµ";
+//		psText = "ÃƒÃ‹Ã‘ÃŠÃŠÃ“Ã‹ÃƒÃ‘Âº";
+//		psText = "ÃƒÃ‹Ã‘ÃŠÃŠÃ“Ã‹ÃƒÃ‘Âº   ÃÃ’_Â¡Ã”Â¹_Â¤ÃÃƒÃ¬Â·_1415";
 //	}
 //	else
 //	if (GetLanguageEnum() == eKorean)
 //	{
-//		psText = "Wp:¼îÅ¸ÀÓÀÌ´Ù ¸Ö¸°. ±×µéÀÌ ¸»ÇÑ´ë·Î ³×°¡ ÀßÇÒÁö ±â´ëÇÏ°Ú´Ù.";
+//		psText = "Wp:Â¼Ã®Ã…Â¸Ã€Ã“Ã€ÃŒÂ´Ã™ Â¸Ã–Â¸Â°. Â±Ã—ÂµÃ©Ã€ÃŒ Â¸Â»Ã‡Ã‘Â´Ã«Â·ÃŽ Â³Ã—Â°Â¡ Ã€ÃŸÃ‡Ã’ÃÃ¶ Â±Ã¢Â´Ã«Ã‡ÃÂ°ÃšÂ´Ã™.";
 //	}
 //	else
 //	if (GetLanguageEnum() == eJapanese)
@@ -1546,14 +1592,14 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 //	else
 //	if (GetLanguageEnum() == eRussian)
 //	{
-////		//psText = "Íà âåðøèíå õîëìà ñòîèò ñòàðûé äîì ñ ïðèâèäåíèÿìè è áàøíÿ ñ âîëøåáíûìè ÷àñàìè."
-//		psText = "Íà âåðøèíå õîëìà ñòîèò";
+////		//psText = "ÃÃ  Ã¢Ã¥Ã°Ã¸Ã¨Ã­Ã¥ ÃµÃ®Ã«Ã¬Ã  Ã±Ã²Ã®Ã¨Ã² Ã±Ã²Ã Ã°Ã»Ã© Ã¤Ã®Ã¬ Ã± Ã¯Ã°Ã¨Ã¢Ã¨Ã¤Ã¥Ã­Ã¨Ã¿Ã¬Ã¨ Ã¨ Ã¡Ã Ã¸Ã­Ã¿ Ã± Ã¢Ã®Ã«Ã¸Ã¥Ã¡Ã­Ã»Ã¬Ã¨ Ã·Ã Ã±Ã Ã¬Ã¨."
+//		psText = "ÃÃ  Ã¢Ã¥Ã°Ã¸Ã¨Ã­Ã¥ ÃµÃ®Ã«Ã¬Ã  Ã±Ã²Ã®Ã¨Ã²";
 //	}
 //	else
 //	if (GetLanguageEnum() == ePolish)
 //	{
-//		psText = "za³o¿ony w 1364 roku, jest najstarsz¹ polsk¹ uczelni¹ i nale¿y...";
-//		psText = "za³o¿ony nale¿y";
+//		psText = "zaÂ³oÂ¿ony w 1364 roku, jest najstarszÂ¹ polskÂ¹ uczelniÂ¹ i naleÂ¿y...";
+//		psText = "zaÂ³oÂ¿ony naleÂ¿y";
 //	}
 
 
@@ -1829,51 +1875,3 @@ void R_ReloadFonts_f(void)
 		Com_Printf( "Problem encountered finding current fonts, ignoring.\n" );	// poo. Oh well, forget it.
 	}
 }
-
-
-//Jedi Knight Galaxies - extended ^xRGB color code functions  --futuza
-
-//returns a -1 if invalid, otherwise returns float color similar to how g_color_table() works
-static float ExtColor_GetLevel(char chr) 
-{
-	if (chr >= '0' && chr <= '9') 
-	{
-		return ((float)(chr - '0') / 15.0f);
-	}
-	if (chr >= 'A' && chr <= 'F') 
-	{
-		return ((float)(chr - 'A' + 10) / 15.0f);
-	}
-	if (chr >= 'a' && chr <= 'f') 
-	{
-		return ((float)(chr - 'a' + 10) / 15.0f);
-	}
-	return -1;
-}
-
-//return 0 if invalid RGB color, otherwise return a 1 and modify color to contain appropriate colors
-static int Text_ExtColorCodes(const char *text, vec4_t color) 
-{
-	const char *r, *g, *b;
-	float red, green, blue;
-	r = text + 1;
-	g = text + 2;
-	b = text + 3;
-	// Get the color levels (if the numbers are invalid, it'll return -1, which we can use to validate)
-	red = ExtColor_GetLevel(*r);
-	green = ExtColor_GetLevel(*g);
-	blue = ExtColor_GetLevel(*b);
-	// Determine if all 3 are valid
-	if (red == -1 || green == -1 || blue == -1) {
-		return 0;
-	}
-
-	// We're clear to go, lets construct our color
-	color[0] = red;
-	color[1] = green;
-	color[2] = blue;
-	color[3] = 1.0f;
-	return 1;
-}
-
-// end

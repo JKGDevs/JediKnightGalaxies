@@ -75,8 +75,8 @@ int BG_SoundIndex(char *sound)
 
 extern stringID_table_t FPTable[];
 
-#define MAX_SABER_DATA_SIZE 0x80000
-static char SaberParms[MAX_SABER_DATA_SIZE];
+//#define MAX_SABER_DATA_SIZE 0x80000
+//static char SaberParms[MAX_SABER_DATA_SIZE];
 
 stringID_table_t SaberTable[] =
 {
@@ -157,7 +157,7 @@ stringID_table_t SaberMoveTable[] =
 	ENUM2STRING(LS_DUAL_FB),
 	ENUM2STRING(LS_DUAL_LR),
 	ENUM2STRING(LS_HILT_BASH),
-	"",	-1
+	{"",	-1}
 };
 
 saber_colors_t TranslateSaberColor( const char *name ) 
@@ -271,7 +271,7 @@ qboolean WP_UseFirstValidSaberStyle( saberInfo_t *saber1, saberInfo_t *saber2, i
 	qboolean dualSabers = qfalse;
 	int	validStyles = 0, styleNum;
 
-	if ( saber2 && saber2->model && saber2->model[0] )
+	if ( saber2 && saber2->model[0] )
 	{
 		dualSabers = qtrue;
 	}
@@ -296,7 +296,6 @@ qboolean WP_UseFirstValidSaberStyle( saberInfo_t *saber1, saberInfo_t *saber2, i
 	{
 		saber2Active = qfalse;
 		if ( !saber1
-			|| !saber1->model
 			|| !saber1->model[0] )
 		{
 			saber1Active = qfalse;
@@ -333,7 +332,6 @@ qboolean WP_UseFirstValidSaberStyle( saberInfo_t *saber1, saberInfo_t *saber2, i
 
 	if ( saber1Active
 		&& saber1
-		&& saber1->model
 		&& saber1->model[0]
 		&& saber1->stylesForbidden )
 	{
@@ -377,7 +375,7 @@ qboolean WP_SaberStyleValidForSaber( saberInfo_t *saber1, saberInfo_t *saber2, i
 	qboolean saber2Active;
 	qboolean dualSabers = qfalse;
 
-	if ( saber2 && saber2->model && saber2->model[0] )
+	if ( saber2 && saber2->model[0] )
 	{
 		dualSabers = qtrue;
 	}
@@ -402,7 +400,6 @@ qboolean WP_SaberStyleValidForSaber( saberInfo_t *saber1, saberInfo_t *saber2, i
 	{
 		saber2Active = qfalse;
 		if ( !saber1
-			|| !saber1->model
 			|| !saber1->model[0] )
 		{
 			saber1Active = qfalse;
@@ -433,7 +430,6 @@ qboolean WP_SaberStyleValidForSaber( saberInfo_t *saber1, saberInfo_t *saber2, i
 
 	if ( saber1Active
 		&& saber1
-		&& saber1->model
 		&& saber1->model[0]
 		&& saber1->stylesForbidden )
 	{
@@ -445,7 +441,6 @@ qboolean WP_SaberStyleValidForSaber( saberInfo_t *saber1, saberInfo_t *saber2, i
 	if ( dualSabers
 		&& saber2Active
 		&& saber2
-		&& saber2->model
 		&& saber2->model[0] )
 	{
 		if ( saber2->stylesForbidden )
@@ -647,7 +642,7 @@ bool JKG_ParseHiltFile( const char *filename )
 	saberInfo_t theHilt;
 	cJSON *json = NULL;
     cJSON *jsonNode = NULL;
-	cJSON *jsonChild = NULL;
+	//cJSON *jsonChild = NULL;
 	char error[MAX_STRING_CHARS];
 	char hiltFileData[32967];		// TODO: change
 	fileHandle_t f;
@@ -843,13 +838,16 @@ if(childNode)
 		theHilt.disarmBonus2 = cJSON_ToInteger(jsonNode);
 
 	JSONPARSE("singleBladeStyle")
-		int i = 0; // does not work
+		(void)0;
+		//int i = 0; // does not work
 
 	JSONPARSE("brokenSaber1")
-		int i = 0; // BROKEN in base (ironic)
+		(void)0;
+		//int i = 0; // BROKEN in base (ironic)
 
 	JSONPARSE("brokenSaber2")
-		int i = 0; // BROKEN in base (ironic)
+		(void)0;
+		//int i = 0; // BROKEN in base (ironic)
 
 	JSONPARSE("moveSpeedScale")
 		theHilt.moveSpeedScale = cJSON_ToNumber(jsonNode);

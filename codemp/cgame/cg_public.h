@@ -129,11 +129,6 @@ typedef struct TCGG2Mark_s {
 	vec3_t		start, dir;
 } TCGG2Mark;
 
-// CG_INCOMING_CONSOLE_COMMAND
-typedef struct TCGIncomingConsoleCommand_s {
-	char conCommand[1024];
-} TCGIncomingConsoleCommand;
-
 // CG_FX_CAMERASHAKE
 typedef struct TCGCameraShake_s {
 	vec3_t	mOrigin;					// input
@@ -488,7 +483,6 @@ typedef struct cgameExport_s {
 	void			(*G2Trace)					( void );
 	void			(*G2Mark)					( void );
 	int				(*RagCallback)				( int callType );
-	qboolean		(*IncomingConsoleCommand)	( void );
 	qboolean		(*NoUseableForce)			( void );
 	void			(*GetOrigin)				( int entID, vec3_t out );
 	void			(*GetAngles)				( int entID, vec3_t out );

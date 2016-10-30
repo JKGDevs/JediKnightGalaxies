@@ -244,36 +244,8 @@ const char *Text_ConvertExtToNormal(const char *text) {
 	return &buff[0];
 }
 
-void Text_DrawText(int x, int y, const char *text, const float* rgba, int iFontIndex, const int limit, float scale) {
-	// Custom draw algo to ensure proper spacing in compliance with Text_GetWidth
-	char s[2];
-	const char *t = (char *)text;
-	vec4_t color;
-	float xx = x;
-
-	s[1] = 0;
-	VectorCopy4(rgba, color);
-	while (*t) {
-		if (*t == '^') {
-			if (*(t+1) >= '0' && *(t+1) <= '9') {
-				VectorCopy4(tColorTable[*(t+1) - '0'], color);
-				t+=2;
-				continue;
-			}
-			if (*(t + 1) == 'x' || *(t + 1) == 'X') {
-				// Extended colorcode
-				if (Text_ExtColorCodes(t+1, color)) {
-					t+=5;
-					continue;
-				}
-			}
-		}
-		s[0] = *t;
-		trap->R_Font_DrawString(xx, y, s, color, iFontIndex, limit, scale);
-		xx += ((float)trap->R_Font_StrLenPixels(s, iFontIndex, 1) * scale);
-		t++;
-	}
-}
+//todo: move all xrgb color related functions to ui_shared.cpp/h since all ui functions should be able to use it other than just chatbox
+//void Text_DrawText(int x, int y, const char *text, const float* rgba, int iFontIndex, const int limit, float scale)	//now defined in ui_shared
 
 void ChatBox_NewChatMode() {
     char *p = strchr (cb_data.buff, ' ');

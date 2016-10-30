@@ -743,6 +743,10 @@ static qboolean turretG2_find_enemies( gentity_t *self )
 		{
 			continue;
 		}
+		if ( target->client && target->client->noclip )
+		{
+			continue;
+		}
 		if ( target->client && target->client->sess.sessionTeam == TEAM_SPECTATOR )
 		{
 			continue;
@@ -750,6 +754,9 @@ static qboolean turretG2_find_enemies( gentity_t *self )
 		if ( target->client && target->client->tempSpectate >= level.time )
 		{
 			continue;
+		}
+		if (target->NPC) {
+			continue; // Don't target NPCs (for now)
 		}
 		if ( self->alliedTeam )
 		{
@@ -772,7 +779,7 @@ static qboolean turretG2_find_enemies( gentity_t *self )
 			continue;
 		}
 
-		if ( target->vendorData.ourID )
+		if ( target->szVendorTreasureClass != nullptr )
 		{
 			continue;
 		}
@@ -886,7 +893,8 @@ void turretG2_base_think( gentity_t *self )
 	if ( self->enemy )
 	{
 		if ( self->enemy->health < 0 
-			|| !self->enemy->inuse )
+			|| !self->enemy->inuse
+			|| self->enemy->NPC ) // dont shoot at NPCs (for now)
 		{
 			self->enemy = NULL;
 		}

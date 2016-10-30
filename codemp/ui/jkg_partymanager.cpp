@@ -290,7 +290,7 @@ void JKG_PartyMngt_UpdateNotify(int msg) {
 		PMngtData.active = 1;
 		if (Menus_ActivateByName("jkg_partymanagement"))
 		{
-			trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI & ~KEYCATCH_CONSOLE );			
+			trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI /*& ~KEYCATCH_CONSOLE*/ );			
 		}
 	}
 }
@@ -767,7 +767,7 @@ void PartyMngt_Script_OpenDlg(char **args) {
 	JKG_PartyMngt_UpdateState();
 	// Request a new list
 	PMngtData.seekerListPending = 1;
-	cgImports->SendClientCommand(va("~pmngt partylistrefresh %i", (int)cgImports->PartyMngtDataRequest(2)));
+	cgImports->SendClientCommand(va("~pmngt partylistrefresh %i", *(int*)cgImports->PartyMngtDataRequest(2)));
 	trap->Cvar_Set("ui_hidehud", "1");
 	PMngtData.active = 1;
 }

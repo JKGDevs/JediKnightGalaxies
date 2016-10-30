@@ -625,6 +625,7 @@ void Controls_SetDefaults( void );
 
 void CL_InitMultiMasterServer(void);
 void CL_ShutdownMultiMasterServer(void);
+void Text_DrawText(int x, int y, const char *text, const float* rgba, int iFontIndex, const int limit, float scale);
 
 
 /*

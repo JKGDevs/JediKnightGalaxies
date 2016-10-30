@@ -27,9 +27,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "jkg_gangwars.h"
 #include "../ui/menudef.h"			// for the voice chats
 #include "../GLua/glua.h"
-#include "jkg_admin.h"
 #include "jkg_chatcmds.h"
 #include "jkg_utilityfunc.h"
+#include "jkg_treasureclass.h"
 
 //rww - for getting bot commands...
 int AcceptBotCommand(char *cmd, gentity_t *pl);
@@ -58,13 +58,7 @@ CheatsOk
 ==================
 */
 qboolean	CheatsOk( gentity_t *ent ) {
-	if (ent->client->sess.adminRank >= ADMRANK_DEVELOPER)
-	{
-		return qtrue;
-	}
-	if (ent->client->sess.canUseCheats)
-		return qtrue;
-	if ( !sv_cheats.integer ) {
+	if ( !sv_cheats.integer && !ent->client->sess.canUseCheats ) {
 		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOCHEATS")));
 		return qfalse;
 	}
@@ -74,7 +68,6 @@ qboolean	CheatsOk( gentity_t *ent ) {
 	}
 	return qtrue;
 }
-
 
 /*
 ==================
@@ -144,7 +137,7 @@ void DeathmatchScoreboardMessage( gentity_t *ent ) {
 	int			stringlength;
 	int			i, j;
 	gclient_t	*cl;
-	int			numSorted, scoreFlags, accuracy, perfect;
+	int			numSorted, scoreFlags;
 
 	// send the latest information on all clients
 	string[0] = 0;
@@ -166,29 +159,14 @@ void DeathmatchScoreboardMessage( gentity_t *ent ) {
 		if ( cl->pers.connected == CON_CONNECTING ) {
 			ping = -1;
 		} else {
-			ping = cl->ps.ping < 999 ? cl->ps.ping : 999;
+			ping = cl->ps.ping;
 		}
-
-		if( cl->accuracy_shots ) {
-			accuracy = cl->accuracy_hits * 100 / cl->accuracy_shots;
-		}
-		else {
-			accuracy = 0;
-		}
-		perfect = ( cl->ps.persistant[PERS_RANK] == 0 && cl->ps.persistant[PERS_KILLED] == 0 ) ? 1 : 0;
 
 		// FIXME
 		Com_sprintf (entry, sizeof(entry),
-			" %i %i %i %i %i %i %i %i %i %i %i %i %i %i", level.sortedClients[i],
+			" %i %i %i %i %i %i", level.sortedClients[i],
 			cl->sess.sessionTeam == TEAM_SPECTATOR ? 0 : cl->ps.persistant[PERS_SCORE], ping, (level.time - cl->pers.enterTime)/60000,
-			scoreFlags, g_entities[level.sortedClients[i]].s.powerups, accuracy, 
-			cl->ps.credits,
-			0,
-			0, 
-			0, 
-			0, 
-			0,
-			0);
+			scoreFlags, g_entities[level.sortedClients[i]].s.powerups);
 		j = strlen(entry);
 		if (stringlength + j > 1022)
 			break;
@@ -326,7 +304,7 @@ void JKG_ItemCheck_f(gentity_t *ent)
 			else if(itemLookupTable[itemNum].itemType == ITEM_WEAPON)
 			{
 				trap->SendServerCommand(ent-g_entities, va("print \"%s (%i) - Weapon (w %i, v %i)\n\"", itemLookupTable[itemNum].displayName, itemNum,
-					itemLookupTable[itemNum].weapon, itemLookupTable[itemNum].variation));
+					itemLookupTable[itemNum].weaponData.weapon, itemLookupTable[itemNum].weaponData.variation));
 				return;
 			}
 			else
@@ -362,13 +340,14 @@ JKG_BuyItem_f
 */
 void JKG_BuyItem_f(gentity_t *ent)
 {
+	gentity_t* trader = ent->client->currentTrader;
 	if(trap->Argc() < 1)
 	{
 		trap->SendServerCommand(ent->s.number, "print \"Not enough args.\n\"");
 		return;
 	}
 
-	if(ent->client->currentVendor == NULL)
+	if(trader == NULL)
 	{
 		trap->SendServerCommand(ent->s.number, "print \"You are not at a vendor.\n\"");
 		return;
@@ -377,7 +356,42 @@ void JKG_BuyItem_f(gentity_t *ent)
 	char buffer[8];
 
 	trap->Argv (1, buffer, sizeof(buffer));
-	JKG_Vendor_Buy (ent, ent->client->currentVendor, atoi(buffer));
+	int item = atoi(buffer);
+	if (item < 0 || item >= trader->inventory->size()) {
+		trap->SendServerCommand(ent - g_entities, "print \"Invalid item.\n\"");
+		return;
+	}
+
+	itemInstance_t* pItem = &(*trader->inventory)[item];
+	if (pItem->id->baseCost > ent->client->ps.credits) 
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"You do not have enough credits to purchase that item.\n\"");
+		
+		//select random unhappy vendor sound to play
+		std::string snd;
+		switch (Q_irand(0, 5))
+		{	case 0: snd = "sound/vendor/generic/purchasefail00.mp3";
+				break;
+			case 1: snd = "sound/vendor/generic/purchasefail01.mp3";
+				break;
+			case 2: snd = "sound/vendor/generic/purchasefail02.mp3";
+				break;
+			case 3: snd = "sound/vendor/generic/purchasefail03.mp3";
+				break;
+			case 4: snd = "sound/vendor/generic/purchasefail04.mp3";
+				break;
+			case 5: snd = "sound/vendor/generic/purchasefail05.mp3";
+				break;
+			default: snd = "sound/vendor/generic/purchasefail00.mp3";
+				break;
+		}
+		G_Sound(trader, CHAN_AUTO, G_SoundIndex(snd.c_str()));	//play sound
+		return;
+	}
+
+	BG_SendTradePacket(IPT_TRADESINGLE, ent, trader, pItem, pItem->id->baseCost, 0);
+	BG_GiveItemNonNetworked(ent, *pItem);
+	ent->client->ps.credits -= pItem->id->baseCost;
 }
 
 /*
@@ -388,13 +402,14 @@ JKG_CloseVendor_f
 */
 void JKG_CloseVendor_f (gentity_t *ent)
 {
-	if ( ent->client->currentVendor == NULL )
+	if ( ent->client->currentTrader == NULL )
 	{
 		return;
 	}
 
 	ent->client->pmnomove = false;
-	ent->client->currentVendor = NULL;
+	ent->client->currentTrader->genericValue1 = ENTITYNUM_NONE;
+	ent->client->currentTrader = NULL;
 }
 
 /*
@@ -791,7 +806,6 @@ Cmd_Give_f
 Give items to a client
 ==================
 */
-extern void JKG_A_RollItem( unsigned int itemIndex, int qualityOverride, inv_t *inventory );
 void Cmd_Give_f (gentity_t *cmdent, int baseArg)
 {
 	char		name[MAX_TOKEN_CHARS];
@@ -909,17 +923,11 @@ void Cmd_Give_f (gentity_t *cmdent, int baseArg)
 	        int i = 0;
 			int itemID;
 	        
-			/*if ( ent->client->coreStats.weight >= MAX_INVENTORY_WEIGHT)
-	        {
-	            trap->SendServerCommand (ent->s.number, "print \"Your inventory is full. No more items can be added.\n\"");
-	            return;
-	        }*/
-
 			//FIXME: The below assumes that there is a valid weapon item
-			itemID = JKG_GetItemByWeaponIndex(BG_GetWeaponIndex((unsigned int)weapon->weaponBaseIndex, (unsigned int)weapon->weaponModIndex))->itemID;
+			itemID = BG_GetItemByWeaponIndex(BG_GetWeaponIndex((unsigned int)weapon->weaponBaseIndex, (unsigned int)weapon->weaponModIndex))->itemID;
 
-	        //while ( i < MAX_INVENTORY_ITEMS && cmdent->inventory[i].id )
-			JKG_A_GiveEntItem(itemID, IQUAL_NORMAL, ent->inventory, ent->client);
+			itemInstance_t item = BG_ItemInstance(itemID, 1);
+			BG_GiveItem(ent, item);
 			trap->SendServerCommand (ent->s.number, va ("print \"'%s' was added to your inventory.\n\"", itemLookupTable[itemID].displayName));
 			
 			// UQ1: Added - update their ACI...
@@ -970,7 +978,7 @@ void Cmd_Give_f (gentity_t *cmdent, int baseArg)
 	}
 
 	//Inventory items -- eezstreet/JKG
-	if(!give_all && Q_stricmp(name, "itemNew") == 0)
+	if(!give_all && Q_stricmp(name, "item") == 0)
 	{
 		int itemID = 0, j = 0;
 		qboolean inventoryFull = qtrue;
@@ -985,28 +993,18 @@ void Cmd_Give_f (gentity_t *cmdent, int baseArg)
 				trap->SendServerCommand(ent - g_entities, va("print \"%i refers to an item that does not exist\n\"", itemID));
 				return;
 			}
+			itemInstance_t item = BG_ItemInstance(itemID, 1);
+			BG_GiveItem(ent, item);
 		}
 		else
 		{
-			//Find us the correct item.
-			for(j = 0; j < MAX_ITEM_TABLE_SIZE; j++)
-			{
-				if(itemLookupTable[j].itemID)
-				{
-					if(!Q_stricmp(itemLookupTable[j].internalName, ConcatArgs(2+baseArg)))
-					{
-						itemID = j;
-						break;
-					}
-				}
-			}
-			if(!itemID)
-			{
+			itemInstance_t item = BG_ItemInstance(arg, 1);
+			if (!item.id) {
 				trap->SendServerCommand(ent - g_entities, va("print \"%s refers to an item that does not exist\n\"", arg));
 				return;
 			}
+			BG_GiveItem(ent, item);
 		}
-		JKG_A_GiveEntItem(itemID, IQUAL_NORMAL, ent->inventory, ent->client);
 		return;
 	}
 
@@ -1062,6 +1060,10 @@ argv(0) god
 void Cmd_God_f( gentity_t *ent ) {
 	char *msg = NULL;
 
+	if ( !CheatsOk( ent ) ) {
+		return;
+	}
+
 	ent->flags ^= FL_GODMODE;
 	if ( !(ent->flags & FL_GODMODE) )
 		msg = "godmode OFF";
@@ -1084,6 +1086,10 @@ argv(0) notarget
 void Cmd_Notarget_f( gentity_t *ent ) {
 	char *msg = NULL;
 
+	if ( !CheatsOk( ent ) ) {
+		return;
+	}
+
 	ent->flags ^= FL_NOTARGET;
 	if ( !(ent->flags & FL_NOTARGET) )
 		msg = "notarget OFF";
@@ -1103,6 +1109,10 @@ argv(0) noclip
 */
 void Cmd_Noclip_f( gentity_t *ent ) {
 	char *msg = NULL;
+
+	if ( !CheatsOk( ent ) ) {
+		return;
+	}
 
 	ent->client->noclip = !ent->client->noclip;
 	if ( !ent->client->noclip )
@@ -1126,6 +1136,10 @@ hide the scoreboard, and take a special screenshot
 */
 void Cmd_LevelShot_f( gentity_t *ent )
 {
+	if ( !CheatsOk( ent ) ) {
+		return;
+	}
+
 	if ( !ent->client->pers.localClient )
 	{
 		trap->SendServerCommand(ent-g_entities, "print \"The levelshot command must be executed by a local client\n\"");
@@ -1591,40 +1605,6 @@ void Cmd_Team_f( gentity_t *ent ) {
 // INVENTORY RELATED COMMANDS
 //==========================================================
 
-void JKG_CompactInventory(inventory_t inventory)
-{
-	int i;
-	// We can make this even more efficient, but not really much point.
-	for(i = 0; i < MAX_INVENTORY_ITEMS; i++)
-	{
-	    int j;
-	    
-	    if ( inventory[i].id )
-	    {
-	        continue;
-	    }
-	    
-	    for ( j = i + 1; j < MAX_INVENTORY_ITEMS; j++ )
-	    {
-	        if ( inventory[j].id )
-	        {
-	            inventory[i] = inventory[j];
-	            memset (&inventory[j], 0, sizeof (inventory[j]));
-	            
-	            break;
-	        }
-	    }
-	    
-	    if ( j == MAX_INVENTORY_ITEMS )
-	    {
-	        // Current slot is null, but can find no other items above this one.
-	        // Must be the end of the list.
-	        break;
-	    }
-	}
-}
-
-extern void JKG_Easy_RemoveItemFromInventory(int number, itemInstance_t **inventory, gentity_t *owner, qboolean NPC);
 /*
 =================
 JKG_Cmd_Loot_f
@@ -1632,118 +1612,7 @@ JKG_Cmd_Loot_f
 */
 void JKG_Cmd_Loot_f(gentity_t *ent, int otherNum, int lootID, qboolean trade)
 {
-    int i;
-	gentity_t *other = &g_entities[otherNum];
-
-	//Check whether we're trying to loot ourselves.
-	if(ent->s.number == other->s.number){
-		trap->SendServerCommand( ent-g_entities, "print \"You cannot loot yourself.\n\"" );
-		return;
-	}
-
-	//Check whether our target is a player
-	if(other->client && !other->client->NPC_class){
-		trap->SendServerCommand( ent-g_entities, "print \"You cannot loot other players.\n\"" );
-		return;
-	}
-	
-	//Check and see if we've got a valid loot ID
-	if( lootID < 0 ){
-		trap->SendServerCommand( ent-g_entities, "print \"Invalid loot ID\n\"" );
-		return;
-	}
-
-	//check to make sure this object is even lootable
-	//if( !other->inventory[lootID].id ){
-	if( !other->inventory->items[lootID].id ) {
-		trap->SendServerCommand( ent-g_entities, "print \"Invalid target or loot ID.\n\"" );
-		return;
-	}
-
-	//check to make sure we can carry this item
-	//if( (ent->client->coreStats.weight - other->inventory[lootID].id->weight) < 0 ){
-	if ( (signed int)( ent->client->coreStats.weight - other->inventory->items[lootID].id->weight ) < 0 ) {
-		trap->SendServerCommand( ent-g_entities, "print \"You can't carry any more.\n\"" );
-		return;
-	}
-
-	//check if we've got enough open slots
-	/*for(i = 0; i < MAX_INVENTORY_ITEMS; i++)
-	{
-		if(!ent->inventory[i].id)
-		{
-			break;
-		}
-	}
-	if(i >= MAX_INVENTORY_ITEMS)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"You are out of space.\n\"" );
-		return;
-	}*/
-	i = 0;
-	while ( 1 )
-	{
-		if(!ent->inventory->items[i].id)
-			break;
-	}
-
-	//find the distance between the two targets
-	if ( DistanceSquared (other->s.origin, ent->client->ps.origin) >= MAX_LOOT_DISTANCE * MAX_LOOT_DISTANCE ) {
-		trap->SendServerCommand( ent-g_entities, "print \"You are too far away to loot that target.\n\"" );
-		return;
-	}
-
-	//We can carry this item. Super. Now let's find our first available inventory space.
-	//eezstreet note: WHY THE HECK DID WE EVEN LOOP LIKE THIS TO BEGIN WITH?! ABORT! ABORT!
-	/*for ( i = 0; i < MAX_INVENTORY_ITEMS; i++ )
-	{
-		if( !ent->inventory[i].id )
-		{
-			ent->inventory[i] = other->inventory[lootID];
-#ifdef _DEBUG
-			trap->SendServerCommand( ent-g_entities, va("print \"loot: %s\n\"", ent->inventory[i].id->displayName) );
-#endif
-			trap->SendServerCommand( ent-g_entities, va("pInv add %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
-				i,
-				ent->inventory[i].id->itemID, 
-				ent->inventory[i].itemQuality,
-				ent->inventory[i].amount[0],
-				ent->inventory[i].amount[1],
-				ent->inventory[i].amount[2],
-				ent->inventory[i].amount[3],
-				ent->inventory[i].amount[4],
-				ent->inventory[i].amount[5],
-				ent->inventory[i].amount[6],
-				ent->inventory[i].amount[7],
-				ent->inventory[i].amount[8],
-				ent->inventory[i].amount[9],
-				ent->inventory[i].equipped));
-			ent->client->coreStats.weight += other->inventory[lootID].id->weight;
-			memset(&other->inventory[lootID], 0, sizeof(itemInstance_t));
-			
-			JKG_CompactInventory (other->inventory);
-			return;
-		}
-	}*/
-#ifdef _DEBUG
-	trap->SendServerCommand( ent-g_entities, va("print \"loot: %s\n\"", ent->inventory->items[i].id->displayName));
-#endif
-	trap->SendServerCommand( ent-g_entities, va("pInv add %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
-		i,
-		ent->inventory->items[i].id->itemID,
-		ent->inventory->items[i].amount[0],
-		ent->inventory->items[i].amount[1],
-		ent->inventory->items[i].amount[2],
-		ent->inventory->items[i].amount[3],
-		ent->inventory->items[i].amount[4],
-		ent->inventory->items[i].amount[5],
-		ent->inventory->items[i].amount[6],
-		ent->inventory->items[i].amount[7],
-		ent->inventory->items[i].amount[8],
-		ent->inventory->items[i].amount[9],
-		ent->inventory->items[i].equipped));
-	ent->client->coreStats.weight += other->inventory->items[lootID].id->weight;
-	JKG_Easy_RemoveItemFromInventory(lootID, &other->inventory->items, other, qtrue);
+	return;
 }
 
 /*
@@ -1751,8 +1620,6 @@ void JKG_Cmd_Loot_f(gentity_t *ent, int otherNum, int lootID, qboolean trade)
 JKG_Cmd_ItemAction_f
 =================
 */
-extern void JKG_Easy_RemoveItemFromInventory(int number, itemInstance_t **inventory, gentity_t *owner, qboolean NPC);
-extern void JKG_Easy_DIMA_Remove(inv_t *inventory, unsigned int invID);
 void JKG_Cmd_ItemAction_f (gentity_t *ent, int itemNum)
 {
 	itemInstance_t *itemInUse;
@@ -1774,96 +1641,12 @@ void JKG_Cmd_ItemAction_f (gentity_t *ent, int itemNum)
 	{
 	    return;
 	}
-	if( itemNum > ent->inventory->elements )
+	if( itemNum > ent->inventory->size() )
 	{
 		//Nope.
 		return;
 	}
-
-	//itemInUse = &ent->inventory[itemNum];
-	itemInUse = &ent->inventory->items[itemNum];
-	if ( !itemInUse->id )
-	{
-#ifdef _DEBUG
-	    trap->SendServerCommand (ent->s.number, "print \"No item with that number.\n\"");
-#endif
-	    return;
-	}
-	
-	for(i = 0; i < MAX_PSPELLS; i++){
-		switch(itemInUse->id->pSpell[i])
-		{
-			case -1:
-			case PSPELL_NONE:
-				return;
-				break;
-			case PSPELL_ADD_PS:
-				ent->client->ps.stats[itemInUse->id->affector[i]] += (int)itemInUse->amount[i];
-				break;
-			case PSPELL_SUB_PS:
-				ent->client->ps.stats[itemInUse->id->affector[i]] -= (int)itemInUse->amount[i];
-				break;
-			case PSPELL_MUL_PS:
-				ent->client->ps.stats[itemInUse->id->affector[i]] *= (int)itemInUse->amount[i];
-				break;
-			case PSPELL_DIV_PS:
-				ent->client->ps.stats[itemInUse->id->affector[i]] /= (int)itemInUse->amount[i];
-				break;
-			case PSPELL_EXP_PS:
-				ent->client->ps.stats[itemInUse->id->affector[i]] = (int)pow(ent->client->ps.stats[itemInUse->id->affector[i]], (double)itemInUse->amount[i]);
-				break;
-			case PSPELL_SQT_PS:
-				ent->client->ps.stats[itemInUse->id->affector[i]] = (int)sqrt((double)ent->client->ps.stats[itemInUse->id->affector[i]]);
-				break;
-			case PSPELL_SEEKER:
-				if(ent->client->ps.eFlags & EF_SEEKERDRONE)
-				{
-					trap->SendServerCommand(ent->client->ps.clientNum, "print \"You cannot have more than one seeker drone at a time.\n\"");
-					return;
-				}
-				ItemUse_Seeker(ent);
-				break;
-			case PSPELL_PLAYSOUND:
-				G_Sound( ent, CHAN_AUTO, itemInUse->id->affector[i] );
-				break;
-			case PSPELL_DESTROYITEM:
-				JKG_Easy_RemoveItemFromInventory(itemNum, &ent->inventory->items, ent, qfalse);
-				return;
-				break;
-			case PSPELL_CND_GT_PS:
-				{
-					if(ent->client->ps.stats[itemInUse->id->affector[i]] > (int)itemInUse->amount[i])
-					{
-						return;
-					}
-				}
-				break;
-			case PSPELL_CND_EQ_PS:
-				{
-					if(ent->client->ps.stats[itemInUse->id->affector[i]] == (int)itemInUse->amount[i])
-					{
-						return;
-					}
-				}
-				break;
-			case PSPELL_CND_LT_PS:
-				{
-					if(ent->client->ps.stats[itemInUse->id->affector[i]] < (int)itemInUse->amount[i])
-					{
-						return;
-					}
-				}
-				break;
-			case PSPELL_DO_EVENT:
-				G_AddEvent(ent, itemInUse->id->affector[i], (int)itemInUse->amount[i]);
-				break;
-			default:
-				ent->client->ps.stats[itemInUse->id->affector[i]] += (int)itemInUse->amount[i];
-				break;
-		}
-		if(itemInUse->id->affector[i] == STAT_HEALTH && itemInUse->id->pSpell[i] < PSPELL_SEEKER)
-			ent->health = ent->client->ps.stats[STAT_HEALTH];
-	}
+	BG_ConsumeItem(ent, itemNum);
 }
 
 /*
@@ -1881,18 +1664,11 @@ void JKG_Cmd_ShowInv_f(gentity_t *ent)
 	Q_strncpyz (buffer, "Inventory ID | Item Num | Instance Name                       | Weight\n", sizeof (buffer));
 	Q_strcat (buffer, sizeof (buffer), "-------------+----------+-----------------------------------------------+--------\n");
 
-	for ( i = 0; i < ent->inventory->elements; i++ )
-	{
-	        
-		if(!ent->inventory->items[i].equipped)
-			Q_strcat (buffer, sizeof(buffer), va(S_COLOR_WHITE "%12i | %8i | %-45s | %i\n", i, ent->inventory->items[i].id->itemID, ent->inventory->items[i].id->displayName, ent->inventory->items[i].id->weight));
-			//Q_strcat (buffer, sizeof (buffer), va (S_COLOR_WHITE "%12i | %8i | %-45s | %i\n", i, ent->inventory[i].id->itemID, ent->inventory[i].id->displayName, ent->inventory[i].id->weight));
-		else
-			Q_strcat (buffer, sizeof(buffer), va(S_COLOR_YELLOW "%12i | %8i | %-45s | %i\n", i, ent->inventory->items[i].id->itemID, va ("%s (equipped)", ent->inventory->items[i].id->displayName), ent->inventory->items[i].id->weight));
-			//Q_strcat (buffer, sizeof (buffer), va (S_COLOR_YELLOW "%12i | %8i | %-45s | %i\n", i, ent->inventory[i].id->itemID, va ("%s (equipped)", ent->inventory[i].id->displayName), ent->inventory[i].id->weight));
+	for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
+		Q_strcat(buffer, sizeof(buffer), va(S_COLOR_WHITE "%12i | %8i | %-45s | %i\n", i, it->id->itemID, it->id->displayName, it->quantity));
 	}
 	
-	Q_strcat (buffer, sizeof (buffer), va( "%i total items, %i weight left.", i, MAX_INVENTORY_WEIGHT - ent->client->coreStats.weight));
+	Q_strcat (buffer, sizeof (buffer), va( "%i total items", i));
 	
 	trap->SendServerCommand (ent->s.number, va ("print \"%s\n\"", buffer));
 }
@@ -1956,67 +1732,27 @@ void JKG_Cmd_DestroyItem_f(gentity_t *ent)
 
 	if(JKG_CheckIfNumber(arg) == JKGSTR_DECIMAL)
 	{
-		//if(!ent->inventory[atoi(arg)].id || atoi(arg) < 0)
-		if(!ent->inventory->items[atoi(arg)].id || atoi(arg) < 0)
+		int inventoryID = atoi(arg);
+		if (inventoryID >= ent->inventory->size() || inventoryID < 0)
 		{
 			trap->SendServerCommand(ent->client->ps.clientNum, "print \"^1Invalid inventory ID.\n\"");
 			return;
 		}
-		//destroyedItem = ent->inventory[atoi(arg)];
-		destroyedItem = ent->inventory->items[atoi(arg)];
-		inventoryID = atoi(arg);
-		if(inventoryID < 0 || inventoryID >= ent->inventory->elements)
-		{
-			//No way.
-			trap->SendServerCommand(ent->s.number, "print \"You cannot destroy/sell an item on an index that is out of bounds.\n\"");
-			return;
-		}
-		JKG_Easy_RemoveItemFromInventory(atoi(arg), (itemInstance_t **)ent->inventory, ent, qfalse);
+		BG_RemoveItemStack(ent, inventoryID);
 	}
 	else
 	{
-		/*for(i = 0; i < MAX_INVENTORY_ITEMS; i++)
-		{
-			if(ent->inventory[i].id)
-			{
-				if(!Q_stricmp(ent->inventory[i].id->internalName, ConcatArgs(1)))
-				{
-					destroyedItem = ent->inventory[i];
-					inventoryID = i;
-					JKG_Easy_RemoveItemFromInventory(i, (itemInstance_t **)ent->inventory);
-					break;
-				}
+		for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
+			if (!it->id) {
+				continue;
 			}
-			else
-			{
-				trap->SendServerCommand(ent->client->ps.clientNum, va("print \"^1Could not find item with internal %s\n\"", ConcatArgs(1)));
+			if (!Q_stricmp(it->id->internalName, arg)) {
+				BG_RemoveItemStack(ent, it - ent->inventory->begin());
 				return;
 			}
-		}*/
-		for(i = 0; i < ent->inventory->elements; i++)
-		{
-			if(ent->inventory->items[i].id)
-			{
-				if(!Q_stricmp(ent->inventory->items[i].id->internalName, ConcatArgs(1)))
-				{
-					destroyedItem = ent->inventory->items[i];
-					inventoryID = i;
-					JKG_Easy_RemoveItemFromInventory(i, (itemInstance_t **)ent->inventory->items, ent, qfalse);
-					break;
-				}
-				else
-					continue;
-			}
 		}
-		if(!destroyedItem.id)
-		{
-			trap->SendServerCommand(ent->client->ps.clientNum, va("print \"^1Could not find item with internal %s\n\"", ConcatArgs(1)));
-			return;
-		}
-
+		trap->SendServerCommand(ent - g_entities, va("print \"^1Could not find item with internal %s\n\"", ConcatArgs(1)));
 	}
-	/*trap->SendServerCommand(ent->client->ps.clientNum, va("print \"^2DEBUG: %s (internal %s, invID %i) destroyed.\n\"", destroyedItem.id->displayName,
-		destroyedItem.id->internalName, inventoryID));*/
 }
 
 void JKG_Cmd_SellItem_f(gentity_t *ent)
@@ -2029,75 +1765,48 @@ void JKG_Cmd_SellItem_f(gentity_t *ent)
 		trap->SendServerCommand(ent->client->ps.clientNum, "print \"Syntax: /inventorySell <inventory ID or internal>\n\"");
 		return;
 	}
+
+	int nInvID = -1;
 	if(JKG_CheckIfNumber(arg) == JKGSTR_DECIMAL)
 	{
-		int numbah = atoi(arg);
-		if(numbah >= ent->inventory->elements)
-		{
-			return;
-		}
-		if(!ent->inventory->items[numbah].id)
-		{
-			return;
-		}
-		// DO NOT ALLOW SELLING OF STARTER WEAPONS! (unless you already have another gun in your inventory)
-		if(ent->inventory->items[numbah].id->itemType == ITEM_WEAPON)
-		{
-			if(!Q_stricmp(GetWeaponData(ent->inventory->items[numbah].id->weapon, ent->inventory->items[numbah].id->variation)->displayName,
-				level.startingWeapon))
-			{
-				if(ent->inventory->elements < 2)
-				{
-					trap->SendServerCommand(ent->client->ps.clientNum, "print \"You cannot sell your starter gun unless you have another item in your inventory.\n\"");
-					return;
-				}
-				ent->inventory->items[numbah].id->baseCost = 2;	// hackery. Starting weapon sells for 1 credit.
-			}
-		}
-		ent->client->ps.credits += (ent->inventory->items[numbah].id->baseCost)/2;
-		JKG_Cmd_DestroyItem_f(ent);
+		nInvID = atoi(arg);
 	}
 	else
 	{
-		int i, inventoryID;
-		itemInstance_t destroyedItem = {0};
-		for(i = 0; i < ent->inventory->elements; i++)
-		{
-			if(ent->inventory->items[i].id)
-			{
-				if(!Q_stricmp(ent->inventory->items[i].id->internalName, ConcatArgs(1)))
-				{
-					destroyedItem = ent->inventory->items[i];
-					inventoryID = i;
-
-					// DO NOT ALLOW DESTROYING OF STARTER ITEMS!
-					if(ent->inventory->items[i].id->itemType == ITEM_WEAPON)
-					{
-						if(!Q_stricmp(GetWeaponData(ent->inventory->items[i].id->weapon, ent->inventory->items[i].id->variation)->displayName,
-							level.startingWeapon))
-						{
-							if(ent->inventory->elements < 2)
-							{
-								trap->SendServerCommand(ent->client->ps.clientNum, "print \"You cannot sell your starter gun unless you have another item in your inventory.\n\"");
-								return;
-							}
-						}
-					}
-
-					ent->client->ps.credits += (ent->inventory->items[i].id->baseCost/2);
-					JKG_Easy_RemoveItemFromInventory(i, (itemInstance_t **)ent->inventory->items, ent, qfalse);
-					break;
-				}
-				else
-					continue;
+		for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
+			if (!it->id) {
+				continue;
+			}
+			if (!Q_stricmp(it->id->internalName, arg)) {
+				nInvID = it - ent->inventory->begin();
+				break;
 			}
 		}
-		if(!destroyedItem.id)
-		{
-			trap->SendServerCommand(ent->client->ps.clientNum, va("print \"^1Could not find item with internal %s\n\"", ConcatArgs(1)));
-			return;
+	}
+
+	if (nInvID >= ent->inventory->size() || nInvID < 0) {
+		return;
+	}
+
+	auto item = (*ent->inventory)[nInvID];
+	int creditAmount = item.id->baseCost;
+	if (!item.id) {
+		return;
+	}
+	// DO NOT ALLOW SELLING OF STARTER WEAPONS! (unless you already have another gun in your inventory)
+	if (item.id->itemType == ITEM_WEAPON) {
+		if (!Q_stricmp(item.id->internalName, level.startingWeapon)) {
+			if (ent->inventory->size() < 2) {
+				trap->SendServerCommand(ent - g_entities, "print \"You cannot sell your starter gun unless you have another item in your inventory.\n\"");
+				return;
+			}
+			else {
+				creditAmount = 2;
+			}
 		}
 	}
+	ent->client->ps.credits += creditAmount / 2;
+	BG_RemoveItemStack(ent, nInvID);
 	trap->SendServerCommand(ent->s.number, va("inventory_update %i", ent->client->ps.credits));
 }
 /*
@@ -3853,7 +3562,39 @@ void Cmd_Reload_f( gentity_t *ent ) {
 	ent->client->ps.shotsRemaining = 0;
 }
 
-
+/*
+=================
+Cmd_TcEval_f
+=================
+*/
+void Cmd_TcEval_f(gentity_t *ent, bool bMulti = false) {
+	// usage: tcEval <tc> <samples>
+	if (trap->Argc() != 3 && !bMulti) {
+		trap->SendServerCommand(ent - g_entities, "print \"usage: tcEval <tc> <samples>\n\"");
+		return;
+	}
+	else if (trap->Argc() != 3 && bMulti) {
+		trap->SendServerCommand(ent - g_entities, "print \"usage: tcEvalMulti <tc> <samples>\n\"");
+		return;
+	}
+	char buffer[MAX_TOKEN_CHARS];
+	int nSamples = 0;
+	trap->Argv(2, buffer, sizeof(buffer));
+	nSamples = atoi(buffer);
+	trap->Argv(1, buffer, sizeof(buffer));
+	if (nSamples <= 0) {
+		return;
+	}
+	Q_strlwr(buffer);
+	std::string sSearch = buffer;
+	auto tc = umTreasureClasses.find(sSearch);
+	if (tc == umTreasureClasses.end()) {
+		trap->SendServerCommand(ent - g_entities, "print \"could not find treasure class.\n\"");
+		return;
+	}
+	TreasureClass* pTC = tc->second;
+	pTC->PrintDropRates(ent, nSamples, bMulti);
+}
 
 /*
 =================
@@ -4724,7 +4465,6 @@ ClientCommand
 
 #include "jkg_threading.h"
 
-extern lootTable_t lootLookupTable[MAX_LOOT_TABLE_SIZE];
 void ClientCommand( int clientNum ) {
 	gentity_t *ent;
 	char	cmd[MAX_TOKEN_CHARS];
@@ -4749,9 +4489,6 @@ void ClientCommand( int clientNum ) {
 	if (level.clients[clientNum].pers.connected != CON_CONNECTED)
 		return;
 
-	// Check for admin commands
-	if (JKG_Admin_Execute(cmd, ent)) return;
-
 	// Check for Glua bound commands
 	if (GLua_Command(clientNum, cmd)) return;
 
@@ -4760,22 +4497,6 @@ void ClientCommand( int clientNum ) {
 
 	if (!Q_stricmp( cmd, "taskreport" )) {
 		JKG_PrintTasksTable( clientNum );
-		return;
-	}
-
-	/*if (!Q_stricmp (cmd, "fieldlight")) {
-		if (ent->playerState->eFlags & EF_FIELDLIGHT) {
-			ent->playerState->eFlags &= ~EF_FIELDLIGHT;
-			trap->SendServerCommand( clientNum, "print \"Fieldlight disabled\n\"" );
-		} else {
-			ent->playerState->eFlags |= EF_FIELDLIGHT;
-			trap->SendServerCommand( clientNum, "print \"Fieldlight enabled\n\"" );
-		}
-		return;
-	}*/
-
-	if (!Q_stricmp(cmd, "reload")) {
-		Cmd_Reload_f(ent);
 		return;
 	}
 
@@ -4838,6 +4559,11 @@ void ClientCommand( int clientNum ) {
 		return;
 	}
 
+	if (!Q_stricmp(cmd, "resendInv")) {
+		BG_SendItemPacket(IPT_RESET, ent, nullptr, ent->inventory->size(), 0);
+		return;
+	}
+
 	if (Q_stricmp(cmd, "voice_cmd") == 0)
 	{
 		Cmd_VoiceCommand_f(ent);
@@ -4859,13 +4585,20 @@ void ClientCommand( int clientNum ) {
 		return;
 	}
 
-	//eezstreet add
 	if(Q_stricmp(cmd, "itemLookup") == 0) {
 		JKG_ItemLookup_f(ent);
 		return;
 	}
 	if(Q_stricmp(cmd, "itemCheck") == 0) {
 		JKG_ItemCheck_f(ent);
+		return;
+	}
+	if (Q_stricmp(cmd, "tcEval") == 0) {
+		Cmd_TcEval_f(ent);
+		return;
+	}
+	if (Q_stricmp(cmd, "tcEvalMulti") == 0) {
+		Cmd_TcEval_f(ent, true);
 		return;
 	}
 
@@ -5151,12 +4884,6 @@ void ClientCommand( int clientNum ) {
 		trap->Print("----------------------------------------------\n");
 	}
 #endif //__AUTOWAYPOINT__ // __DOMINANCE_NPC__
-	/*
-	else if (Q_stricmp (cmd, "kylesmash") == 0)
-	{
-		TryGrapple(ent);
-	}
-	*/
 	//for convenient powerduel testing in release
 	else if (Q_stricmp(cmd, "killother") == 0 && CheatsOk( ent ))
 	{
@@ -5919,7 +5646,7 @@ void ClientCommand( int clientNum ) {
 
 		trap->Argv(1, str, sizeof(str));
 
-		if (!str || !str[0])
+		if (!str[0])
 		{
 			trap->Print("Format: /warzone_changeflagteam <flag #> <team name>\n");
 			WARZONE_ShowInfo();
