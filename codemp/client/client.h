@@ -351,7 +351,15 @@ typedef struct console_s {
 								// for transparent notify lines
 	vec4_t	color;
 
-
+	// oox - cleaned this struct up a bit, i left futzas code behind 
+	// incase he needs it, feel free to remove all comments 
+	// but we can now compile on vs2013 and linux 
+	struct TextColors
+	{
+		vec4_t color[CON_TEXTSIZE];
+		bool isRGB[CON_TEXTSIZE];
+	}textColorStart;
+	/*
 	//jkg RGB color console fix --futuza
 	//note, not yet implemented - ignored for now
 	struct TextColors 
@@ -367,7 +375,7 @@ typedef struct console_s {
 		//int total = 0;
 
 	}textColorStart;
-
+	*/
 
 } console_t;
 
