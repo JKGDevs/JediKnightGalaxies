@@ -159,57 +159,6 @@ void SCR_DrawSmallChar( int x, int y, int ch ) {
 					   cls.charSetShader );
 }
 
-// FIXME
-#define Q_IsRGBColorString( p ) ( p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && (*((p)+1) == 'x' || *((p)+1) == 'X' ) && Text_IsExtColorCode(p) )
-
-//Jedi Knight Galaxies - extended ^xRGB color code functions  --futuza
-
-//returns a -1 if invalid, otherwise returns float color similar to how g_color_table() works
-static float ExtColor_GetLevel(char chr) 
-{
-	if (chr >= '0' && chr <= '9') 
-	{
-		return ((float)(chr - '0') / 15.0f);
-	}
-	if (chr >= 'A' && chr <= 'F') 
-	{
-		return ((float)(chr - 'A' + 10) / 15.0f);
-	}
-	if (chr >= 'a' && chr <= 'f') 
-	{
-		return ((float)(chr - 'a' + 10) / 15.0f);
-	}
-	return -1;
-}
-
-//return 0 if invalid RGB color, otherwise return a 1 and modify color to contain appropriate colors
-static int Text_ExtColorCodes(const char *text, vec4_t color) 
-{
-	const char *r, *g, *b;
-	float red, green, blue;
-	r = text + 1;
-	g = text + 2;
-	b = text + 3;
-	// Get the color levels (if the numbers are invalid, it'll return -1, which we can use to validate)
-	red = ExtColor_GetLevel(*r);
-	green = ExtColor_GetLevel(*g);
-	blue = ExtColor_GetLevel(*b);
-	// Determine if all 3 are valid - if value less than 0
-	if (red < 0 || green < 0 || blue < 0) {
-		return 0;
-	}
-
-	// We're clear to go, lets construct our color
-	color[0] = red;
-	color[1] = green;
-	color[2] = blue;
-	color[3] = 1.0f;
-	return 1;
-}
-
-// end
-
-
 /*
 ==================
 SCR_DrawBigString[Color]
@@ -232,13 +181,9 @@ void SCR_DrawStringExt( int x, int y, float size, const char *string, float *set
 	s = string;
 	xx = x;
 	while ( *s ) {
-		if ( !noColorEscape && Q_IsColorString( s ) ) {
-			s += 2;
-			continue;
-		}
-		// CHECKME
-		if ( !noColorEscape && Q_IsRGBColorString( s ) ) {
-			s += 5;
+		int colorLen = Q_parseColorString( s, nullptr );
+		if ( !noColorEscape && colorLen ) {
+			s += colorLen;
 			continue;
 		}
 		SCR_DrawChar( xx+2, y+2, size, *s );
@@ -252,29 +197,14 @@ void SCR_DrawStringExt( int x, int y, float size, const char *string, float *set
 	xx = x;
 	re->SetColor( setColor );
 	while ( *s ) {
-		if ( Q_IsColorString( s ) ) {
+		int colorLen = Q_parseColorString( s, color );
+		if ( colorLen ) {
 			if ( !forceColor ) {
-				Com_Memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
 				color[3] = setColor[3];
 				re->SetColor( color );
 			}
 			if ( !noColorEscape ) {
-				s += 2;
-				continue;
-			}
-		}
-		// FIXME
-		if( Q_IsRGBColorString( s ) ) {
-			if ( !forceColor ) {
-				//if not valid, process like normal text
-				if( Text_ExtColorCodes(s, color) )
-				{
-					color[3] = setColor[3];
-					re->SetColor( color );
-				}
-			}
-			if ( !noColorEscape ) {
-				s += 5;
+				s += colorLen;
 				continue;
 			}
 		}
@@ -319,29 +249,14 @@ void SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, 
 	xx = x;
 	re->SetColor( setColor );
 	while ( *s ) {
-		if ( Q_IsColorString( s ) ) {
+		int colorLen = Q_parseColorString( s, color );
+		if ( colorLen ) {
 			if ( !forceColor ) {
-				Com_Memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
 				color[3] = setColor[3];
 				re->SetColor( color );
 			}
 			if ( !noColorEscape ) {
-				s += 2;
-				continue;
-			}
-		}
-		// FIXME
-		if( Q_IsRGBColorString( s ) ) {
-			if ( !forceColor ) {
-				//if not valid, process like normal text
-				if( Text_ExtColorCodes(s, color) )
-				{
-					color[3] = setColor[3];
-					re->SetColor( color );
-				}
-			}
-			if ( !noColorEscape ) {
-				s += 5;
+				s += colorLen;
 				continue;
 			}
 		}
@@ -362,15 +277,13 @@ static int SCR_Strlen( const char *str ) {
 	int count = 0;
 
 	while ( *s ) {
-		if ( Q_IsColorString( s ) ) {
-			s += 2;
-		} else if ( Q_IsRGBColorString( s ) ) {
-			s += 5;
+		int colorLen = Q_parseColorString( s, nullptr );
+		if( colorLen ) {
+			s += colorLen;
 			continue;
-		} else {
-			count++;
-			s++;
 		}
+		count++;
+		s++;
 	}
 
 	return count;

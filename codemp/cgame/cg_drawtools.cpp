@@ -256,19 +256,10 @@ void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 			xx = x;
 			yy = y;
 			while ( *s ) {
-				if(*s == '^')
-				{
-					//Don't include color codes
-					if(*(s+1) >= '0' && *(s+1) <= '9')
-					{
-						s+=2;
-						continue;
-					}
-					else if (*(s + 1) == 'x' && Text_IsExtColorCode((s + 1)) || *(s + 1) == 'X' && Text_IsExtColorCode((s + 1)))		//--futuza: fixing to include 'X'
-					{
-						s+=5;
-						continue;
-					}
+				int colorLen = Q_parseColorString( s, nullptr );
+				if ( colorLen ) {
+					s += colorLen;
+					continue;
 				}
 				else if(*s == '\n')
 				{
@@ -290,6 +281,7 @@ void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 		yy = y;
 		trap->R_SetColor( setColor );
 		while ( *s ) {
+			int colorLen = Q_parseColorString( s, color );
 			if(*s == '\n')
 			{	//Handle newlines
 				yy += charHeight;
@@ -297,50 +289,14 @@ void CG_DrawStringExt( int x, int y, const char *string, const float *setColor,
 				s++;
 				continue;
 			}
-			else if(*s == '^')
-			{	//Handle color codes
-				if(*(s+1) >= '0' && *(s+1) <= '9')
-				{
-					if(!forceColor)
-					{
-						memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
-						color[3] = setColor[3];
-						trap->R_SetColor( color );
-					}
-					s+= 2;
-					continue;
+			else if ( colorLen )
+			{
+				if ( !forceColor ) {
+					color[3] = setColor[3];
+					trap->R_SetColor( color );
 				}
-				else if(*(s+1) == 'x' || *(s+1) == 'X')		//--futuza: fixing to include 'X'
-				{
-					if(strlen(s) > 5)
-					{
-						if(!forceColor)
-						{
-							int i;
-							for(i=0; i<3; i++)
-							{
-								if((s+2+i))
-								{
-									char letter = *(s+2+i);
-									if(*(s+2+i) >= '0' && *(s+2+i) <= '9')
-									{
-										color[i] = (atof(va("%c", letter))/16.0f);
-									}
-									else if((*(s+2+i) >= 'A' && *(s+2+i) <= 'F') || (*(s+2+i) >= 'a' && *(s+2+i) <= 'f'))
-									{
-										char *endPtr = NULL;
-										long value = strtol(va("0x%c", letter), &endPtr, 16);
-										color[i] = (float)value/16.0f;
-									}
-								}
-							}
-							color[3] = setColor[3];
-							trap->R_SetColor( color );
-						}
-						s += 5;
-						continue;
-					}
-				}
+				s += colorLen;
+				continue;
 			}
 			CG_DrawChar( xx + 2, yy, charWidth, charHeight, *s, textShader );
 			xx += charWidth-1;
@@ -386,8 +342,9 @@ int CG_DrawStrlen( const char *str ) {
 	int count = 0;
 
 	while ( *s ) {
-		if ( Q_IsColorString( s ) ) {
-			s += 2;
+		int colorLen = Q_parseColorString( s, nullptr );
+		if ( colorLen ) {
+			s += colorLen;
 		} else {
 			count++;
 			s++;

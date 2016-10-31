@@ -1355,55 +1355,77 @@ CFontInfo *GetFont(int index)
 	return pFont;
 }
 
-//Jedi Knight Galaxies - extended ^xRGB color code functions  --futuza
+float RE_Font_StrLenPixelsNew( const char *psText, const int iFontHandle, const float fScale ) {
+	CFontInfo *curfont = GetFont(iFontHandle);
+	if ( !curfont ) {
+		return 0.0f;
+	}
 
-//returns a -1 if invalid, otherwise returns float color similar to how g_color_table() works
-float ExtColor_GetLevel(char chr) 
-{
-	if (chr >= '0' && chr <= '9') 
+	float fScaleAsian = fScale;
+	if (Language_IsAsian() && fScale > 0.7f )
 	{
-		return ((float)(chr - '0') / 15.0f);
+		fScaleAsian = fScale * 0.75f;
 	}
-	if (chr >= 'A' && chr <= 'F') 
-	{
-		return ((float)(chr - 'A' + 10) / 15.0f);
+
+	float maxLineWidth = 0.0f;
+	float thisLineWidth = 0.0f;
+	while ( *psText ) {
+		int iAdvanceCount, backupcount;
+		unsigned int uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
+		backupcount = iAdvanceCount;
+		psText += iAdvanceCount;
+
+		if ( uiLetter == '^' ) {
+			psText -= backupcount; //that is necessary because Q_parseColorString works with strings that start with ^
+			int colorLen = Q_parseColorString( psText, nullptr );
+			if ( colorLen ) {
+				// Technically this loop is unnecessary since these characters are all ASCII but...
+				for( int i = 0; i < colorLen; i++ )
+				{
+					uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
+					psText += iAdvanceCount;
+				}
+				psText += backupcount;
+				continue;
+			}
+			else
+				psText += backupcount; // addd it back anyway
+		}
+
+		if ( uiLetter == '\n' ) {
+			thisLineWidth = 0.0f;
+		}
+		else {
+			float iPixelAdvance = (float)curfont->GetLetterHorizAdvance( uiLetter );
+
+			float fValue = iPixelAdvance * ((uiLetter > (unsigned)g_iNonScaledCharRange) ? fScaleAsian : fScale);
+
+			/*if ( r_aspectCorrectFonts->integer == 1 ) {
+				fValue *= ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth));
+			}
+			else if ( r_aspectCorrectFonts->integer == 2 ) {
+				fValue = ceilf(
+					fValue * ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth))
+				);
+			}*/
+			thisLineWidth += curfont->mbRoundCalcs
+				? roundf( fValue )
+				: /*(r_aspectCorrectFonts->integer == 2)
+					? ceilf( fValue )
+					:*/ fValue;
+			if ( thisLineWidth > maxLineWidth ) {
+				maxLineWidth = thisLineWidth;
+			}
+		}
 	}
-	if (chr >= 'a' && chr <= 'f') 
-	{
-		return ((float)(chr - 'a' + 10) / 15.0f);
-	}
-	return -1;
+	return maxLineWidth;
 }
-
-//return 0 if invalid RGB color, otherwise return a 1 and modify color to contain appropriate colors
-int Text_ExtColorCodes(const char *text, vec4_t color) 
-{
-	const char *r, *g, *b;
-	float red, green, blue;
-	r = text + 1;
-	g = text + 2;
-	b = text + 3;
-	// Get the color levels (if the numbers are invalid, it'll return -1, which we can use to validate)
-	red = ExtColor_GetLevel(*r);
-	green = ExtColor_GetLevel(*g);
-	blue = ExtColor_GetLevel(*b);
-	// Determine if all 3 are valid - if value less than 0
-	if (red < 0 || green < 0 || blue < 0) {
-		return 0;
-	}
-
-	// We're clear to go, lets construct our color
-	color[0] = red;
-	color[1] = green;
-	color[2] = blue;
-	color[3] = 1.0f;
-	return 1;
-}
-
-// end
 
 int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float fScale)
 {
+	// using ceil because we need to make sure that all the text is contained within the integer pixel width we're returning
+	return (int)ceilf( RE_Font_StrLenPixelsNew( psText, iFontHandle, fScale ) );
+#if 0
 	float		fMaxWidth = 0.0f;
 	float		fThisWidth = 0.0f;
 	CFontInfo	*curfont;
@@ -1435,22 +1457,6 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 				psText += iAdvanceCount;
 				continue;
 			}
-			else if (*psText == 'x' || *psText == 'X')
-			{
-				//stuff
-				const char *r = psText + 1, *g = psText + 2, *b = psText + 3;
-				if (ExtColor_GetLevel(*r) == -1 || ExtColor_GetLevel(*g) == -1 || ExtColor_GetLevel(*b) == -1)	//if one is invalid don't advance past ^xRGB text
-					;	//do nothing
-
-				else
-				{
-					uiLetter = AnyLanguage_ReadCharFromString(psText, &iAdvanceCount, NULL);
-					psText += iAdvanceCount;	//not sure if I need to advance more here...?  --futuza
-					continue;
-					//psText +=4;	
-				}
-			}
-
 		}
 
 		if (uiLetter == 0x0A)
@@ -1472,6 +1478,7 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 
 	// using ceil because we need to make sure that all the text is contained within the integer pixel width we're returning
 	return (int)ceilf(fMaxWidth);
+#endif
 }
 
 // not really a font function, but keeps naming consistant...
@@ -1486,35 +1493,27 @@ int RE_Font_StrLenChars(const char *psText)
 	{
 		// in other words, colour codes and CR/LF don't count as chars, all else does...
 		//
-		int iAdvanceCount;
+		int iAdvanceCount, backupcount;
 		unsigned int uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
+		backupcount = iAdvanceCount;
 		psText += iAdvanceCount;
 
 		switch (uiLetter)
 		{
 			case '^':
-				if (*psText >= '0' &&
-					*psText <= '9')
-				{
-					psText++;
-				}
-
-				//--futuza: extended xRGB color codes
-				else if (*psText == 'x' || *psText == 'X')	
-				{
-					//safety check
-					const char *r = psText + 1, *g = psText + 2, *b = psText + 3;
-					if (ExtColor_GetLevel(*r) == -1 || ExtColor_GetLevel(*g) == -1 || ExtColor_GetLevel(*b) == -1)	//if one is invalid don't advance past ^xRGB text and just count it as a normal char
-						iCharCount++;
-
-					else
-					psText += 4;	//advance past ^xRGB
+			{
+				psText -= backupcount; //that is necessary because Q_parseColorString works with strings that start with ^
+				int colorLen = Q_parseColorString( psText, nullptr );
+				if ( colorLen ) {
+					psText += colorLen;
 				}
 				else
 				{
 					iCharCount++;
 				}
+				psText += backupcount;
 				break;	// colour code (note next-char skip)
+			}
 			case 10:								break;	// linefeed
 			case 13:								break;	// return
 			case '_':	iCharCount += (GetLanguageEnum() == eThai && (((unsigned char *)psText)[0] >= TIS_GLYPHS_START))?0:1; break;	// special word-break hack
@@ -1642,8 +1641,9 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	qboolean bNextTextWouldOverflow = qfalse;
 	while (*psText && !bNextTextWouldOverflow)
 	{
-		int iAdvanceCount;
+		int iAdvanceCount, backupcount;
 		unsigned int uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
+		backupcount = iAdvanceCount;
 		psText += iAdvanceCount;
 
 		switch( uiLetter )
@@ -1672,40 +1672,18 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		case '^':
 			if (uiLetter != '_')	// necessary because of fallthrough above
 			{
-				if (*psText >= '0' &&
-					*psText <= '9')
-				{
-					colour = ColorIndex(*psText++);
-					if (!gbInShadow)
-					{
-						vec4_t color;
-						Com_Memcpy( color, g_color_table[colour], sizeof( color ) );
+				psText -= backupcount; //that is necessary because Q_parseColorString works with strings that start with ^
+				vec4_t color;
+				int colorLen = Q_parseColorString( psText, color );
+				if ( colorLen ) {
+					psText += colorLen;
+					if ( !gbInShadow ) {
 						color[3] = rgba ? rgba[3] : 1.0f;
 						RE_SetColor( color );
 					}
 					break;
 				}
-				
-				//--futuza:  extended color code format: ^xRGB - where each RGB char is a hexadecimal value 0-f
-				else if(*psText == 'x' || *psText == 'X')
-				{
-					vec4_t color;	//holds our color values
-					VectorCopy4(rgba, color);
-					if( Text_ExtColorCodes(psText, color) )	//if not valid, process like normal text
-					{
-						//backdrop shadow
-						if (!gbInShadow)
-						{
-							vec4_t tempColor;
-							Com_Memcpy(tempColor, color, sizeof(tempColor));
-							tempColor[3] = rgba ? rgba[3] : 1.0f;
-							RE_SetColor(tempColor);
-						}
-						psText += 4;	//move pointer to after ^xRGB
-						break;
-					}
-				}
-
+				psText += backupcount;
 			}
 			//purposely falls thrugh
 		default:

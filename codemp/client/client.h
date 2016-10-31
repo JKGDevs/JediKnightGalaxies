@@ -331,7 +331,7 @@ typedef struct clientStatic_s {
 typedef struct console_s {
 	qboolean	initialized;
 
-	short	text[CON_TEXTSIZE];
+	int32_t	text[CON_TEXTSIZE];
 	int		current;		// line where next message will be printed
 	int		x;				// offset in current line for next print
 	int		display;		// bottom of console displays this line
@@ -350,6 +350,7 @@ typedef struct console_s {
 	int		times[NUM_CON_TIMES];	// cls.realtime time the line was generated
 								// for transparent notify lines
 	vec4_t	color;
+<<<<<<< HEAD
 
 	// oox - cleaned this struct up a bit, i left futzas code behind 
 	// incase he needs it, feel free to remove all comments 
@@ -377,6 +378,8 @@ typedef struct console_s {
 	}textColorStart;
 	*/
 
+=======
+>>>>>>> refs/remotes/JKGDevs/master
 } console_t;
 
 extern	clientStatic_t		cls;

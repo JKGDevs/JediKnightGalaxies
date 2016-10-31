@@ -78,6 +78,8 @@ void ChatBox_SetPaletteAlpha(float alpha) {
 }
 
 float Text_GetWidth(const char *text, int iFontIndex, float scale) {
+	return trap->R_Font_StrLenPixels(text, iFontIndex, scale);
+#if 0
 	// Fixed algorithm to get text length accurately
 	char s[2];
 	const char *t = (char *)text;
@@ -103,145 +105,7 @@ float Text_GetWidth(const char *text, int iFontIndex, float scale) {
 		t++;
 	}
 	return w;
-}
-
-static vec4_t tColorTable[10] = {
-	{0, 0, 0, 1}, // ^0
-	{1, 0, 0, 1}, // ^1
-	{0, 1, 0, 1}, // ^2
-	{1, 1, 0, 1}, // ^3
-	{0, 0, 1, 1}, // ^4
-	{0, 1, 1, 1}, // ^5
-	{1, 0, 1, 1}, // ^6
-	{1, 1, 1, 1}, // ^7
-	{0, 0, 0, 1}, // ^8
-	{1, 0, 0, 1}  // ^9
-};
-
-static float ExtColor_GetLevel(char chr) {
-	if (chr >= '0' && chr <= '9') {
-		return ( (float)(chr-'0') / 15.0f );
-	}
-	if (chr >= 'A' && chr <= 'F') {
-		return ( (float)(chr-'A'+10) / 15.0f );
-	}
-	if (chr >= 'a' && chr <= 'f') {
-		return ( (float)(chr-'a'+10) / 15.0f );
-	}
-	return -1;
-}
-
-static int Text_ExtColorCodes(const char *text, vec4_t color) {
-	const char *r, *g, *b;
-	float red, green, blue;
-	r = text+1;
-	g = text+2;
-	b = text+3;
-	// Get the color levels (if the numbers are invalid, it'll return -1, which we can use to validate)
-	red = ExtColor_GetLevel(*r);
-	green = ExtColor_GetLevel(*g);
-	blue = ExtColor_GetLevel(*b);
-	// Determine if all 3 are valid
-	if (red == -1 || green == -1 || blue == -1) {
-		return 0;
-	}
-
-	// We're clear to go, lets construct our color
-
-	color[0] = red;
-	color[1] = green;
-	color[2] = blue;
-
-	// HACK: Since cgame will use a palette override to implement dynamic opacity (like the chatbox)
-	// we must ensure we use that alpha as well.
-	// So copy the alpha of colorcode 0 (^0) instead of assuming 1.0
-
-	//color[3] =*(float *)(0x56DF54 /*0x56DF48 + 12*/);
-	color[3] = 1.0f;
-	return 1;
-}
-
-// This function converts a text with extended color codes (^xRGB) into a text with normal color codes
-// The extended colors will be clamped so the closest normal color available
-// Used to display text with extended colorcodes in the console
-const char *Text_ConvertExtToNormal(const char *text) {
-	static char buff[2048];
-	const char *r;		// Reader
-	char *w;			// Writer
-	char *cutoff;
-	vec4_t color;
-	int hicolors;
-	int i;
-	r = text;
-	w = buff;
-	cutoff = &buff[2046];
-	while (*r) {
-		if (w >= cutoff) {
-			// Time to stop, we reached the limit
-			*w = 0;
-			return &buff[0];
-		}
-		if (*r == '^' && *(r + 1) == 'x' || *r == '^' && *(r + 1) == 'X') {
-			if (Text_ExtColorCodes(r+1, color)) {
-				// Extended colorcode alright, determine which base color is closest to this one
-				*w = *r;	// write the ^
-				w++;
-				r+=5;
-
-				// Determine how many of the R G and B components are over 50%
-				hicolors = 0;
-				for (i=0; i<3; i++) {
-					if (color[i] >= 0.5f) {
-						hicolors++;
-					}
-				}
-				switch (hicolors) {
-					case 0:
-						// Color is black
-						*w = '0';
-						break;
-					case 1:
-						// It's a primary color, find out which
-						if (color[0] >= 0.5f) {
-							// It's red
-							*w = '1';
-						} else if (color[1] >= 0.5f) {
-							// It's green
-							*w = '2';
-						} else {
-							// Must be blue
-							*w = '4';
-						}
-						break;
-					case 2:
-						// It's a secondary color, find out which
-						if (color[0] >= 0.5f && color[1] >= 0.5f) {
-							// It's yellow
-							*w = '3';
-						} else if (color[1] >= 0.5f && color[2] >= 0.5f) {
-							// It's cyan
-							*w = '5';
-						} else {
-							// Must be purple
-							*w = '6';
-						}
-						break;
-					case 3:
-						// Color is white
-						*w = '7';
-						break;
-					default:
-						assert(0);	// Never happens, telling the compiler so
-				}
-				w++;
-				continue;
-			}
-		}
-		*w = *r;
-		r++; w++;
-	}
-	*w = *r;	// Write the null terminator
-	return &buff[0];
+#endif
 }
 
 //todo: move all xrgb color related functions to ui_shared.cpp/h since all ui functions should be able to use it other than just chatbox
@@ -280,7 +144,16 @@ const char *ChatBox_PrintableText(int iFontIndex, float scale) {
 	s[1] = 0;
 
 	while (*t) {
-		if (*t == '^' && *(t + 1)) {
+		int colorLen = Q_parseColorString( t, nullptr );
+		if ( colorLen ) {
+			for( int i = 0; i < colorLen; i++ )
+			{
+				*u = *t;
+				u++; t++;
+			}
+			continue;
+		}
+/*		if (*t == '^' && *(t + 1)) {
 			if (*(t+1) >= '0' && *(t+1) <= '9') {
 				*u = *t;
 				u++; t++;
@@ -296,7 +169,7 @@ const char *ChatBox_PrintableText(int iFontIndex, float scale) {
 				}
 				continue;
 			}
-		}
+		}*/
 		s[0] = *t;
 
 		w += ((float)trap->R_Font_StrLenPixels(s, iFontIndex, 1) * scale);
@@ -464,14 +337,22 @@ void ChatBox_HandleKey(int key, qboolean down) {
 	else if ( key == A_CURSOR_RIGHT || key == A_KP_6 ) 
 	{
 		if (cb_data.cursor < cb_data.len) {
-			if (cb_data.buff[cb_data.cursor+1] == '^' && (cb_data.buff[cb_data.cursor+2] >= '0' && cb_data.buff[cb_data.cursor+2] <= '9')) {
+			int colorLen = Q_parseColorString( &cb_data.buff[cb_data.cursor+1], nullptr );
+			if( colorLen )
+			{
+				cb_data.cursor += (colorLen + 1);
+			}
+			else
+				cb_data.cursor++;
+
+			/*if (cb_data.buff[cb_data.cursor+1] == '^' && (cb_data.buff[cb_data.cursor+2] >= '0' && cb_data.buff[cb_data.cursor+2] <= '9')) {
 				cb_data.cursor += 3;
 			}
 			else if (cb_data.buff[cb_data.cursor + 1] == '^' && ( (cb_data.buff[cb_data.cursor + 2] == 'x' && Text_IsExtColorCode(&cb_data.buff[cb_data.cursor + 2])) ||  (cb_data.buff[cb_data.cursor + 2] == 'X' && Text_IsExtColorCode(&cb_data.buff[cb_data.cursor + 2]))) ) {
 				cb_data.cursor += 6;
 			} else {
 				cb_data.cursor++;
-			}
+			}*/
 			ChatBox_UpdateScroll();
 		} 
 		return;
@@ -479,7 +360,16 @@ void ChatBox_HandleKey(int key, qboolean down) {
 	else if ( key == A_CURSOR_LEFT || key == A_KP_4 ) 
 	{
 		if ( cb_data.cursor > 1 ) {
-			if (cb_data.buff[cb_data.cursor-2] == '^' && (cb_data.buff[cb_data.cursor-1] >= '0' && cb_data.buff[cb_data.cursor-1] <= '9')) {
+			int colorLen = Q_parseColorString( &cb_data.buff[cb_data.cursor-2], nullptr );
+			if( colorLen )
+			{
+				cb_data.cursor -= (colorLen + 1);
+			}
+			else
+				cb_data.cursor++;
+			
+			
+			/*if (cb_data.buff[cb_data.cursor-2] == '^' && (cb_data.buff[cb_data.cursor-1] >= '0' && cb_data.buff[cb_data.cursor-1] <= '9')) {
 				// Jump over the color code
 				cb_data.cursor -= 3;
 			}
@@ -488,7 +378,7 @@ void ChatBox_HandleKey(int key, qboolean down) {
 				cb_data.cursor -= 6;
 			} else {
 				cb_data.cursor--;
-			}
+			}*/
 		} else if (cb_data.cursor > 0) {
 			cb_data.cursor--;
 		}

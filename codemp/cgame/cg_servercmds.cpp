@@ -1398,7 +1398,6 @@ void Cin_ProcessCinematicBinary_f();
 void Cmd_CBB_f(void);
 void CinBuild_Cmd_f();
 void ChatBox_CloseChat();
-const char *Text_ConvertExtToNormal(const char *text);
 extern void JKG_OpenShopMenu_f ( void );
 extern int shopItems[128];
 extern int numShopItems;
@@ -1792,7 +1791,7 @@ static void CG_ServerCommand( void ) {
 			Q_strncpyz( text, CG_Argv(2), sizeof (text) );
 			CG_RemoveChatEscapeChar( text );
 			CG_ChatBox_AddString(text, atoi(CG_Argv(1)));
-			trap->Print( "*%s\n", Text_ConvertExtToNormal(text) );
+			trap->Print( "*%s\n", text );
 		}
 		return;
 	}
@@ -1802,7 +1801,7 @@ static void CG_ServerCommand( void ) {
 		Q_strncpyz( text, CG_Argv(2), MAX_SAY_TEXT );
 		CG_RemoveChatEscapeChar( text );
 		CG_ChatBox_AddString(text, atoi(CG_Argv(1)));
-		trap->Print( "*%s\n", Text_ConvertExtToNormal(text) );
+		trap->Print( "*%s\n", text );
 
 		return;
 	}
@@ -1836,7 +1835,7 @@ static void CG_ServerCommand( void ) {
 			Com_sprintf(text, MAX_SAY_TEXT, "%s<%s>^%s%s", name, loc, color, message);
 			CG_RemoveChatEscapeChar( text );
 			CG_ChatBox_AddString(text, fadeLevel);
-			trap->Print( "*%s\n", Text_ConvertExtToNormal(text) );
+			trap->Print( "*%s\n", text );
 		}
 		return;
 	}
@@ -1867,7 +1866,7 @@ static void CG_ServerCommand( void ) {
 		Com_sprintf(text, MAX_SAY_TEXT, "%s<%s> ^%s%s", name, loc, color, message);
 		CG_RemoveChatEscapeChar( text );
 		CG_ChatBox_AddString(text, fadeLevel);
-		trap->Print( "*%s\n", Text_ConvertExtToNormal(text) );
+		trap->Print( "*%s\n", text );
 
 		return;
 	}

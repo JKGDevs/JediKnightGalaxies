@@ -792,6 +792,8 @@ extern vec4_t g_color_table[Q_COLOR_BITS+1];
 #define	MAKERGB( v, r, g, b ) v[0]=r;v[1]=g;v[2]=b
 #define	MAKERGBA( v, r, g, b, a ) v[0]=r;v[1]=g;v[2]=b;v[3]=a
 
+int Q_parseColorString( const char *p, float *color );
+
 struct cplane_s;
 
 extern	vec3_t		vec3_origin;
@@ -2468,14 +2470,7 @@ void JKG_ClearGenericMemoryObject(GenericMemoryObject *gmo);
 void JKG_GenericMemoryObject_AddElement(GenericMemoryObject *gmo, void *element);
 void JKG_GenericMemoryObject_DeleteElement(GenericMemoryObject *gmo, unsigned int number);
 void Q_RGBCopy( vec4_t *output, vec4_t source );
-qboolean ExtColor_IsValid(char chr);			//check if ^xRGB valid, returns -1 if not valid
-//static float ExtColor_GetLevel(char chr);			//get color values for ^xRGB
-void Q_StripColor_Simple(char *text);				//simplifying strip mining operations
-char *JKG_xRBG_ConvertExtToNormal(const char *text);	//for converting ^xRGB names to regular ^1names return nonconst
-void Global_SanitizeString_MaxQPath(char *in, char *out);
-void Global_SanitizeString(char *in, char *out, int limit);
 void getGalacticTimeStamp(char* outStr);	//Gets current time    to use : char myarray[17]; getBuildTimeStamp(myarray); 
-qboolean Text_IsExtColorCode(const char *text);
 qboolean StringContainsWord(const char *haystack, const char *needle);
 qboolean Q_stratt( char *dest, unsigned int iSize, char *source );
 

@@ -1155,6 +1155,69 @@ const char *Q_stristr( const char *s, const char *find ) {
 	return s;
 }
 
+static QINLINE float HexColor_GetLevel(char chr) 
+{
+	if (chr >= '0' && chr <= '9') {
+		return ((float)(chr - '0') / 15.0f);
+	}
+	if (chr >= 'A' && chr <= 'F') {
+		return ((float)(chr - 'A' + 10) / 15.0f);
+	}
+	if (chr >= 'a' && chr <= 'f') {
+		return ((float)(chr - 'a' + 10) / 15.0f);
+	}
+	return -1;
+}
+
+int Q_parseColor( const char *p, float *color ) {
+	char c = *p++;
+	if ( c >= '0' && c <= '9' )
+	{
+		if (!color)
+			return 1;
+		memcpy( color, g_color_table[ColorIndex((int)c)], sizeof( vec3_t ) );
+		return 1;
+	}
+	else if ( strlen(p) >= 3 && (c == 'x' || c == 'X') )
+	{
+		float red = HexColor_GetLevel(*p);
+		float green = HexColor_GetLevel(*(p+1));
+		float blue = HexColor_GetLevel(*(p+2));
+		if( red == -1 || green == -1 || blue == -1 )
+			return -1;
+		if (!color)
+			return 4;
+		color[0] = red;
+		color[1] = green;
+		color[2] = blue;
+		return 4;
+		/*int i;
+		for ( i = 0; i < 3; i++ )
+		{
+			float tmp = HexColor_GetLevel(*(p+i));
+			if( tmp < 0 )
+				return -1;
+			if(!color)
+				continue;
+			color[i] = tmp;
+		}
+		return 4;*/
+	}
+	return -1;
+}
+
+// @returns color string length
+// @color - pass in vec3 or vec4 or nullptr
+int Q_parseColorString( const char *p, float *color ) {
+	char c;
+	if ( !p )
+		return 0;
+	c = *p;
+	if (!c || c != Q_COLOR_ESCAPE || ( c == Q_COLOR_ESCAPE && !p[1] ) )
+		return 0;
+	return 1 + Q_parseColor( p+1, color );
+}
+
 int Q_PrintStrlen( const char *string ) {
 	int			len;
 	const char	*p;
@@ -1166,8 +1229,9 @@ int Q_PrintStrlen( const char *string ) {
 	len = 0;
 	p = string;
 	while( *p ) {
-		if( Q_IsColorString( p ) ) {
-			p += 2;
+		int colorLen = Q_parseColorString( p, NULL );
+		if( colorLen ) {
+			p += colorLen;
 			continue;
 		}
 		p++;
@@ -1176,7 +1240,6 @@ int Q_PrintStrlen( const char *string ) {
 
 	return len;
 }
-
 
 /* This function modifies INPUT (is mutable) */
 char *Q_CleanStr( char *string ) {
@@ -1187,23 +1250,10 @@ char *Q_CleanStr( char *string ) {
 	s = string;
 	d = string;
 	while ((c = *s) != 0 ) {
-		// eezstreet fix: deal with non standard color codes as well..
-		/*if( s[0] == '^' && s[1] == 'x' &&
-			((s[2] >= '0' && s[2] <= '9') ||
-			(s[2] >= 'a' && s[2] <= 'f') ||
-			(s[2] >= 'A' && s[2] <= 'F')) &&
-			((s[3] >= '0' && s[3] <= '9') ||
-			(s[3] >= 'a' && s[3] <= 'f') ||
-			(s[3] >= 'A' && s[3] <= 'F')) &&
-			((s[4] >= '0' && s[4] <= '9') ||
-			(s[4] >= 'a' && s[4] <= 'f') ||
-			(s[4] >= 'A' && s[4] <= 'F')) )*/
-		if (*s == '^' && (s[1] == 'X' || s[1] == 'x') && (ExtColor_IsValid(s[2]) && ExtColor_IsValid(s[3]) && ExtColor_IsValid(s[4])) )	//--futuza this is cleaner and better, cuz we can use either x/X
-		{
-			s+=4;
-		}
-		else if ( Q_IsColorString( s ) ) {
-			s++;
+		int colorLen = Q_parseColorString( s, NULL );
+		if ( colorLen ) {
+			s += colorLen;
+			continue;
 		}
 		else if ( c >= 0x20 && c <= 0x7E ) {
 			*d++ = c;
@@ -1225,13 +1275,11 @@ Strips coloured strings in-place using multiple passes: "fgs^^56fds" -> "fgs^6fd
 This function modifies INPUT (is mutable)
 
 (Also strips ^8 and ^9)
-
-//--Futuza todo: simplify this whole damn function
 ==================
 */
+//#define SIMPLE_STRIP_COLOR
 void Q_StripColor(char *text)
 {
-	/*
 	qboolean doPass = qtrue;
 	char *read;
 	char *write;
@@ -1242,18 +1290,12 @@ void Q_StripColor(char *text)
 		read = write = text;
 		while ( *read )
 		{
-			if ( Q_IsColorStringExt(read) )		//if (*read == '^' && *read + 1 >= '0' && *read + 1 <= '9')	//--futuza: explaining the damn function, because it is fracking unreadable
+			int colorLen = Q_parseColorString( read, NULL );
+			if( colorLen )
 			{
 				doPass = qtrue;
-				read += 2;
+				read += colorLen;
 			}
-
-			if (*read == '^' && (read[1] == 'X' || read[1] == 'x') && (ExtColor_IsValid(read[2]) && ExtColor_IsValid(read[3]) && ExtColor_IsValid(read[4])))	//if ^xRGB (and a valid one)
-			{
-				doPass = qtrue;
-				read += 5;
-			}
-
 			else
 			{
 				// Avoid writing the same data over itself
@@ -1270,37 +1312,40 @@ void Q_StripColor(char *text)
 			// Add trailing NUL byte if string has shortened
 			*write = '\0';
 		}
-	}*/
-	Q_StripColor_Simple(text);	//just use simple version, original version is idiotic
+	}
 }
 
-//simplified Q_StripColor - courtesy of eezstreet
+// Same as above just doesn't use multiple passes
 void Q_StripColor_Simple(char *text)
 {
-	int nOffset = 0;
+	char *read;
+	char *write;
 
-	while (*text)	//while not null
+	read = write = text;
+	while ( *read )
 	{
-		if (*text == '^')	//if we encounter color code
+		int colorLen = Q_parseColorString( read, NULL );
+		if( colorLen )
 		{
-			if (text[1] == 'x' || text[1] == 'X')	//xRGB color codes
-			{
-				if ( ExtColor_IsValid(text[2]) && ExtColor_IsValid(text[3]) && ExtColor_IsValid(text[4]) ) //valid color?
-					nOffset += 5;
-			}
-			else if ( isdigit(text[1]) )	//number color codes	--futuza: possibly unsafe to use isdigit? if so change to check 0-9 range instead
-			{
-				nOffset += 2;
-			}
+			read += colorLen;
 		}
-		text[0] = text[nOffset];
-		nOffset++;
-		text++;
+		else
+		{
+			// Avoid writing the same data over itself
+			if (write != read)
+			{
+				*write = *read;
+			}
+			write++;
+			read++;
+		}
 	}
-
+	if ( write < read )
+	{
+		// Add trailing NUL byte if string has shortened
+		*write = '\0';
+	}
 }
-
-
 
 /*
 Q_strstrip
@@ -1688,7 +1733,6 @@ void Info_RemoveKey_Big( char *s, const char *key ) {
 		if (!*s)
 			return;
 	}
-
 }
 
 /*
@@ -1919,251 +1963,6 @@ void Q_RGBCopy( vec4_t *output, vec4_t source )
 	(*output)[0] = source[0];
 	(*output)[1] = source[1];
 	(*output)[2] = source[2];
-}
-
-qboolean Text_IsExtColorCode(const char *text) {
-	const char *r, *g, *b;
-	if ( strlen (text) < 4 )
-	{
-	    return qfalse;
-	}
-	
-	r = text+1;
-	g = text+2;
-	b = text+3;
-	// Get the color levels (if the numbers are invalid, it'll return -1, which we can use to validate)
-	if ((*r < '0' || *r > '9') && (*r < 'a' || *r > 'f') && (*r < 'A' || *r > 'F')) {
-		return qfalse;
-	}
-	if ((*g < '0' || *g > '9') && (*g < 'a' || *g > 'f') && (*g < 'A' || *g > 'F')) {
-		return qfalse;
-	}
-	if ((*b < '0' || *b > '9') && (*b < 'a' || *b > 'f') && (*b < 'A' || *b > 'F')) {
-		return qfalse;
-	}
-	return qtrue;
-}
-
-
-/*
-====================================================================
-//JKG Extended ^xRBG Color Codes adopted from jkg_chatbox.cpp
-====================================================================  
-So far only JKG_xRBG_ConvertExtToNormal() can be used.  Might add some more from jkg_chatbox.h later
-
-*/
-
-qboolean ExtColor_IsValid(char chr)
-{
-	if (chr >= '0' && chr <= '9')
-		return qtrue;
-
-	if (chr >= 'A' && chr <= 'F')
-		return qtrue;
-
-	if (chr >= 'a' && chr <= 'f')
-		return qtrue;
-
-	return qfalse;
-}
-
-static vec4_t tColorTable[10] = 
-{
-	{ 0, 0, 0, 1 }, // ^0
-	{ 1, 0, 0, 1 }, // ^1
-	{ 0, 1, 0, 1 }, // ^2
-	{ 1, 1, 0, 1 }, // ^3
-	{ 0, 0, 1, 1 }, // ^4
-	{ 0, 1, 1, 1 }, // ^5
-	{ 1, 0, 1, 1 }, // ^6
-	{ 1, 1, 1, 1 }, // ^7
-	{ 0, 0, 0, 1 }, // ^8
-	{ 1, 0, 0, 1 }  // ^9
-};
-
-static float ExtColor_GetLevel(char chr) 
-{
-	if (chr >= '0' && chr <= '9') {
-		return ((float)(chr - '0') / 15.0f);
-	}
-	if (chr >= 'A' && chr <= 'F') {
-		return ((float)(chr - 'A' + 10) / 15.0f);
-	}
-	if (chr >= 'a' && chr <= 'f') {
-		return ((float)(chr - 'a' + 10) / 15.0f);
-	}
-	return -1;
-}
-
-static int Text_ExtColorCodes(const char *text, vec4_t color) 
-{
-	const char *r, *g, *b;
-	float red, green, blue;
-	r = text + 1;
-	g = text + 2;
-	b = text + 3;
-	// Get the color levels (if the numbers are invalid, it'll return -1, which we can use to validate)
-	red = ExtColor_GetLevel(*r);
-	green = ExtColor_GetLevel(*g);
-	blue = ExtColor_GetLevel(*b);
-	// Determine if all 3 are valid
-	if (red == -1 || green == -1 || blue == -1) {
-		return 0;
-	}
-
-	// We're clear to go, lets construct our color
-
-	color[0] = red;
-	color[1] = green;
-	color[2] = blue;
-
-	// HACK: Since cgame will use a palette override to implement dynamic opacity (like the chatbox)
-	// we must ensure we use that alpha as well.
-	// So copy the alpha of colorcode 0 (^0) instead of assuming 1.0
-
-	//color[3] =*(float *)(0x56DF54 /*0x56DF48 + 12*/);
-	color[3] = 1.0f;
-	return 1;
-}
-
-// This function converts a text with extended color codes (^xRGB) into a text with normal color codes
-// The extended colors will be clamped so the closest normal color available
-// Used primarily to display text with extended colorcodes in the console
-
-//futuza note:  I accidentally wrote this wrong should be xRGB not RBG oh well too late to change now.
-char *JKG_xRBG_ConvertExtToNormal(const char *text)	//for converting ^xRBG names to regular ^1names, return a non-const
-{
-	static char buff[2048];
-	const char *r;		// Reader
-	char *w;			// Writer
-	char *cutoff;
-	vec4_t color;
-	int hicolors;
-	int i;
-	r = text;
-	w = buff;
-	cutoff = &buff[2046];
-	while (*r) {
-		if (w >= cutoff) {
-			// Time to stop, we reached the limit
-			*w = 0;
-			return &buff[0];
-		}
-		if (*r == '^' && (*(r + 1) == 'x' || *(r + 1) == 'X')) {
-			if (Text_ExtColorCodes(r + 1, color)) {
-				// Extended colorcode alright, determine which base color is closest to this one
-				*w = *r;	// write the ^
-				w++;
-				r += 5;
-
-				// Determine how many of the R G and B components are over 50%
-				hicolors = 0;
-				for (i = 0; i<3; i++) {
-					if (color[i] >= 0.5f) {
-						hicolors++;
-					}
-				}
-				switch (hicolors) {
-				case 0:
-					// Color is black
-					*w = '0';
-					break;
-				case 1:
-					// It's a primary color, find out which
-					if (color[0] >= 0.5f) {
-						// It's red
-						*w = '1';
-					}
-					else if (color[1] >= 0.5f) {
-						// It's green
-						*w = '2';
-					}
-					else {
-						// Must be blue
-						*w = '4';
-					}
-					break;
-				case 2:
-					// It's a secondary color, find out which
-					if (color[0] >= 0.5f && color[1] >= 0.5f) {
-						// It's yellow
-						*w = '3';
-					}
-					else if (color[1] >= 0.5f && color[2] >= 0.5f) {
-						// It's cyan
-						*w = '5';
-					}
-					else {
-						// Must be purple
-						*w = '6';
-					}
-					break;
-				case 3:
-					// Color is white
-					*w = '7';
-					break;
-				default:
-					assert(0);	// Never happens, telling the compiler so
-				}
-				w++;
-				continue;
-			}
-		}
-		*w = *r;
-		r++; w++;
-	}
-	*w = *r;	// Write the null terminator
-	return &buff[0];
-}
-
-//didn't provide a limit value okay?
-void Global_SanitizeString_MaxQPath(char *in, char *out)
-{
-	Global_SanitizeString(in, out, MAX_QPATH);
-}
-
-//--futuza: got sick of rewritting SanitizeString() functions, so here's a global one
-void Global_SanitizeString(char *in, char *out, int limit)		//note: users can optionally pass in a limit value, rather then using the default
-{
-	int i = 0;
-	int r = 0;
-
-	while (in[i])
-	{
-		if (i >= limit - 1)		//the ui truncates the name here...
-			break;
-
-		if (in[i] == '^')
-		{
-			if (in[i + 1] == 'x' || in[i + 1] == 'X')	//if ^xRGB
-			{
-				if (ExtColor_IsValid(in[i + 2]) && ExtColor_IsValid(in[i + 3]) && ExtColor_IsValid(in[i + 4]))	//if a valid color
-				{
-					i += 5;
-					continue;
-				}
-			}
-			else if (isdigit(in[i + 1]))	//if ^0-9
-			{
-				i += 2;
-				continue;
-			}
-			else	//treat ^'s without color codes like a normal char
-				;
-		}
-
-		if (in[i] < 32)		//if a control character?
-		{
-			i++;
-			continue;
-		}
-
-		out[r] = in[i];
-		r++;
-		i++;
-	}
-	out[r] = 0;
-
 }
 
 void getGalacticTimeStamp(char* outStr)	//to use : char myarray[17]; getBuildTimeStamp(myarray); 

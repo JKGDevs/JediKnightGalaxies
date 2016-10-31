@@ -123,6 +123,48 @@ qboolean StringIsInteger( const char *s ) {
 
 /*
 ==================
+ClientNumberFromString
+Returns a player number for either a number or name string
+Returns -1 if invalid
+==================
+*/
+int ClientNumberFromString( gentity_t *to, const char *s, qboolean allowconnecting ) {
+	gclient_t	*cl;
+	int			idnum;
+	char		cleanInput[MAX_NETNAME];
+
+	if ( StringIsInteger( s ) )
+	{// numeric values could be slot numbers
+		idnum = atoi( s );
+		if ( idnum >= 0 && idnum < level.maxclients )
+		{
+			cl = &level.clients[idnum];
+			if ( cl->pers.connected == CON_CONNECTED )
+				return idnum;
+			else if ( allowconnecting && cl->pers.connected == CON_CONNECTING )
+				return idnum;
+		}
+	}
+
+	Q_strncpyz( cleanInput, s, sizeof(cleanInput) );
+	Q_StripColor( cleanInput );
+
+	for ( idnum=0,cl=level.clients; idnum < level.maxclients; idnum++,cl++ )
+	{// check for a name match
+		if ( cl->pers.connected != CON_CONNECTED )
+			if ( !allowconnecting || cl->pers.connected < CON_CONNECTING )
+				continue;
+
+		if ( !Q_stricmp( cl->pers.netname_nocolor, cleanInput ) )
+			return idnum;
+	}
+
+	trap->SendServerCommand( to-g_entities, va( "print \"User %s is not on the server\n\"", s ) );
+	return -1;
+}
+
+/*
+==================
 DeathmatchScoreboardMessage
 
 ==================
@@ -519,77 +561,6 @@ JKGStringType_t JKG_CheckIfNumber(const char *string)
 	return JKGSTR_DECIMAL;
 }
 
-/*
-==================
-SanitizeString
-
-Remove case and control characters
-
-//futuza: todo replace this with Global_SanitizeString if possible, note this also removes case so we have to account for that
-==================
-*/
-void SanitizeString( char *in, char *out ) {
-	while ( *in ) {
-		if ( *in == 27 ) {
-			in += 2;		// skip color code
-			continue;
-		}
-		if ( *in < 32 ) {
-			in++;
-			continue;
-		}
-		*out++ = tolower( (unsigned char) *in++ );
-	}
-
-	*out = 0;
-}
-
-/*
-==================
-ClientNumberFromString
-
-Returns a player number for either a number or name string
-Returns -1 if invalid
-==================
-*/
-int ClientNumberFromString( gentity_t *to, char *s ) {
-	gclient_t	*cl;
-	int			idnum;
-	char		s2[MAX_STRING_CHARS];
-	char		n2[MAX_STRING_CHARS];
-
-	// numeric values are just slot numbers
-	if (s[0] >= '0' && s[0] <= '9') {
-		idnum = atoi( s );
-		if ( idnum < 0 || idnum >= level.maxclients ) {
-			trap->SendServerCommand( to-g_entities, va("print \"Bad client slot: %i\n\"", idnum));
-			return -1;
-		}
-
-		cl = &level.clients[idnum];
-		if ( cl->pers.connected != CON_CONNECTED ) {
-			trap->SendServerCommand( to-g_entities, va("print \"Client %i is not active\n\"", idnum));
-			return -1;
-		}
-		return idnum;
-	}
-
-	// check for a name match
-	SanitizeString( s, s2 );
-	for ( idnum=0,cl=level.clients ; idnum < level.maxclients ; idnum++,cl++ ) {
-		if ( cl->pers.connected != CON_CONNECTED ) {
-			continue;
-		}
-		SanitizeString( cl->pers.netname, n2 );
-		if ( !strcmp( n2, s2 ) ) {
-			return idnum;
-		}
-	}
-
-	trap->SendServerCommand( to-g_entities, va("print \"User %s is not on the server\n\"", s));
-	return -1;
-}
-
 int G_ClientNumberFromStrippedSubstring ( const char* name, qboolean checkAll );
 int G_ClientNumberFromArg ( const char* name)
 {
@@ -634,7 +605,7 @@ qboolean G_VoteFraglimit(gentity_t *ent, int numArgs, const char *arg1, const ch
 }
 
 qboolean G_VoteKick(gentity_t *ent, int numArgs, const char *arg1, const char *arg2) {
-	int clientid = ClientNumberFromString(ent, const_cast<char*>(arg2));
+	int clientid = ClientNumberFromString(ent, arg2, qtrue);
 	gentity_t *target = NULL;
 	if (clientid == -1)
 		return qfalse;
@@ -1190,13 +1161,8 @@ Let everyone know about a team change
 */
 void BroadcastTeamChange( gclient_t *client, int oldTeam )														
 {
-
 	client->ps.fd.forceDoInit = 1; //every time we change teams make sure our force powers are set right
-	
-	//BUG\FIXME: messages are getting cut off if names aren't a certain length when they mix ^1 and ^xRGB color codes, see github issue: https://github.com/JKGDevs/JediKnightGalaxies/issues/131#issuecomment-179015083
-	//lazy fix: convert to regular colors with JKG_xRBG_ConvertExtToNormal()
 
-	//--futuza notes:  ^xRGB fix applied from tr_font.cpp now supports extended colors
 	if ( client->sess.sessionTeam == TEAM_RED ) {
 		trap->SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
 			client->pers.netname, G_GetStringEdString2(bgGangWarsTeams[level.redTeam].joinstring)) );
@@ -2002,7 +1968,7 @@ void Cmd_Follow_f( gentity_t *ent ) {
 	}
 
 	trap->Argv( 1, arg, sizeof( arg ) );
-	i = ClientNumberFromString( ent, arg );
+	i = ClientNumberFromString( ent, arg, qfalse );
 	if ( i == -1 ) {
 		return;
 	}
@@ -2672,101 +2638,28 @@ void JKG_BindChatCommands( void )
 	CCmd_AddCommand("say_team", CCmd_Say_Team);
 }
 
-// JKG BIG FIXME: We need to get everything together and work on a general SanitizeString that works across the board. I swear we have like seven functions
-// devoted to simply stripping a string of color codes. It's getting a bit ridiculous now. --eez
-
 /*
 ==================
-SanitizeString2
-
-Rich's revised version of SanitizeString
-
---futuza: todo: use GlobalSanitizeString() in q_shared.c instead
+ClientNumberFromString
+Returns a player number for a name string
+Returns -1 if invalid
 ==================
 */
-void SanitizeString2( char *in, char *out )
-{
-	int i = 0;
-	int r = 0;
+int G_ClientNumberFromStrippedName( const char *name ) {
+	gclient_t	*cl;
+	int			idnum;
+	char		cleanInput[MAX_NETNAME];
 
-	while (in[i])
-	{
-		if (i >= MAX_NAME_LENGTH-1)
-		{ // the ui truncates the name here..
-			break;
-		}
+	Q_strncpyz( cleanInput, name, sizeof(cleanInput) );
+	Q_StripColor( cleanInput );
 
-		if (in[i] == '^')
-		{
-			if (in[i+1] >= 48 && //'0'
-				in[i+1] <= 57) //'9'
-			{ //only skip it if there's a number after it for the color
-				i += 2;
-				continue;
-			}
-			else if (in[i + 1] == 'x' || in[i + 1] == 'X')		//if an extended RGB color code
-			{
-
-				for (int l = 2; l < 7; l++)
-				{
-					if (in[i + l] == NULL)
-						;					//if we hit end of string do nothing
-					else
-						i++;
-				}
-				//i += 5;
-				continue;
-			}
-			else
-			{ // just skip the ^
-				i++;
-				continue;
-			}
-		}
-
-		if (in[i] < 32)
-		{
-			i++;
+	for ( idnum=0,cl=level.clients; idnum < level.maxclients; idnum++,cl++ )
+	{// check for a name match
+		if ( cl->pers.connected != CON_CONNECTED )
 			continue;
-		}
 
-		out[r] = in[i];
-		r++;
-		i++;
-	}
-	out[r] = 0;
-}
-
-/*
-====================
-G_ClientNumberFromStrippedName
-
-Same as above, but strips special characters out of the names before comparing.
-Jedi Knight Galaxies - Fixed the code to return the correct client ID
-====================
-*/
-
-int G_ClientNumberFromStrippedName ( const char* name )
-{
-	char		s2[MAX_STRING_CHARS];
-	char		n2[MAX_STRING_CHARS];
-	int			i;
-	gclient_t*	cl;
-
-	// check for a name match
-	//SanitizeString2( (char*)name, s2 );			//futuza: Global_SanitizeString
-	Global_SanitizeString((char*)name, s2, MAX_NAME_LENGTH);		//fixed
-	Q_strlwr(s2);
-	for ( i=0; i < level.numConnectedClients ; i++ ) 
-	{
-		cl = &level.clients[level.sortedClients[i]];
-		//SanitizeString2( cl->pers.netname, n2 );
-		Global_SanitizeString(cl->pers.netname, n2, MAX_NAME_LENGTH);
-		Q_strlwr(n2);
-		if ( !strcmp( n2, s2 ) ) 
-		{
-			return level.sortedClients[i];
-		}
+		if ( !Q_stricmp( cl->pers.netname_nocolor, cleanInput ) )
+			return idnum;
 	}
 
 	return -1;
@@ -2864,7 +2757,7 @@ void Cmd_GameCommand_f( gentity_t *ent ) {
 	}
 
 	trap->Argv( 1, arg, sizeof( arg ) );
-	targetNum = ClientNumberFromString( ent, arg );
+	targetNum = ClientNumberFromString( ent, arg, qfalse );
 	if ( targetNum == -1 )
 		return;
 
@@ -2939,36 +2832,33 @@ Checks substrings rather than the full string and returns -2 on multiple matches
 
 int G_ClientNumberFromStrippedSubstring ( const char* name, qboolean checkAll )
 {
-	char		s2[MAX_STRING_CHARS];
-	char		n2[MAX_STRING_CHARS];
-	int			i, match = -1;
 	gclient_t	*cl;
+	int			idnum, match = -1;
+	char		cleanInput[MAX_NETNAME];
 
-	// check for a name match
-	//SanitizeString2( (char*)name, s2 );			//futuza: Global_SanitizeString
-	Global_SanitizeString((char*)name, s2, MAX_NAME_LENGTH);
-	Q_strlwr(s2);
-	for ( i=0 ; i < level.numConnectedClients ; i++ ) 
-	{
-		cl = &level.clients[level.sortedClients[i]];
-		//SanitizeString2( cl->pers.netname, n2 );
-		Global_SanitizeString(cl->pers.netname, n2, MAX_NAME_LENGTH);
-		Q_strlwr(n2);
-		if ( strstr( n2, s2 ) ) 
+	Q_strncpyz( cleanInput, name, sizeof(cleanInput) );
+	Q_StripColor( cleanInput );
+
+	for ( idnum=0,cl=level.clients; idnum < level.maxclients; idnum++,cl++ )
+	{// check for a name match
+		if ( cl->pers.connected != CON_CONNECTED )
+			continue;
+
+		if ( Q_stristr( cl->pers.netname_nocolor, cleanInput ) )
 		{
 			if( match != -1 )
 			{ //found more than one match
 				return -2;
 			}
-			match = level.sortedClients[i];
-			if (!checkAll) {
-				// Don't continue checking
+			match = idnum;
+			if (!checkAll)
+			{ // Don't continue checking
 				return match;
 			}
 		}
 	}
 
-	return match;
+	return match; // Could this just be -1? I'm not sure...
 }
 
 /*

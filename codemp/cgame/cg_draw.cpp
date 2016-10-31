@@ -150,12 +150,8 @@ int MenuFontToHandle(int iMenuFont)
 int CG_Text_Width(const char *text, float scale, int iMenuFont) 
 {
 	int iFontIndex = MenuFontToHandle(iMenuFont);
-	// Remove colour codes before measuring as colour codes aren't drawn.
-	char buffer[MAX_STRING_CHARS];
-	Q_strncpyz (buffer, text, sizeof (buffer));
-	Q_CleanStr (buffer);
 
-	return trap->R_Font_StrLenPixels(buffer, iFontIndex, scale);
+	return trap->R_Font_StrLenPixels(text, iFontIndex, scale);
 }
 
 int CG_Text_Height(const char *text, float scale, int iMenuFont) 
@@ -2377,7 +2373,7 @@ static void CG_DrawTeamOverlay() {
 		if ( ci->infoValid && (( cgs.party.active && TeamFriendly( i )) || ( !cgs.party.active && ci->team == cg.snap->ps.persistant[PERS_TEAM] )))
 		{
 			plyrs++;
-			len = (float)trap->R_Font_StrLenPixels(Text_ConvertExtToNormal(ci->name), MenuFontToHandle(1), 1) *0.5f; //CG_DrawStrlen(ci->name);		//futuza note: deals with filling in the actual space and figuring out how wide to make it
+			len = (float)trap->R_Font_StrLenPixels(ci->name, MenuFontToHandle(1), 1) *0.5f; //CG_DrawStrlen(ci->name);		//futuza note: deals with filling in the actual space and figuring out how wide to make it
 			if (len > pwidth)
 				pwidth = len;
 		}
@@ -4586,59 +4582,6 @@ static void CG_ScanForCrosshairEntity( void ) {
 	cg.crosshairClientTime = cg.time;
 }
 
-//--futuza notice:  this function is depreciated use Global_SanitizeString() instead (you can pass it 128 for the limit for CG_draw functions)
-void CG_SanitizeString( char *in, char *out )
-{
-	int i = 0;
-	int r = 0;
-
-	while (in[i])
-	{
-		if (i >= 128-1)
-		{ //the ui truncates the name here..
-			break;
-		}
-
-		if (in[i] == '^')
-		{
-			if (in[i+1] >= 48 && //'0'
-				in[i+1] <= 57) //'9'
-			{ //only skip it if there's a number after it for the color
-				i += 2;
-				continue;
-			}
-			else if (in[i + 1] == 'x' || in[i + 1] == 'X')		//if an extended RGB color code  note: needs safety checking
-			{
-				for (int l = 2; l < 7; l++)
-				{
-					if (in[i + l] == NULL)
-						;					//if we hit end of string do nothing
-					else
-						i++;
-				}
-				//i += 5;
-				continue;
-			}
-			else
-			{ //just skip the ^
-				i++;
-				continue;
-			}
-		}
-
-		if (in[i] < 32)
-		{
-			i++;
-			continue;
-		}
-
-		out[r] = in[i];
-		r++;
-		i++;
-	}
-	out[r] = 0;
-}
-
 int			next_vischeck[MAX_GENTITIES];
 qboolean	currently_visible[MAX_GENTITIES];
 
@@ -4795,7 +4738,6 @@ void CG_DrawNPCNames( void )
 		float			size, x, y, x2, y2, dist;
 		vec4_t			tclr =	{ 0.325f,	0.325f,	1.0f,	1.0f	};
 		vec4_t			tclr2 = { 0.325f,	0.325f,	1.0f,	1.0f	};
-		char			sanitized1[1024], sanitized2[1024];
 		int				baseColor = CT_BLUE;
 		float			multiplier = 1.0f;
 
@@ -5441,10 +5383,8 @@ void CG_DrawNPCNames( void )
 
 		//CG_Printf("%i screen coords are %fx%f. (%f %f %f)\n", cent->currentState.number, x, y, origin[0], origin[1], origin[2]);
 
-		//CG_SanitizeString(str1, sanitized1);		//--futuza: depreciated
-		//CG_SanitizeString(str2, sanitized2);
-		Global_SanitizeString(str1, sanitized1, 128);
-		Global_SanitizeString(str2, sanitized2, 128);
+		Q_StripColor(str1);
+		Q_StripColor(str2);
 		
 		size = dist * 0.0002;
 		
@@ -5455,16 +5395,16 @@ void CG_DrawNPCNames( void )
 
 		size *= 0.3;
 
-		w = CG_Text_Width(sanitized1, size*2, FONT_SMALL);
-		y = y + CG_Text_Height(sanitized1, size*2, FONT_SMALL);
+		w = CG_Text_Width(str1, size*2, FONT_SMALL);
+		y = y + CG_Text_Height(str1, size*2, FONT_SMALL);
 		x -= (w * 0.5f);
 		
-		w2 = CG_Text_Width(sanitized2, size*1.5, FONT_SMALL3);
+		w2 = CG_Text_Width(str2, size*1.5, FONT_SMALL3);
 		x2 -= (w2 * 0.5f);
-		y2 = y + 6 + CG_Text_Height(sanitized1, size*2, FONT_SMALL);
+		y2 = y + 6 + CG_Text_Height(str1, size*2, FONT_SMALL);
 
-		CG_Text_Paint( x, (y*(1-size))+((30*(1-size))*(1-size))+sqrt(sqrt((1-size)*30))+((1-multiplier)*30), size*2, tclr, sanitized1, 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_SMALL);
-		CG_Text_Paint( x2, (y2*(1-size))+((30*(1-size))*(1-size))+sqrt(sqrt((1-size)*30))+((1-multiplier)*30), size*1.5, tclr2, sanitized2, 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_SMALL3);
+		CG_Text_Paint( x, (y*(1-size))+((30*(1-size))*(1-size))+sqrt(sqrt((1-size)*30))+((1-multiplier)*30), size*2, tclr, str1, 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_SMALL);
+		CG_Text_Paint( x2, (y2*(1-size))+((30*(1-size))*(1-size))+sqrt(sqrt((1-size)*30))+((1-multiplier)*30), size*1.5, tclr2, str2, 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_SMALL3);
 
 		//CG_Printf("Draw %s - %s as size %f.\n", sanitized1, sanitized2, size);
 	}
@@ -5479,7 +5419,6 @@ static void CG_DrawCrosshairNames( void ) {
 	float		*color;
 	vec4_t		tcolor;
 	char		*name;
-	char		sanitized[1024];
 	int			baseColor;
 	qboolean	isVeh = qfalse;
 
@@ -5563,7 +5502,7 @@ static void CG_DrawCrosshairNames( void ) {
 	}
 	else*/
 	{
-		name = cgs.clientinfo[ cg.crosshairClientNum ].name;
+		name = cgs.clientinfo[ cg.crosshairClientNum ].cleanname;
 	}
 
 	if (cgs.gametype >= GT_TEAM)
@@ -5623,17 +5562,15 @@ static void CG_DrawCrosshairNames( void ) {
 	tcolor[2] = colorTable[baseColor][2];
 	tcolor[3] = color[3]*0.5f;
 
-	//CG_SanitizeString(name, sanitized);												//--futuza note: depreciated
-	Global_SanitizeString(name, sanitized, 128);
 	if (isVeh)
 	{
 		char str[MAX_STRING_CHARS];
-		Com_sprintf(str, MAX_STRING_CHARS, "%s (pilot)", sanitized);
+		Com_sprintf(str, MAX_STRING_CHARS, "%s (pilot)", name);
 		UI_DrawProportionalString(320, 170, str, UI_CENTER, tcolor, FONT_MEDIUM);
 	}
 	else
 	{
-		UI_DrawProportionalString(320, 170, sanitized, UI_CENTER, tcolor, FONT_MEDIUM);
+		UI_DrawProportionalString(320, 170, name, UI_CENTER, tcolor, FONT_MEDIUM);
 	}
 
 	trap->R_SetColor( NULL );
@@ -6534,7 +6471,12 @@ void CG_ChatBox_AddString(char *chatStr, int fadeLevel)
 		chatLen = 0;
 		while (chat->string[i])
 		{
-			if (chat->string[i] == '^') {
+			int colorLen = Q_parseColorString(&(chat->string[i]), nullptr);
+			if (colorLen) {
+				i+=colorLen;
+				continue;
+			}
+			/*if (chat->string[i] == '^') {
 				// Dont include color codes in here :P
 				if (chat->string[i+1] >= '0' && chat->string[i+1] <= '9') {
 					i+=2;
@@ -6544,7 +6486,7 @@ void CG_ChatBox_AddString(char *chatStr, int fadeLevel)
 					i+=5;
 					continue;
 				}
-			}
+			}*/
 			*writeptr = chat->string[i];
 			//chatLen = ((float)trap->R_Font_StrLenPixels(buffer, cgDC.Assets.qhSmall4Font, 1) * 0.5f); //CG_Text_Width(s, 0.65f, FONT_SMALL);
 			//chatLen += trap->R_Font_StrLenPixels(s, cgDC.Assets.qhSmallFont, 0.4f); //CG_Text_Width(s, 0.65f, FONT_SMALL);

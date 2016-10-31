@@ -3810,6 +3810,8 @@ void Enter_EditField(itemDef_t *item)
 // JKG - TextField items are fully recoded to actually work good
 
 static float Text_GetWidth(const char *text, int iFontIndex, float scale) {
+	return trap->R_Font_StrLenPixels(text, iFontIndex, scale);
+	#if 0
 	// Fixed algorithm to get text length accurately
 	char s[2];
 	const char *t = (char *)text;
@@ -3835,65 +3837,19 @@ static float Text_GetWidth(const char *text, int iFontIndex, float scale) {
 		t++;
 	}
 	return w;
-}
-
-static vec4_t tColorTable[10] = {
-	{0, 0, 0, 1}, // 0
-	{1, 0, 0, 1}, // ^1
-	{0, 1, 0, 1}, // ^2
-	{1, 1, 0, 1}, // ^3
-	{0, 0, 1, 1}, // ^4
-	{0, 1, 1, 1}, // ^5
-	{1, 0, 1, 1}, // ^6
-	{1, 1, 1, 1}, // ^7
-	{0, 0, 0, 1}, // ^8
-	{1, 0, 0, 1}  // ^9
-};
-
-static float ExtColor_GetLevel(char chr) {
-	if (chr >= '0' && chr <= '9') {
-		return ( (float)(chr-'0') / 15.0f );
-	}
-	if (chr >= 'A' && chr <= 'F') {
-		return ( (float)(chr-'A'+10) / 15.0f );
-	}
-	if (chr >= 'a' && chr <= 'f') {
-		return ( (float)(chr-'a'+10) / 15.0f );
-	}
-	return -1;
-}
-
-static int Text_ExtColorCodes(const char *text, vec4_t color) {
-	const char *r, *g, *b;
-	float red, green, blue;
-	r = text+1;
-	g = text+2;
-	b = text+3;
-	// Get the color levels (if the numbers are invalid, it'll return -1, which we can use to validate)
-	red = ExtColor_GetLevel(*r);
-	green = ExtColor_GetLevel(*g);
-	blue = ExtColor_GetLevel(*b);
-	// Determine if all 3 are valid
-	if (red == -1 || green == -1 || blue == -1) {
-		return 0;
-	}
-
-	// We're clear to go, lets construct our color
-
-	color[0] = red;
-	color[1] = green;
-	color[2] = blue;
-
-	// HACK: Since cgame will use a palette override to implement dynamic opacity (like the chatbox)
-	// we must ensure we use that alpha as well.
-	// So copy the alpha of colorcode 0 (^0) instead of assuming 1.0
-
-	//color[3] =*(float *)(0x56DF54 /*0x56DF48 + 12*/);
-	color[3] = 1.0f;
-	return 1;
+	#endif
 }
 
 void Text_DrawText(int x, int y, const char *text, const float* rgba, int iFontIndex, const int limit, float scale) {
+	trap->R_Font_DrawString(	x,		// int ox
+								y,		// int oy
+								text,	// const char *text
+								rgba,	// paletteRGBA_c c
+								iFontIndex,	// const int iFontHandle
+								!limit?-1:limit,		// iCharLimit (-1 = none)
+								scale	// const float scale = 1.0f
+							);
+#if 0	
 	// Custom draw algo to ensure proper spacing in compliance with Text_GetWidth
 	char s[2];
 	const char *t = (char *)text;
@@ -3922,6 +3878,7 @@ void Text_DrawText(int x, int y, const char *text, const float* rgba, int iFontI
 		xx += ((float)trap->R_Font_StrLenPixels(s, iFontIndex & 0xFFFF, 1) * scale);
 		t++;
 	}
+#endif
 }
 
 static const char *Text_PrintableText(const char *buff, itemDef_t *item) {
@@ -3940,7 +3897,16 @@ static const char *Text_PrintableText(const char *buff, itemDef_t *item) {
 	s[1] = 0;
 
 	while (*t) {
-		if (*t == '^') {
+		int colorLen = Q_parseColorString( t, nullptr );
+		if ( colorLen ) {
+			for( int i = 0; i < colorLen; i++ )
+			{
+				*u = *t;
+				u++; t++;
+			}
+			continue;
+		}
+		/*if (*t == '^') {
 			if (*(t+1) >= '0' && *(t+1) <= '9') {
 				*u = *t;
 				u++; t++;
@@ -3957,7 +3923,7 @@ static const char *Text_PrintableText(const char *buff, itemDef_t *item) {
 				}
 				continue;
 			}
-		}
+		}*/
 		s[0] = *t;
 
 		w += (trap->R_Font_StrLenPixels(s, item->iMenuFont, 1) * item->textscale);
@@ -4179,14 +4145,21 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 				item->cursorPos++;
 			}*/
 			if (item->cursorPos < len) {
-				if (buff[item->cursorPos+1] == '^' && (buff[item->cursorPos+2] >= '0' && buff[item->cursorPos+2] <= '9')) {
+				int colorLen = Q_parseColorString( &buff[item->cursorPos+1], nullptr );
+				if( colorLen )
+				{
+					item->cursorPos += (colorLen + 1);
+				}
+				else
+					item->cursorPos++;
+				/*if (buff[item->cursorPos+1] == '^' && (buff[item->cursorPos+2] >= '0' && buff[item->cursorPos+2] <= '9')) {
 					item->cursorPos += 3;
 				}
 				else if (buff[item->cursorPos + 1] == '^' && (buff[item->cursorPos + 2] == 'x' || buff[item->cursorPos + 2] == 'X') && Text_IsExtColorCode(&buff[item->cursorPos + 2])) {
 					item->cursorPos += 6;
 				} else {
 					item->cursorPos++;
-				}
+				}*/
 				Item_TextField_UpdateScroll(item);
 			} 
 			return qtrue;
@@ -4201,7 +4174,14 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 				editPtr->paintOffset--;
 			}*/
 			if ( item->cursorPos > 1 ) {
-				if (buff[item->cursorPos-2] == '^' && (buff[item->cursorPos-1] >= '0' && buff[item->cursorPos-1] <= '9')) {
+				int colorLen = Q_parseColorString( &buff[item->cursorPos-2], nullptr );
+				if( colorLen )
+				{
+					item->cursorPos -= (colorLen + 1);
+				}
+				else
+					item->cursorPos++;
+				/*if (buff[item->cursorPos-2] == '^' && (buff[item->cursorPos-1] >= '0' && buff[item->cursorPos-1] <= '9')) {
 					// Jump over the color code
 					item->cursorPos -= 3;
 				}
@@ -4210,7 +4190,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 					item->cursorPos -= 6;
 				} else {
 					item->cursorPos--;
-				}
+				}*/
 			} else if (item->cursorPos > 0) {
 				item->cursorPos--;
 			}
