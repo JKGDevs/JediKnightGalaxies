@@ -79,33 +79,6 @@ void ChatBox_SetPaletteAlpha(float alpha) {
 
 float Text_GetWidth(const char *text, int iFontIndex, float scale) {
 	return trap->R_Font_StrLenPixels(text, iFontIndex, scale);
-#if 0
-	// Fixed algorithm to get text length accurately
-	char s[2];
-	const char *t = (char *)text;
-	float w = 0;
-
-	s[1] = 0;
-	
-	while (*t) {
-		if (*t == '^') {
-			if (*(t+1) >= '0' && *(t+1) <= '9') {
-				t+=2;
-				continue;
-			}
-			if (*(t+1) == 'x' || *(t+1) == 'X') {
-				if (Text_IsExtColorCode(t+1)) {
-					t+=5;
-					continue;
-				}
-			}
-		}
-		s[0] = *t;
-		w += ((float)trap->R_Font_StrLenPixels(s, iFontIndex, 1) * scale);
-		t++;
-	}
-	return w;
-#endif
 }
 
 //todo: move all xrgb color related functions to ui_shared.cpp/h since all ui functions should be able to use it other than just chatbox
@@ -153,23 +126,6 @@ const char *ChatBox_PrintableText(int iFontIndex, float scale) {
 			}
 			continue;
 		}
-/*		if (*t == '^' && *(t + 1)) {
-			if (*(t+1) >= '0' && *(t+1) <= '9') {
-				*u = *t;
-				u++; t++;
-				*u = *t;
-				u++; t++;
-				continue;
-			}
-			if (*(t + 1) == 'x' && Text_IsExtColorCode(t + 1) || *(t + 1) == 'X' && Text_IsExtColorCode(t + 1)) {
-				int i;
-				for (i=0; i<5; i++) {
-					*u = *t;
-					u++; t++;
-				}
-				continue;
-			}
-		}*/
 		s[0] = *t;
 
 		w += ((float)trap->R_Font_StrLenPixels(s, iFontIndex, 1) * scale);
@@ -345,14 +301,6 @@ void ChatBox_HandleKey(int key, qboolean down) {
 			else
 				cb_data.cursor++;
 
-			/*if (cb_data.buff[cb_data.cursor+1] == '^' && (cb_data.buff[cb_data.cursor+2] >= '0' && cb_data.buff[cb_data.cursor+2] <= '9')) {
-				cb_data.cursor += 3;
-			}
-			else if (cb_data.buff[cb_data.cursor + 1] == '^' && ( (cb_data.buff[cb_data.cursor + 2] == 'x' && Text_IsExtColorCode(&cb_data.buff[cb_data.cursor + 2])) ||  (cb_data.buff[cb_data.cursor + 2] == 'X' && Text_IsExtColorCode(&cb_data.buff[cb_data.cursor + 2]))) ) {
-				cb_data.cursor += 6;
-			} else {
-				cb_data.cursor++;
-			}*/
 			ChatBox_UpdateScroll();
 		} 
 		return;
@@ -367,18 +315,6 @@ void ChatBox_HandleKey(int key, qboolean down) {
 			}
 			else
 				cb_data.cursor++;
-			
-			
-			/*if (cb_data.buff[cb_data.cursor-2] == '^' && (cb_data.buff[cb_data.cursor-1] >= '0' && cb_data.buff[cb_data.cursor-1] <= '9')) {
-				// Jump over the color code
-				cb_data.cursor -= 3;
-			}
-			else if (cb_data.cursor > 4 && cb_data.buff[cb_data.cursor - 5] == '^' && ( (cb_data.buff[cb_data.cursor - 4] == 'x' && Text_IsExtColorCode(&cb_data.buff[cb_data.cursor - 4]) || (cb_data.buff[cb_data.cursor - 4] == 'X' && Text_IsExtColorCode(&cb_data.buff[cb_data.cursor - 4]) )))) {
-				// Jump over extended color code
-				cb_data.cursor -= 6;
-			} else {
-				cb_data.cursor--;
-			}*/
 		} else if (cb_data.cursor > 0) {
 			cb_data.cursor--;
 		}

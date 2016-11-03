@@ -562,12 +562,10 @@ JKGStringType_t JKG_CheckIfNumber(const char *string)
 }
 
 int G_ClientNumberFromStrippedSubstring ( const char* name, qboolean checkAll );
-int G_ClientNumberFromArg ( const char* name)
+int G_ClientNumberFromArg ( const char *name )
 {
 	int client_id = 0;
-	char *cp;
-	
-	cp = (char *)name;
+	const char *cp = name;
 	while (*cp)
 	{
 		if ( *cp >= '0' && *cp <= '9' ) cp++;
@@ -770,132 +768,70 @@ void Svcmd_ToggleAllowVote_f(void) {
 	}
 }
 
-/*
-==================
-Cmd_Give_f
-
-Give items to a client
-==================
-*/
-void Cmd_Give_f (gentity_t *cmdent, int baseArg)
+void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 {
-	char		name[MAX_TOKEN_CHARS];
-	gentity_t	*ent;
 	gitem_t		*it;
 	int			i;
-	qboolean	give_all;
-	gentity_t		*it_ent;
+	qboolean	give_all = qfalse;
+	gentity_t	*it_ent;
 	trace_t		trace;
-	char		arg[MAX_TOKEN_CHARS];
 
-	if ( !CheatsOk( cmdent ) ) {
-		return;
-	}
-
-	if (baseArg)
-	{
-		char otherindex[MAX_TOKEN_CHARS];
-
-		trap->Argv( 1, otherindex, sizeof( otherindex ) );
-
-		if (!otherindex[0])
-		{
-			Com_Printf("giveother requires that the second argument be a client index number.\n");
-			return;
-		}
-
-		i = atoi(otherindex);
-
-		if (i < 0 || i >= MAX_CLIENTS)
-		{
-			Com_Printf("%i is not a client index\n", i);
-			return;
-		}
-
-		ent = &g_entities[i];
-
-		if (!ent->inuse || !ent->client)
-		{
-			Com_Printf("%i is not an active client\n", i);
-			return;
-		}
-	}
-	else
-	{
-		ent = cmdent;
-	}
-
-	trap->Argv( 1+baseArg, name, sizeof( name ) );
-
-	if (Q_stricmp(name, "all") == 0)
+	if ( !Q_stricmp( name, "all" ) )
 		give_all = qtrue;
-	else
-		give_all = qfalse;
 
-	if (give_all)
+	if ( give_all || !Q_stricmp( name, "health" ) )
 	{
-		i = 0;
-		while (i < HI_NUM_HOLDABLE)
-		{
-			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << i);
-			i++;
-		}
-		i = 0;
-	}
-
-	// Pretty much to test out the awesome seeker upgrades.
-	if ( Q_stricmp( name, "seeker" ) == 0 )
-	{
-		char time[1024];
-		trap->Argv( 2 + baseArg, time, sizeof( time ));
-		ItemUse_Seeker( cmdent );
-		if ( time[0] ) cmdent->client->ps.droneExistTime = level.time + ( atoi( time ) * 1000 );
-		else cmdent->client->ps.droneExistTime = level.time + 60000;
-	}
-
-	if (give_all || Q_stricmp( name, "health") == 0)
-	{
-		if (trap->Argc() == 3+baseArg) {
-			trap->Argv( 2+baseArg, arg, sizeof( arg ) );
-			ent->health = atoi(arg);
-			if (ent->health > ent->client->ps.stats[STAT_MAX_HEALTH]) {
-				ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-			}
-		}
-		else {
+		if ( argc == 3 )
+			ent->health = Com_Clampi( 1, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
+		else
 			ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-		}
-		if (!give_all)
+
+		if ( !give_all )
 			return;
 	}
 
-	if (give_all || Q_stricmp(name, "weapons") == 0)
+	if ( give_all || !Q_stricmp( name, "armor" ) || !Q_stricmp( name, "shield" ) )
 	{
-		ent->client->ps.stats[STAT_WEAPONS] = (1 << (LAST_USEABLE_WEAPON+1))  - ( 1 << WP_NONE );
-		if (!give_all)
+		if ( argc == 3 )
+			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi( 0, ent->client->ps.stats[STAT_MAX_ARMOR], atoi( args ) );
+		else
+			ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_MAX_ARMOR];
+
+		if ( !give_all )
 			return;
 	}
-	
-	if ( !give_all && Q_stricmp(name, "weaponnum") == 0 )
+
+	/*if ( give_all || !Q_stricmp( name, "force" ) )
 	{
-		trap->Argv( 2+baseArg, arg, sizeof( arg ) );
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << atoi(arg));
+		if ( argc == 3 )
+			ent->client->ps.fd.forcePower = Com_Clampi( 0, ent->client->ps.fd.forcePowerMax, atoi( args ) );
+		else
+			ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax;
+
+		if ( !give_all )
+			return;
+	}*/
+
+	if ( give_all || !Q_stricmp( name, "weapons" ) )
+	{
+		ent->client->ps.stats[STAT_WEAPONS] = (1 << (LAST_USEABLE_WEAPON+1)) - ( 1 << WP_NONE );
+		if ( !give_all )
+			return;
+	}
+
+	if ( !give_all && !Q_stricmp( name, "weaponnum" ) )
+	{
+		ent->client->ps.stats[STAT_WEAPONS] |= (1 << atoi( args ));
 		return;
 	}
-	
-	if ( !give_all && Q_stricmp (name, "weapon") == 0 )
+
+	if ( !give_all && !Q_stricmp( name, "weapon" ) )
 	{
-	    weaponData_t *weapon;
-	    
-	    trap->Argv (2 + baseArg, arg, sizeof (arg));
-	    weapon = BG_GetWeaponByClassName (arg);
+	    const weaponData_t *weapon = BG_GetWeaponByClassName ( args );
 	    if ( weapon )
 	    {
-	        int i = 0;
-			int itemID;
-	        
 			//FIXME: The below assumes that there is a valid weapon item
-			itemID = BG_GetItemByWeaponIndex(BG_GetWeaponIndex((unsigned int)weapon->weaponBaseIndex, (unsigned int)weapon->weaponModIndex))->itemID;
+			int itemID = BG_GetItemByWeaponIndex(BG_GetWeaponIndex((unsigned int)weapon->weaponBaseIndex, (unsigned int)weapon->weaponModIndex))->itemID;
 
 			itemInstance_t item = BG_ItemInstance(itemID, 1);
 			BG_GiveItem(ent, item);
@@ -906,22 +842,19 @@ void Cmd_Give_f (gentity_t *cmdent, int baseArg)
 	    }
 	    else
 	    {
-	        trap->SendServerCommand (ent->s.number, va ("print \"'%s' does not exist.\n\"", arg));
+	        trap->SendServerCommand (ent->s.number, va ("print \"'%s' does not exist.\n\"", args));
 	    }
 	    return;
 	}
 
-	if (give_all || Q_stricmp(name, "ammo") == 0)
+	if ( give_all || !Q_stricmp( name, "ammo" ) )
 	{
 		int num = 999;
-		if (trap->Argc() == 3+baseArg) {
-			trap->Argv( 2+baseArg, arg, sizeof( arg ) );
-			num = atoi(arg);
-		}
-		for ( i = 0 ; i < JKG_MAX_AMMO_INDICES ; i++ ) {
+		if ( argc == 3 )
+			num = Com_Clampi( 0, 999, atoi( args ) );
+		for ( i=0; i<JKG_MAX_AMMO_INDICES; i++ )
 			ent->client->ammoTable[i] = num;		//FIXME: copy to proper ammo array
-		}
-		for ( i = 0; i <= 255; i++ )
+		for ( i=0; i<256; i++ )
 		{
 			int weapVar, weapBase;
 			if(!BG_GetWeaponByIndex(i, &weapBase, &weapVar))
@@ -931,32 +864,15 @@ void Cmd_Give_f (gentity_t *cmdent, int baseArg)
 			ent->client->clipammo[i] = GetWeaponAmmoClip (weapBase, weapVar);
 		}
 		ent->client->ps.ammo = num;
-		if (!give_all)
+		if ( !give_all )
 			return;
 	}
-
-	if (give_all || Q_stricmp(name, "armor") == 0)
-	{
-		if (trap->Argc() == 3+baseArg) {
-			trap->Argv( 2+baseArg, arg, sizeof( arg ) );
-			ent->client->ps.stats[STAT_ARMOR] = atoi(arg);
-		} else {
-			ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_MAX_ARMOR];
-		}
-
-		if (!give_all)
-			return;
-	}
-
+	
 	//Inventory items -- eezstreet/JKG
-	if(!give_all && Q_stricmp(name, "item") == 0)
+	if( !give_all && !Q_stricmp( name, "item" ) )
 	{
-		int itemID = 0, j = 0;
-		qboolean inventoryFull = qtrue;
-
-		trap->Argv(2+baseArg, arg, sizeof( arg ) );
-		itemID = atoi(arg);
-
+		//qboolean inventoryFull = qtrue;
+		int itemID = atoi( args );
 		if(itemID)
 		{
 			if(!itemLookupTable[itemID].itemID)
@@ -969,9 +885,9 @@ void Cmd_Give_f (gentity_t *cmdent, int baseArg)
 		}
 		else
 		{
-			itemInstance_t item = BG_ItemInstance(arg, 1);
+			itemInstance_t item = BG_ItemInstance(args, 1);
 			if (!item.id) {
-				trap->SendServerCommand(ent - g_entities, va("print \"%s refers to an item that does not exist\n\"", arg));
+				trap->SendServerCommand(ent - g_entities, va("print \"%s refers to an item that does not exist\n\"", args));
 				return;
 			}
 			BG_GiveItem(ent, item);
@@ -979,44 +895,112 @@ void Cmd_Give_f (gentity_t *cmdent, int baseArg)
 		return;
 	}
 
-	if (Q_stricmp(name, "credits") == 0 || Q_stricmp(name, "credit") == 0) {
-		int creditAmount;
-		trap->Argv(2+baseArg, arg, sizeof( arg ) );
-
-		creditAmount = atoi(arg);
-		ent->client->ps.credits += creditAmount;
-		int credits = ent->client->ps.credits;
-		trap->SendServerCommand( ent->client->ps.clientNum, va("print \"Your new balance is: %i credits\n\"", Q_max (0, credits)) );
-		return;
+	if ( give_all || !Q_stricmp( name, "credits" ) || !Q_stricmp( name, "credit" ) ) {
+		int num = 32000; // FIXME
+		// FIXME if we allow addition of large number to an already close to overflow...
+		if ( argc == 3 )
+			num = Com_Clampi( 0, INT_MAX-2, atoi( args ) ); // putting a minus 2 here for safety
+		ent->client->ps.credits = Com_Clampi( 0, INT_MAX-2, ent->client->ps.credits+num );
+		trap->SendServerCommand( ent->client->ps.clientNum, va("print \"Your new balance is: %i credits\n\"", ent->client->ps.credits ));
+		if ( !give_all )
+			return;
 	}
 
-	if ( give_all )
-	{
-		ent->client->ps.cloakFuel	= 100;
-		ent->client->ps.jetpackFuel	= 100;
-		ent->client->ps.credits = 32000; // FIXME
+	if ( give_all || !Q_stricmp( name, "cloak" ) || !Q_stricmp( name, "cloakFuel" ) ) {
+		int num = 100;
+		if ( argc == 3 )
+			num = Com_Clampi( 0, 100, atoi( args ) );
+		ent->client->ps.cloakFuel = num;
+		if ( !give_all )
+			return;
+	}
+
+	if ( give_all || !Q_stricmp( name, "jetpack" ) || !Q_stricmp( name, "jetpackFuel" ) ) {
+		int num = 100;
+		if ( argc == 3 )
+			num = Com_Clampi( 0, 100, atoi( args ) );
+		ent->client->ps.jetpackFuel = num;
+		if ( !give_all )
+			return;
 	}
 
 	// spawn a specific item right on the player
 	if ( !give_all ) {
-		it = BG_FindItem (name);
-		if (!it) {
+		it = BG_FindItem( name );
+		if ( !it )
 			return;
-		}
 
 		it_ent = G_Spawn();
 		VectorCopy( ent->r.currentOrigin, it_ent->s.origin );
 		it_ent->classname = it->classname;
-		G_SpawnItem (it_ent, it);
-			if ( !it_ent || !it_ent->inuse )
+		G_SpawnItem( it_ent, it );
+		if ( !it_ent || !it_ent->inuse )
 			return;
-		FinishSpawningItem(it_ent );
+		FinishSpawningItem( it_ent );
+		if ( !it_ent || !it_ent->inuse )
+			return;
 		memset( &trace, 0, sizeof( trace ) );
-		Touch_Item (it_ent, ent, &trace);
-		if (it_ent->inuse) {
+		Touch_Item( it_ent, ent, &trace );
+		if ( it_ent->inuse )
 			G_FreeEntity( it_ent );
-		}
 	}
+}
+
+void Cmd_Give_f( gentity_t *ent )
+{
+	char name[MAX_TOKEN_CHARS] = {0};
+
+	if ( !CheatsOk( ent ) ) {
+		return;
+	}
+
+	trap->Argv( 1, name, sizeof( name ) );
+	G_Give( ent, name, ConcatArgs( 2 ), trap->Argc() );
+}
+
+void Cmd_GiveOther_f( gentity_t *ent )
+{
+	char		name[MAX_TOKEN_CHARS] = {0};
+	int			i;
+	char		otherindex[MAX_TOKEN_CHARS];
+	gentity_t	*otherEnt = NULL;
+
+	/*if ( !CheatsOk( ent ) ) {
+		return;
+	}*/
+	// giveother doesn't care if the activator is dead or not
+	// so only check the intended target for life below
+	if ( !sv_cheats.integer && !ent->client->sess.canUseCheats ) {
+		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOCHEATS")));
+		return;
+	}
+
+	if ( trap->Argc () < 3 ) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: giveother <player id> <givestring>\n\"" );
+		return;
+	}
+
+	trap->Argv( 1, otherindex, sizeof( otherindex ) );
+	i = ClientNumberFromString( ent, otherindex, qfalse );
+	if ( i == -1 ) {
+		return;
+	}
+
+	otherEnt = &g_entities[i];
+	if ( !otherEnt->inuse || !otherEnt->client ) {
+		return;
+	}
+
+	if ( (otherEnt->health <= 0 || otherEnt->client->deathcamTime || otherEnt->client->tempSpectate >= level.time || otherEnt->client->sess.sessionTeam == TEAM_SPECTATOR) )
+	{
+		// Intentionally displaying for the command user
+		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "MUSTBEALIVE" ) ) );
+		return;
+	}
+
+	trap->Argv( 2, name, sizeof( name ) );
+
+	G_Give( otherEnt, name, ConcatArgs( 3 ), trap->Argc()-1 );
 }
 
 /*
@@ -1454,6 +1438,9 @@ void SetTeam( gentity_t *ent, char *s ) {
 	if ( !ClientUserinfoChanged( clientNum ) )
 		return;
 
+	// Wipe the client's inventory before they begin so they won't get their old inventory
+	BG_SendItemPacket(IPT_CLEAR, ent, nullptr, 0, 0);
+
 	if (!g_preventTeamBegin)
 	{
 		ClientBegin( clientNum, qfalse );
@@ -1588,8 +1575,6 @@ JKG_Cmd_ItemAction_f
 */
 void JKG_Cmd_ItemAction_f (gentity_t *ent, int itemNum)
 {
-	itemInstance_t *itemInUse;
-	int i;
 	if(!ent->client)
 	{
 		return; //NOTENOTE: NPCs can perform item actions. Nifty, eh?
@@ -1684,11 +1669,7 @@ Destroys an item from your inventory
 void JKG_Cmd_DestroyItem_f(gentity_t *ent)
 {
 	char arg[64];
-	int i, inventoryID = -1;
-	itemInstance_t destroyedItem;
 	trap->Argv(1, arg, sizeof(arg));
-
-	memset(&destroyedItem, 0, sizeof(itemInstance_t));
 
 	if(trap->Argc() < 2)
 	{
@@ -1897,7 +1878,7 @@ argCheck:
 
 		trap->Argv( 1, arg, sizeof( arg ) );
 
-		if (arg && arg[0])
+		if (arg[0])
 		{ //if there's an arg, assume it's a combo team command from the UI.
 			Cmd_Team_f(ent);
 		}
@@ -2257,9 +2238,6 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 			s++;
 		}
 	}
-
-
-
 
 	if (chatText[0] == '/' || chatText[0] == '\\') {
 		// Command, special treatment
@@ -3535,135 +3513,6 @@ void G_LeaveVehicle( gentity_t* ent, qboolean ConCheck ) {
 	ent->client->ps.m_iVehicleNum = 0;
 }
 
-int G_ItemUsable(playerState_t *ps, int forcedUse)
-{
-	vec3_t fwd, fwdorg, dest, pos;
-	vec3_t yawonly;
-	vec3_t mins, maxs;
-	vec3_t trtest;
-	trace_t tr;
-
-	// fix: dead players shouldn't use items
-	if (ps->stats[STAT_HEALTH] <= 0) {
-		return 0;
-	}
-
-	if (ps->m_iVehicleNum)
-	{
-		return 0;
-	}
-	
-	if (ps->pm_flags & PMF_USE_ITEM_HELD)
-	{ //force to let go first
-		return 0;
-	}
-
-	if (!forcedUse)
-	{
-		forcedUse = bg_itemlist[ps->stats[STAT_HOLDABLE_ITEM]].giTag;
-	}
-
-	if (!BG_IsItemSelectable(ps, forcedUse))
-	{
-		return 0;
-	}
-
-	switch (forcedUse)
-	{
-	case HI_MEDPAC:
-	case HI_MEDPAC_BIG:
-		if (ps->stats[STAT_HEALTH] >= ps->stats[STAT_MAX_HEALTH])
-		{
-			return 0;
-		}
-
-		if (ps->stats[STAT_HEALTH] <= 0)
-		{
-			return 0;
-		}
-
-		return 1;
-	case HI_SEEKER:
-		if (ps->eFlags & EF_SEEKERDRONE)
-		{
-			G_AddEvent(&g_entities[ps->clientNum], EV_ITEMUSEFAIL, SEEKER_ALREADYDEPLOYED);
-			return 0;
-		}
-
-		return 1;
-	case HI_SENTRY_GUN:
-		if (ps->fd.sentryDeployed)
-		{
-			G_AddEvent(&g_entities[ps->clientNum], EV_ITEMUSEFAIL, SENTRY_ALREADYPLACED);
-			return 0;
-		}
-
-		yawonly[ROLL] = 0;
-		yawonly[PITCH] = 0;
-		yawonly[YAW] = ps->viewangles[YAW];
-
-		VectorSet( mins, -8, -8, 0 );
-		VectorSet( maxs, 8, 8, 24 );
-
-		AngleVectors(yawonly, fwd, NULL, NULL);
-
-		fwdorg[0] = ps->origin[0] + fwd[0]*64;
-		fwdorg[1] = ps->origin[1] + fwd[1]*64;
-		fwdorg[2] = ps->origin[2] + fwd[2]*64;
-
-		trtest[0] = fwdorg[0] + fwd[0]*16;
-		trtest[1] = fwdorg[1] + fwd[1]*16;
-		trtest[2] = fwdorg[2] + fwd[2]*16;
-
-		trap->Trace(&tr, ps->origin, mins, maxs, trtest, ps->clientNum, MASK_PLAYERSOLID, 0, 0, 0);
-
-		if ((tr.fraction != 1 && tr.entityNum != ps->clientNum) || tr.startsolid || tr.allsolid)
-		{
-			G_AddEvent(&g_entities[ps->clientNum], EV_ITEMUSEFAIL, SENTRY_NOROOM);
-			return 0;
-		}
-
-		return 1;
-	case HI_SHIELD:
-		mins[0] = -8;
-		mins[1] = -8;
-		mins[2] = 0;
-
-		maxs[0] = 8;
-		maxs[1] = 8;
-		maxs[2] = 8;
-
-		AngleVectors (ps->viewangles, fwd, NULL, NULL);
-		fwd[2] = 0;
-		VectorMA(ps->origin, 64, fwd, dest);
-		trap->Trace(&tr, ps->origin, mins, maxs, dest, ps->clientNum, MASK_SHOT, 0, 0, 0 );
-		if (tr.fraction > 0.9f && !tr.startsolid && !tr.allsolid)
-		{
-			VectorCopy(tr.endpos, pos);
-			VectorSet( dest, pos[0], pos[1], pos[2] - 4096 );
-			trap->Trace( &tr, pos, mins, maxs, dest, ps->clientNum, MASK_SOLID, 0, 0, 0 );
-			if ( !tr.startsolid && !tr.allsolid )
-			{
-				return 1;
-			}
-		}
-		G_AddEvent(&g_entities[ps->clientNum], EV_ITEMUSEFAIL, SHIELD_NOROOM);
-		return 0;
-	case HI_JETPACK: //do something?
-		return 1;
-	case HI_HEALTHDISP:
-		return 1;
-	case HI_AMMODISP:
-		return 1;
-	case HI_EWEB:
-		return 1;
-	case HI_CLOAK:
-		return 1;
-	default:
-		return 1;
-	}
-}
-
 void saberKnockDown(gentity_t *saberent, gentity_t *saberOwner, gentity_t *other);
 
 void Cmd_ToggleSaber_f(gentity_t *ent)
@@ -4135,7 +3984,7 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 
 		if (challenged->client->ps.duelIndex == ent->s.number && challenged->client->ps.duelTime >= level.time)
 		{
-			trap->SendServerCommand( /*challenged-g_entities*/-1, va("print \"%s %s %s!\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));		//--futuza note: test this, make sure I didn't break dueling with my RGB fix
+			trap->SendServerCommand( /*challenged-g_entities*/-1, va("print \"%s %s %s!\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname));
 
 			ent->client->ps.duelInProgress = qtrue;
 			challenged->client->ps.duelInProgress = qtrue;
@@ -4353,8 +4202,6 @@ ClientCommand
 =================
 */
 
-#include "jkg_threading.h"
-
 void ClientCommand( int clientNum ) {
 	gentity_t *ent;
 	char	cmd[MAX_TOKEN_CHARS];
@@ -4384,11 +4231,6 @@ void ClientCommand( int clientNum ) {
 
 	// Check team commands.
 	if ( TeamCommand( clientNum, cmd, NULL )) return;
-
-	if (!Q_stricmp( cmd, "taskreport" )) {
-		JKG_PrintTasksTable( clientNum );
-		return;
-	}
 
 	if (Q_stricmp (cmd, "say") == 0) {
 		Cmd_Say_f (ent, SAY_ALL, qfalse);
@@ -4611,18 +4453,18 @@ void ClientCommand( int clientNum ) {
 
 	if (Q_stricmp (cmd, "give") == 0)
 	{
-		Cmd_Give_f (ent, 0);
+		Cmd_Give_f (ent);
 	}
 	else if (Q_stricmp (cmd, "giveother") == 0)
 	{ //for debugging pretty much
-		Cmd_Give_f (ent, 1);
+		Cmd_GiveOther_f (ent);
 	}
 	// Jedi Knight Galaxies begin
 	else if (Q_stricmp (cmd, "credits") == 0)
 	{
 		//DEBUG: Show how many credits you have
 		int credits = ent->client->ps.credits;
-		trap->SendServerCommand(clientNum, va("print \"You have %i credits, %s.\n\"", Q_max(0, credits), ent->client->pers.netname));
+		trap->SendServerCommand(clientNum, va("print \"You have %i credits, %s^7.\n\"", Q_max(0, credits), ent->client->pers.netname));
 		return;
 	}
 	else if ( Q_stricmp (cmd, "closeVendor") == 0 )

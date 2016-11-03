@@ -51,6 +51,7 @@ void UI_LoadArenas( void );
 void UI_LoadForceConfig_List( void );
 
 const char *UI_GetStringEdString2(const char *refName);
+const char* UI_GetStringEdString3(const char* refName);
 
 //
 // ui_players.c
@@ -408,6 +409,7 @@ void JKG_UI_LoadStylesheet( const char *text );
 void JKG_UI_SetClass( const char *className, itemDef_t *item );
 
 void JKG_UI_InventoryFilterChanged();
+void JKG_ShopInventorySortChanged();
 
 // new ui
 

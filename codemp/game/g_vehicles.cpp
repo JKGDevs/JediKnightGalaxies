@@ -1387,25 +1387,6 @@ static qboolean Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 				pVeh->weaponStatus[i].linked = qtrue;
 			}
 		}
-		else if ( (pVeh->m_ucmd.buttons&BUTTON_USE_HOLDABLE) ) 
-		//FIXME: implement... just a console command bound to a key?
-		{//pilot pressed the "weapon link" toggle button
-			playerState_t *pilotPS;
-			bgEntity_t *rider = NULL;
-			if (parent->s.owner != ENTITYNUM_NONE)
-			{
-				rider = PM_BGEntForNum(parent->s.owner); //&g_entities[parent->r.ownerNum];
-			}
-			pilotPS = rider->playerState;
-			if ( !pVeh->linkWeaponToggleHeld )//so we don't hold it down and toggle it back and forth
-			{//okay to toggle
-				if ( pVeh->m_pVehicleInfo->weapon[i].linkable == 1 )
-				{//link-toggleable
-					pVeh->weaponStatus[i].linked = !pVeh->weaponStatus[i].linked;
-				}
-			}
-			linkHeld = qtrue;
-		}
 	}
 	if ( linkHeld )
 	{

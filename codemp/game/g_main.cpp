@@ -24,7 +24,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 
 #include "g_local.h"
-#include "jkg_threading.h" // JKG Threading Header
 #include "jkg_gangwars.h"
 #include "g_ICARUScb.h"
 #include "g_nav.h"
@@ -235,13 +234,30 @@ void G_FindTeams( void ) {
 //	trap->Print ("%i teams with %i entities\n", c, c2);
 }
 
-static void G_ValidateGametype( void ) {
-	// check some things
-	if ( g_gametype.integer < 0 || g_gametype.integer >= GT_MAX_GAME_TYPE ) {
-		trap->Print( "g_gametype %i is out of range, defaulting to 0\n", g_gametype.integer );
-		trap->Cvar_Set( "g_gametype", "0" );
-		trap->Cvar_Update( &g_gametype );
-	}
+char startingGun[MAX_CVAR_VALUE_STRING] = {0};
+void CacheOldGun(void)
+{
+	// Don't cache the spawn value change
+	if(level.spawning)
+		return;
+
+	Q_strncpyz(startingGun, jkg_startingGun.string, sizeof(startingGun));
+
+	if( g_gametype.integer != GT_DUEL && g_gametype.integer != GT_POWERDUEL )
+		Q_strncpyz(level.startingWeapon, startingGun, sizeof(level.startingWeapon));
+}
+
+char startingSaber[MAX_CVAR_VALUE_STRING] = {0};
+void CacheOldSaber(void)
+{
+	// Don't cache the spawn value change
+	if(level.spawning)
+		return;
+
+	Q_strncpyz(startingSaber, jkg_startingSaberDuel.string, sizeof(startingSaber));
+
+	if( g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL )
+		Q_strncpyz(level.startingWeapon, startingSaber, sizeof(level.startingWeapon));
 }
 
 typedef struct {
@@ -262,7 +278,7 @@ static cvarTable_t gameCvarTable[] = {
 		#include "g_xcvar.h"
 	#undef XCVAR_LIST
 };
-static int gameCvarTableSize = ARRAY_LEN( gameCvarTable );
+static const size_t gameCvarTableSize = ARRAY_LEN( gameCvarTable );
 
 /*
 ==============
@@ -270,17 +286,15 @@ G_RegisterCvars
 ==============
 */
 
-void G_RegisterCvars( void )
-{
-	cvarTable_t *cv;
-	int i = 0;
-	for( i = 0, cv = gameCvarTable; i < gameCvarTableSize; i++, cv++ )
-	{
+void G_RegisterCvars( void ) {
+	size_t i = 0;
+	const cvarTable_t *cv = NULL;
+
+	for ( i=0, cv=gameCvarTable; i<gameCvarTableSize; i++, cv++ ) {
 		trap->Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
-		if( cv->update )
+		if ( cv->update )
 			cv->update();
 	}
-
 }
 
 /*
@@ -289,29 +303,24 @@ G_UpdateCvars
 ==============
 */
 
-void G_UpdateCvars( void )
-{
-	cvarTable_t *cv;
-	int i = 0;
-	for( i = 0, cv = gameCvarTable; i < gameCvarTableSize; i++, cv++ )
-	{
-		if( cv->vmCvar )
-		{
+void G_UpdateCvars( void ) {
+	size_t i = 0;
+	const cvarTable_t *cv = NULL;
+
+	for ( i=0, cv=gameCvarTable; i<gameCvarTableSize; i++, cv++ ) {
+		if ( cv->vmCvar ) {
 			int modCount = cv->vmCvar->modificationCount;
 			trap->Cvar_Update( cv->vmCvar );
-
-			if ( cv->vmCvar->modificationCount > modCount )
-			{
+			if ( cv->vmCvar->modificationCount != modCount ) {
 				if ( cv->update )
 					cv->update();
 
 				if ( cv->trackChange )
-					trap->SendServerCommand( -1, va("print \"Server: %s changed to %s\n\"", cv->cvarName, cv->vmCvar->string) );
+					trap->SendServerCommand( -1, va("print \"Server: %s changed to %s\n\"", cv->cvarName, cv->vmCvar->string ) );
 			}
 		}
 	}
 }
-
 
 sharedBuffer_t gSharedBuffer;
 
@@ -347,29 +356,6 @@ G_InitGame
 
 ============
 */
-
-static void JKG_RegisteServerCallback ( asyncTask_t *task )
-{
-	cJSON *data;
-	const char *error;
-	if (task->errorCode) {
-		trap->Print("ERROR: Failed to register server: Error code %i\n", task->errorCode);
-		return;
-	}
-	data = (cJSON *)task->finalData;
-
-	if (cJSON_ToInteger(cJSON_GetObjectItem(data, "errorCode"))) {
-		error = cJSON_ToString(cJSON_GetObjectItem(data, "message"));
-		trap->Print("ERROR: Failed to register server: %s\n", error ? error : "Unknown error");
-		return;
-	}
-	trap->Print("Server successfully registered\n");
-}
-
-extern void RemoveAllWP(void);
-extern void BG_ClearVehicleParseParms(void);
-void ActivateCrashHandler();
-
 void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	int					i;
 	vmCvar_t	mapname;
@@ -638,12 +624,8 @@ void G_ShutdownGame( int restart ) {
 	int i = 0;
 	gentity_t *ent;
 
-	if(JKG_ThreadingInitialized())
-	{
-		//if (!level.serverInit) JKG_NewNetworkTask(LCMETHOD_SVSHUTDOWN, NULL, 0);
-	}
-	// Shutdown JKG's Threading System
-	JKG_ShutdownThreading( 7000 );
+	trap->Cvar_Set( "jkg_startingGun", startingGun );
+	trap->Cvar_Set( "jkg_startingSaberDuel", startingSaber );
 
 	GLua_Close();
 
@@ -2533,29 +2515,6 @@ void CheckTournament( void ) {
 			g_dontFrickinCheck = qtrue;
 		}
 			trap->Cvar_Update( &g_restarted );
-	}
-}
-
-void G_KickAllBots(void)
-{
-	int i;
-	char netname[36];
-	gclient_t	*cl;
-
-	for ( i=0 ; i< sv_maxclients.integer ; i++ )
-	{
-		cl = level.clients + i;
-		if ( cl->pers.connected != CON_CONNECTED )
-		{
-			continue;
-		}
-		if ( !(g_entities[i].r.svFlags & SVF_BOT) )
-		{
-			continue;
-		}
-		strcpy(netname, cl->pers.netname);
-		Q_CleanStr(netname);
-		trap->SendConsoleCommand( EXEC_INSERT, va("kick \"%s\"\n", netname) );
 	}
 }
 

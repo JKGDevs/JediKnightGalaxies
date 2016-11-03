@@ -601,11 +601,8 @@ endif(BuildMPEngine)
 #        Dedicated Server (Engine) (jampded.exe)
 
 if(BuildMPDed)
-if(NOT MSVC)
-	set(MPDedLibraries ${MPEngineAndDedLibraries} "pthread")
-else()
+
 	set(MPDedLibraries ${MPEngineAndDedLibraries})
-endif()
 	set(MPDedIncludeDirectories ${MPEngineAndDedIncludeDirectories})
 	set(MPDedFiles ${MPEngineAndDedFiles})
 	set(MPDedDefines ${MPSharedDefines} "_CONSOLE" "DEDICATED" "ENGINE")

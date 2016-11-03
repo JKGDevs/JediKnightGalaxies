@@ -47,7 +47,6 @@ int G_WeaponLogFrags[MAX_CLIENTS][MAX_CLIENTS];
 int G_WeaponLogTime[MAX_CLIENTS][WP_NUM_WEAPONS];
 int G_WeaponLogLastTime[MAX_CLIENTS];
 qboolean G_WeaponLogClientTouch[MAX_CLIENTS];
-int G_WeaponLogPowerups[MAX_CLIENTS][HI_NUM_HOLDABLE];
 int	G_WeaponLogItems[MAX_CLIENTS][PW_NUM_POWERUPS];
 
 // MOD-weapon mapping array.
@@ -133,7 +132,6 @@ void G_LogWeaponInit(void) {
 	memset(G_WeaponLogFrags, 0, sizeof(G_WeaponLogFrags));
 	memset(G_WeaponLogTime, 0, sizeof(G_WeaponLogTime));
 	memset(G_WeaponLogLastTime, 0, sizeof(G_WeaponLogLastTime));
-	memset(G_WeaponLogPowerups, 0, sizeof(G_WeaponLogPowerups));
 	memset(G_WeaponLogItems, 0, sizeof(G_WeaponLogItems));
 #endif //LOGGING_WEAPONS
 }
@@ -216,7 +214,6 @@ void QDECL G_LogWeaponPowerup(int client, int powerupid)
 #ifdef LOGGING_WEAPONS
 	if (client>=MAX_CLIENTS)
 		return;
-	G_WeaponLogPowerups[client][powerupid]++;
 	G_WeaponLogClientTouch[client] = qtrue;
 #endif //_LOGGING_WEAPONS
 }
@@ -885,10 +882,6 @@ void QDECL G_ClearClientLog(int client)
 	}
 	G_WeaponLogLastTime[client] = 0;
 	G_WeaponLogClientTouch[client] = qfalse;
-	for (i = 0; i < HI_NUM_HOLDABLE; i++)
-	{
-		G_WeaponLogPowerups[client][i] = 0;
-	}
 	for (i = 0; i < PW_NUM_POWERUPS; i++)
 	{
 		G_WeaponLogItems[client][i] = 0;

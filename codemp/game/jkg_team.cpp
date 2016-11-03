@@ -508,8 +508,8 @@
 		}
 		
 		/* Swap the player party index, this doesn't happen anywhere but here! */
-		g_entities[level.party[ent->client->pers.partyNumber][0]].client->pers.partyIndex = iID;
-		g_entities[level.party[ent->client->pers.partyNumber][iID]].client->pers.partyIndex = 0;
+		g_entities[(int)level.party[ent->client->pers.partyNumber][0]].client->pers.partyIndex = iID;
+		g_entities[(int)level.party[ent->client->pers.partyNumber][iID]].client->pers.partyIndex = 0;
 
 		/* Mark the correct leader in the party struct */
 		level.party[ent->client->pers.partyNumber][0] = level.party[ent->client->pers.partyNumber][iID];
@@ -520,7 +520,7 @@
 		{
 			if ( level.party[ent->client->pers.partyNumber][i] != PARTY_SLOT_EMPTY && level.party[ent->client->pers.partyNumber][i] >= 0 )
 			{
-				SendSystem( level.party[ent->client->pers.partyNumber][i], "%s^7 has become the party leader.", g_entities[level.party[ent->client->pers.partyNumber][0]].client->pers.netname );
+				SendSystem( level.party[ent->client->pers.partyNumber][i], "%s^7 has become the party leader.", g_entities[(int)level.party[ent->client->pers.partyNumber][0]].client->pers.netname );
 			}
 		}
 
@@ -658,7 +658,7 @@
 					continue;
 				}
 
-				SendSystem( level.party[ent->client->pers.partyNumber][i], "%s^7 has been dismissed from the party.", g_entities[level.party[ent->client->pers.partyNumber][iID]].client->pers.netname );
+				SendSystem( level.party[ent->client->pers.partyNumber][i], "%s^7 has been dismissed from the party.", g_entities[(int)level.party[ent->client->pers.partyNumber][iID]].client->pers.netname );
 			}
 
 			/* Get the target and party number for the dismiss */
@@ -825,7 +825,7 @@
 
 		memset( buffer, 0, sizeof( buffer ));
 
-		if ( iTime < 0 || iTime > 4294967296 )
+		if (iTime < 0 || iTime >= INT_MAX - 1/*4294967296*/) // --futuza: fixed, can't check higher than INT_MAX
 		{
 			iTime = 0;
 		}
@@ -973,7 +973,7 @@
 			if ( level.party[partyNum][i] == ( 0 - clientNum - 1 ))
 			{
 				SendSystem( level.party[partyNum][0], "%s^7 has rejected the party invitation.", ent->client->pers.netname );
-				SendSystem( clientNum, "You have rejected %s^7's party invitation.", g_entities[level.party[partyNum][0]].client->pers.netname );
+				SendSystem( clientNum, "You have rejected %s^7's party invitation.", g_entities[(int)level.party[partyNum][0]].client->pers.netname );
 
 				level.party[partyNum][i] = PARTY_SLOT_EMPTY;
 				ent->client->pers.partyInvite[iID] = PARTY_SLOT_EMPTY;

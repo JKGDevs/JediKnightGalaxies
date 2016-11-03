@@ -1346,7 +1346,7 @@ void JKG_ProcessPazaak_f() {
 			Menus_CloseAll();
 			if (Menus_ActivateByName("jkg_pazaakholo"))
 			{
-				trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI /*& ~KEYCATCH_CONSOLE*/ );
+				trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI );
 			}
 			Menu_ClearFocus(Menus_FindByName("jkg_pazaakholo"));
 			activeBoard = 1;
@@ -1356,7 +1356,7 @@ void JKG_ProcessPazaak_f() {
 			Menus_CloseAll();
 			if (Menus_ActivateByName("jkg_cardselholo"))
 			{
-				trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI /*& ~KEYCATCH_CONSOLE*/ );
+				trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI );
 			}
 			Menu_ClearFocus(Menus_FindByName("jkg_cardselholo"));
 			activeBoard = 2;

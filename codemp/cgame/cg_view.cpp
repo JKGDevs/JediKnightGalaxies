@@ -31,8 +31,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define MASK_CAMERACLIP (MASK_SOLID|CONTENTS_PLAYERCLIP)
 #define CAMERA_SIZE	4
 
-#include "jkg_cg_auxlib.h"
-
 //[TrueView]
 #define		MAX_TRUEVIEW_INFO_SIZE					8192
 char		true_view_info[MAX_TRUEVIEW_INFO_SIZE];
@@ -996,7 +994,6 @@ static void CG_OffsetFirstPersonView( void ) {
 	vec3_t			predictedVelocity;
 	int				timeDelta;
 	int				kickTime;
-	qboolean rolling = BG_InRoll(&cg.predictedPlayerState, cg.predictedPlayerState.torsoAnim);
 	
 	if ( cg.snap->ps.pm_type == PM_INTERMISSION ) {
 		return;
@@ -2748,8 +2745,6 @@ extern qboolean PM_InKnockDown( playerState_t *ps );
 extern qboolean cgQueueLoad;
 extern void CG_ActualLoadDeferredPlayers( void );
 
-static int cg_siegeClassIndex = -2;
-
 void CinBuild_Visualize();
 
 int LastACRun = 0;
@@ -2853,26 +2848,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	{ //lower sens for emplaced guns and vehicles
 		mSensitivity = 0.2f;
 	}
-#ifdef VEH_CONTROL_SCHEME_4
-	else if (cg.predictedPlayerState.m_iVehicleNum//in a vehicle
-		&& !cg.predictedPlayerState.generic1 )//not as a passenger
-	{
-		centity_t *cent = &cg_entities[cg.predictedPlayerState.m_iVehicleNum];
-		if ( cent->m_pVehicle
-			&& cent->m_pVehicle->m_pVehicleInfo
-			&& cent->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER )
-		{
-			BG_VehicleTurnRateForSpeed( cent->m_pVehicle, cent->currentState.speed, &mPitchOverride, &mYawOverride );
-			//mSensitivityOverride = 5.0f;//old default value
-			mSensitivityOverride = 0.0f;
-			bUseFighterPitch = qtrue;
-			trap->SetUserCmdValue( cg.weaponSelect, mSensitivity, mPitchOverride, mYawOverride, mSensitivityOverride, cg.forceSelect, cg.itemSelect, bUseFighterPitch );
-			isFighter = qtrue;
-		}
-	} 
 
-	if ( !isFighter )
-#endif //VEH_CONTROL_SCHEME_4
 	{
 		if (cg.predictedPlayerState.m_iVehicleNum)
 		{

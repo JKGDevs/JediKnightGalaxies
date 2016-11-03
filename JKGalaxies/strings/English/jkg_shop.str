@@ -1,0 +1,68 @@
+// Note to translators:
+// If a sentence is the same in your language then please change it to "#same"
+//
+// eg:
+// LANG_ENGLISH  "HALT"
+// LANG_GERMAN   "#same"
+//
+// (This is so we can tell which strings have been signed-off as ok to be the same words for QA
+//  and because we do not store duplicate strings, which will then get exported again next time
+//  as being untranslated.)
+//
+VERSION             "1"
+CONFIG              "W:\bin\stringed.cfg"
+FILENOTES           "Text for the inventory menu (@JKG_SHOP_)"
+
+REFERENCE           VENDOR_NONAME
+LANG_ENGLISH        "Vendor"
+
+REFERENCE           PLAYER_NONAME
+LANG_ENGLISH        "Player"
+
+REFERENCE           TAB_NAME
+LANG_ENGLISH        "NAME"
+
+REFERENCE           TAB_PRICE
+LANG_ENGLISH        "PRICE"
+
+REFERENCE           ASCENDING
+LANG_ENGLISH        "ascending"
+
+REFERENCE           DESCENDING
+LANG_ENGLISH        "descending"
+
+REFERENCE           DESC_NAME_NOTACTIVE
+LANG_ENGLISH        "Click to sort items on this side by name"
+
+REFERENCE           DESC_NAME_ACTIVE
+LANG_ENGLISH        "Click to change name sort (currently %s)"
+
+REFERENCE           DESC_PRICE_NOTACTIVE
+LANG_ENGLISH        "Click to sort items on this side by price"
+
+REFERENCE           DESC_PRICE_ACTIVE
+LANG_ENGLISH        "Click to change price sort (currently %s)"
+
+REFERENCE           DESC_FILTER
+LANG_ENGLISH        "Change which items are shown (currently %s)"
+
+REFERENCE           DESC_BUY
+LANG_ENGLISH        "Click to buy the selected item"
+
+REFERENCE           DESC_BUY_NOT_ALLOWED
+LANG_ENGLISH        "You do not have enough credits to purchase that."
+
+REFERENCE           DESC_SELL
+LANG_ENGLISH        "Click to sell the selected item"
+
+REFERENCE           DESC_SELL_NOT_ALLOWED
+LANG_ENGLISH        "The vendor does not want that item."
+
+REFERENCE           DESC_BUYBACK_NOTACTIVE
+LANG_ENGLISH        "Show only items sold in this trade session"
+
+REFERENCE           DESC_BUYBACK_ACTIVE
+LANG_ENGLISH        "Click to see all vendor items"
+
+REFERENCE           DESC_EXAMINE
+LANG_ENGLISH        "Take a closer look at the item's stats"

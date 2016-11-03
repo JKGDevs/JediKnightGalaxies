@@ -715,6 +715,7 @@ static qboolean CL_G2API_OverrideServer( void *serverInstance ) {
 }
 
 static void CL_G2API_GetSurfaceName( void *ghoul2, int surfNumber, int modelIndex, char *fillBuf ) {
+	//NOTE CHECKME should this store empty fillBuf like g2api getglaname does same thing if tmp fails?
 	if ( !ghoul2 ) return;
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
 	char *tmp = re->G2API_GetSurfaceName( g2, modelIndex, surfNumber );

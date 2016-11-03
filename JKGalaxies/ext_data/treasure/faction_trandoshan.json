@@ -1,5 +1,5 @@
 {
-	"classes": [
+	"classes": {
 		"Trandoshan": {
 			"Array_ACP": 				4,
 			"carbine_LT-60_C": 			4,
@@ -16,5 +16,5 @@
 			"sniper_Bowcaster_H_S":		1,
 			"sniper_ACP":				2
 		}
-	]
+	}
 }

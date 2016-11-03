@@ -8,16 +8,24 @@
     "visual": {
         "viewmodel":        "models/weapons2/stun_baton/baton.md3",
         "worldmodel":       "models/weapons2/stun_baton/baton_w.glm",
-        "hudicon":          "",
+        "hudicon":          "gfx/hud/w_icon_stunbaton", // replace me
         "hudnaicon":        "",
-	"barrelCount":	    3,
+		"selectsound":      "sound/weapons/change.wav", // replace me
+		//"gunposition":      "8.0 -3.0 -2.0",
+        //"ironsightsposition": "8.0 -4.0 -2.8",
+		"barrelCount":	    3,
     
         "firemode0": {
-            "type":         "blaster"
+            "type":         "blaster",
+			"firesound":    [ "sound/weapons/baton/fire.mp3" ],
+			"displayName":  "Regular"
         },
         
         "firemode1": {
-            "type":         "blaster"
+            "type":         "blaster",
+			"firesound":    [ "sound/weapons/baton/fire.mp3" ],
+			"chargingsound": "sound/weapons/charge_bryar.wav",  // replace me
+			"displayName":  "Charged"
         }
     },
     
@@ -33,12 +41,27 @@
         "range":        8.0,
         "meansofdeath": "MOD_STUN_BATON"
     },
+
+	// FIXME implement better charge mode
+	"firemode1": {
+        "damage":        28,
+        "maxchargetime": 1200,
+        "chargedamage":  1.0,
+        "chargedelay":   400,
+        "firedelay":     400,
+        "range":         8.0,
+        "meansofdeath":  "MOD_STUN_BATON"
+    },
     
     "playeranims": {
         "idle":         { "torso": "BOTH_IDLE1", "legs": "BOTH_IDLE1" },
         "reload":       { "torso": "TORSO_DROPWEAP1" },
+		"sights":       { "torso": "TORSO_WEAPONREADY3", "legs": "BOTH_STAND1" },
+		"sightsFiring": { "torso": "BOTH_ATTACK3" },
         "ready":        { "torso": "TORSO_WEAPONREADY3", "legs": "BOTH_STAND1" },
-        "firing":       { "torso": "BOTH_ATTACK3" }
+        "firing":       { "torso": "BOTH_ATTACK3" },
+		"sprint":		{ "torso": "BOTH_RIFLERUN" },
+		"sprintStyle":  "18"
     },
     
     "weaponanims": {

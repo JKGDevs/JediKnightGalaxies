@@ -1481,13 +1481,6 @@ typedef struct cgMedia_s {
 	// Jedi Knight Galaxies
 	qhandle_t lowHealthAura; //	trap_R_RegisterShader("gfx/jkag/lowhealthaura")
 
-	//weapon icons
-	/*qhandle_t weaponIcons[WP_NUM_WEAPONS];
-	qhandle_t weaponIcons_NA[WP_NUM_WEAPONS];*/
-
-	//holdable inventory item icons
-	qhandle_t invenIcons[HI_NUM_HOLDABLE];
-
 	//force power icons
 	qhandle_t forcePowerIcons[NUM_FORCE_POWERS];
 
@@ -1863,8 +1856,6 @@ void CG_EventHandling(int type);
 void CG_RankRunFrame( void );
 void CG_SetScoreSelection(void *menu);
 void CG_BuildSpectatorString(void);
-void CG_NextInventory_f(void);
-void CG_PrevInventory_f(void);
 void CG_NextForcePower_f(void);
 void CG_PrevForcePower_f(void);
 

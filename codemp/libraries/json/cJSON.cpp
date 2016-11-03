@@ -1291,7 +1291,7 @@ static void cJSON_Serialize_Number(cJSON *item, cJSON_StringBuilder *sb)
 }
 
 // Parse the input text into an unescaped cstring, and populate item.
-static const unsigned char firstByteMark[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+//static const unsigned char firstByteMark[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
 static int cJSON_Parse_String(cJSON *item, cJSON_StringStream *ss)
 {
 	cJSON_StringBuilder sb;
@@ -2406,7 +2406,7 @@ cJSON *cJSON_ParsePooled(const char *data, char *error, size_t errorlen)
 // Get Array size/item / object item.
 int cJSON_GetArraySize(cJSON *arry)
 {
-	if (!arry || arry->type != cJSON_Array && arry->type != cJSON_Object) {
+	if (!arry || (arry->type != cJSON_Array && arry->type != cJSON_Object)) {
 		return 0;	// Not an array or object
 	}
 	return arry->arraysize;

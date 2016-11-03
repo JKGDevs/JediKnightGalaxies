@@ -43,7 +43,6 @@ USER INTERFACE MAIN
 #include "../game/jkg_gangwars.h"
 
 // JKG
-#include "jkg_ui_auxlib.h"
 #include "jkg_conversations.h"
 #include "jkg_pazaak.h"
 #include "jkg_partymanager.h"
@@ -347,9 +346,6 @@ char *BG_GetUIPortraitFile(const int team, const short classIndex, const short c
 
 siegeClass_t *BG_GetClassOnBaseClass(const int team, const short classIndex, const short cntIndex);
 
-const char *JAMD5Check();
-void CheckEngineDll();
-
 extern uiCrossoverExports_t *UI_InitializeCrossoverAPI( cgCrossoverExports_t *cg );
 
 // TODO: remove
@@ -596,7 +592,6 @@ static int UI_HeadCountByColor( void );
 static void UI_ParseGameInfo(const char *teamFile);
 static const char *UI_SelectedMap(int index, int *actual);
 static int UI_GetIndexFromSelection(int actual);
-static void UI_SiegeClassCnt( const int team );
 
 
 int	uiSkinColor=TEAM_FREE;
@@ -1007,6 +1002,21 @@ const char *UI_GetStringEdString2(const char *refName)
 	if(refName[0] == '@')
 	{
 		trap->SE_GetStringTextString(refName+1, text, sizeof(text));
+	}
+	else
+	{
+		Q_strncpyz(text, refName, 1024);
+	}
+	return text;
+}
+
+// This does LITERALLY the exact same thing, because if you call UI_GetStringEdString2 twice in one line (ie, with va) it won't work.
+// This bypasses this problem but is a messy temporary solution.
+const char* UI_GetStringEdString3(const char* refName) {
+	static char text[1024] = { 0 };
+	if (refName[0] == '@')
+	{
+		trap->SE_GetStringTextString(refName + 1, text, sizeof(text));
 	}
 	else
 	{
@@ -2002,7 +2012,7 @@ static void UI_DrawOpponentName(rectDef_t *rect, float scale, vec4_t color, int 
 	Text_Paint(rect->x, rect->y, scale, color, UI_Cvar_VariableString("ui_opponentName"), 0, 0, textStyle, iMenuFont);
 }
 
-static int UI_OwnerDrawWidth(int ownerDraw, float scale) {
+static int UI_OwnerDrawWidth(int ownerDraw, int ownerDrawID, float scale) {
 	int i, value, iUse = 0;
 	const char *text;
 	const char *s = NULL;
@@ -2124,6 +2134,18 @@ static int UI_OwnerDrawWidth(int ownerDraw, float scale) {
 			break;
 		case UI_SERVERREFRESHDATE:
 			s = UI_Cvar_VariableString(va("ui_lastServerRefresh_%i", ui_netSource.integer));
+			break;
+		case UI_JKG_SHOP_LEFTNAME:
+			s = JKG_Shop_LeftNameText(ownerDrawID);
+			break;
+		case UI_JKG_SHOP_RIGHTNAME:
+			s = JKG_Shop_RightNameText(ownerDrawID);
+			break;
+		case UI_JKG_SHOP_LEFTPRICE:
+			s = JKG_Shop_LeftPriceText(ownerDrawID);
+			break;
+		case UI_JKG_SHOP_RIGHTPRICE:
+			s = JKG_Shop_RightPriceText(ownerDrawID);
 			break;
     default:
       break;
@@ -2421,7 +2443,7 @@ extern void JKG_GangWars_TeamBLUEText( rectDef_t *rect, float scale, vec4_t colo
 static void UI_OwnerDraw(itemDef_t *item, float x, float y, float w, float h, float text_x, float text_y, int ownerDraw, int ownerDrawFlags, int align, float special, float scale, vec4_t color, qhandle_t shader, int textStyle,int iMenuFont, int ownerDrawID) 
 {
 	rectDef_t rect;
-	int drawRank = 0, iUse = 0;
+	int iUse = 0;
 
 	rect.x = x + text_x;
 	rect.y = y + text_y;
@@ -2572,6 +2594,37 @@ static void UI_OwnerDraw(itemDef_t *item, float x, float y, float w, float h, fl
 
 	case UI_JKG_ITEM_TBOTTOM:
 		JKG_Inventory_OwnerDraw_ItemTagBottom(item, ownerDrawID);
+		break;
+
+	case UI_JKG_SHOP_LEFTICON:
+		JKG_ShopIconLeft(item, ownerDrawID);
+		break;
+	case UI_JKG_SHOP_RIGHTICON:
+		JKG_ShopIconRight(item, ownerDrawID);
+		break;
+	case UI_JKG_SHOP_LEFTSELECT:
+		JKG_Shop_InventorySelection(item, ownerDrawID);
+		break;
+	case UI_JKG_SHOP_RIGHTSELECT:
+		JKG_Shop_ShopSelection(item, ownerDrawID);
+		break;
+	case UI_JKG_SHOP_LEFTNAME:
+		JKG_Shop_InventoryItemName(item, ownerDrawID);
+		break;
+	case UI_JKG_SHOP_RIGHTNAME:
+		JKG_Shop_ShopItemName(item, ownerDrawID);
+		break;
+	case UI_JKG_SHOP_LEFTPRICE:
+		JKG_Shop_InventoryItemCost(item, ownerDrawID);
+		break;
+	case UI_JKG_SHOP_RIGHTPRICE:
+		JKG_Shop_ShopItemCost(item, ownerDrawID);
+		break;
+	case UI_JKG_SHOP_LEFTTAB:
+		JKG_Shop_SortSelectionName(item, ownerDrawID);
+		break;
+	case UI_JKG_SHOP_RIGHTTAB:
+		JKG_Shop_SortSelectionPrice(item, ownerDrawID);
 		break;
 
 	case UI_SKIN_COLOR:
@@ -4415,11 +4468,10 @@ void UI_GetVideoSetup ( void )
 // but it already had one on it.
 static void UI_SetBotButton ( void )
 {
-	int gameType = trap->Cvar_VariableValue( "g_gametype" );
 	int server;
 	menuDef_t *menu;
 	itemDef_t *item;
-	char *name = "addBot";
+	const char *name = "addBot";
 
 	server = trap->Cvar_VariableValue( "sv_running" );
 
@@ -6586,7 +6638,6 @@ UI_FeederCount
 static int UI_FeederCount(float feederID) 
 {
 	int count=0,i; 
-	static char info[MAX_STRING_CHARS];
 
 	switch ( (int)feederID )
 	{
@@ -7001,8 +7052,6 @@ static const char *UI_FeederItemText(float feederID, int index, int column,
 
 
 static qhandle_t UI_FeederItemImage(float feederID, int index) {
-	static char info[MAX_STRING_CHARS];
-
 	if (feederID == FEEDER_SABER_SINGLE_INFO) 
 	{
 		return 0;
@@ -8302,15 +8351,12 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 			return;
 		case UIMENU_MAIN:
 			{
-				qboolean active = qfalse;
 				//trap->Cvar_Set( "sv_killserver", "1" );
 				trap->Key_SetCatcher( KEYCATCH_UI );
 				//trap->S_StartLocalSound( trap->S_RegisterSound("sound/misc/menu_background.wav", qfalse) , CHAN_LOCAL_SOUND );
 				//trap->S_StartBackgroundTrack("sound/misc/menu_background.wav", NULL);
 				if (uiInfo.inGameLoad) 
-				{
-					//				UI_LoadNonIngame();
-				}
+					UI_LoadNonIngame();
 
 				Menus_CloseAll();
 				Menus_ActivateByName("main");
@@ -8320,16 +8366,15 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 				{
 					if (!ui_singlePlayerActive.integer) 
 					{
-					Menus_ActivateByName("error_popmenu");
-					active = qtrue;
-				} 
-				else 
-				{
-					trap->Cvar_Set("com_errorMessage", "");
+						Menus_ActivateByName("error_popmenu");
+					} 
+					else 
+					{
+						trap->Cvar_Set("com_errorMessage", "");
+					}
 				}
+				return;
 			}
-			return;
-		}
 
 		case UIMENU_TEAM:
 			trap->Key_SetCatcher( KEYCATCH_UI );
@@ -8606,9 +8651,6 @@ void UI_DrawConnectScreen( qboolean overlay ) {
 	if (connmsg.string[0]) {
 		Text_PaintCenter(centerPoint, yStart + 48, scale, colorWhite, connmsg.string, ITEM_TEXTSTYLE_SHADOWEDMORE, FONT_MEDIUM);
 	} else {
-		char IP[256] = "";
-		char PORT[256] = "";
-
 		if (!Q_stricmp(cstate.servername,"localhost")) {
 			trap->SE_GetStringTextString("MENUS_STARTING_UP", sStringEdTemp, sizeof(sStringEdTemp));
 			Text_PaintCenter(centerPoint, yStart + 48, scale, colorWhite, sStringEdTemp, ITEM_TEXTSTYLE_SHADOWEDMORE, FONT_MEDIUM);

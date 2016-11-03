@@ -179,60 +179,19 @@ static int GLua_Sys_SpotWouldTelefrag(lua_State *L) {
 	return 1;
 }
 
-
-static int Text_IsExtColorCode(const char *text, bool obligatoryYOLOSWAGArgument = false)	// HACK, but it's YOLO SWAG so it's okay
-{
-	const char *r, *g, *b;
-	r = text+1;
-	g = text+2;
-	b = text+3;
-	// Get the color levels (if the numbers are invalid, it'll return -1, which we can use to validate)
-	if ((*r < '0' || *r > '9') && (*r < 'a' || *r > 'f') && (*r < 'A' || *r > 'F')) {
-		return 0;
-	}
-	if ((*g < '0' || *g > '9') && (*g < 'a' || *g > 'f') && (*g < 'A' || *g > 'F')) {
-		return 0;
-	}
-	if ((*b < '0' || *b > '9') && (*b < 'a' || *b > 'f') && (*b < 'A' || *b > 'F')) {
-		return 0;
-	}
-	return 1;
-}
-
-
 static int GLua_Sys_StripColorcodes(lua_State *L) {
-	const char *input;
-	char *output;
+	const char *input = luaL_checkstring(L, 1);
 
-	const char *i;
-	char *o;
+	if( input && *input )
+	{
+		char *output = {};
+		strcpy( output, input );
+		Q_StripColor( output );
 
-	input = luaL_checkstring(L, 1);
-	// alloc the output buffer to be big enough to fit the entire input
-	output = (char *)malloc(strlen(input) + 1);
-	
-	i = input;
-	o = output;
-	while (*i) {
-		if (*i == '^') {
-			if (*(i+1) >= '0' && *(i+1) <= '9') {
-				i+=2;
-				continue;
-			}
-			if (*(i + 1) == 'x' || *(i + 1) == 'X') {
-				if (Text_IsExtColorCode(i+1, false)) {
-					i+=5;
-					continue;
-				}
-			}
-		}
-		*o = *i;
-		i++; o++;
+		lua_pushstring(L, output);
+		return 1;
 	}
-
-	*o = *i;
-	lua_pushstring(L, output);
-	free(output);
+	lua_pushnil(L);
 	return 1;
 }
 

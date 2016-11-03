@@ -446,7 +446,6 @@ typedef struct
 	unsigned char	weaponBaseIndex;		// Base index, determines the type of weapon this is.
 	unsigned char	weaponModIndex;			// Mod index, determines which alternate version of the base weapon this is.
 	unsigned short	weaponReloadTime;		// The time required to reload the weapon (or the time till she blows, for grenades).
-	unsigned char	weaponSlot;				// The slot this weapon uses, i.e. main weapon, secondary weapon or grenade.
 	
 	unsigned char	ammoIndex;				// Ammo index, determines the type of weapon clips used.
 	unsigned int	ammoOnSpawn;			// Ammo given upon spawning with this weapon.

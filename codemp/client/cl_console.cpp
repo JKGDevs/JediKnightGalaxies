@@ -122,7 +122,6 @@ void Con_Clear_f (void) {
 
 	for ( i = 0 ; i < CON_TEXTSIZE ; i++ ) {
 		con.text[i] = 0xfff00000 | ' ';
-		//con.text[i] = (ColorIndex(COLOR_WHITE)<<8) | ' ';
 	}
 
 	Con_Bottom();		// go to end
@@ -214,7 +213,6 @@ void Con_Dump_f (void)
 	FS_FCloseFile( f );
 }
 
-
 /*
 ================
 Con_ClearNotify
@@ -222,11 +220,6 @@ Con_ClearNotify
 */
 void Con_ClearNotify( void ) {
 	memset(con.times, 0, sizeof(con.times));
-	/*int		i;
-
-	for ( i = 0 ; i < NUM_CON_TIMES ; i++ ) {
-		con.times[i] = 0;
-	}*/
 }
 
 /*
@@ -258,7 +251,6 @@ void Con_CheckResize (void)
 		for(i=0; i<CON_TEXTSIZE; i++)
 		{
 			con.text[i] = 0xfff00000 | ' ';
-			//con.text[i] = (ColorIndex(COLOR_WHITE)<<8) | ' ';
 		}
 	}
 	else
@@ -284,7 +276,6 @@ void Con_CheckResize (void)
 		Com_Memcpy (tbuf, con.text, CON_TEXTSIZE * sizeof(int32_t));
 		for(i=0; i<CON_TEXTSIZE; i++)
 			con.text[i] = 0xfff00000 | ' ';
-			//con.text[i] = (ColorIndex(COLOR_WHITE)<<8) | ' ';
 
 
 		for (i=0 ; i<numlines ; i++)
@@ -303,7 +294,6 @@ void Con_CheckResize (void)
 	con.current = con.totallines - 1;
 	con.display = con.current;
 }
-
 
 /*
 ==================
@@ -389,7 +379,6 @@ static void Con_Linefeed (qboolean skipnotify)
 	con.current++;
 	for(i=0; i<con.linewidth; i++)
 		con.text[(con.current%con.totallines)*con.linewidth+i] = 0xfff00000 | ' ';
-		//con.text[(con.current%con.totallines)*con.linewidth+i] = (ColorIndex(COLOR_WHITE)<<8) | ' ';
 }
 
 static QINLINE int Q_PackRGB( const vec3_t colorIn )
@@ -751,14 +740,9 @@ void Con_DrawSolidConsole( float frac ) {
 	if ( con.x == 0 ) {
 		row--;
 	}
-	
-	//currentColor = 7;
+
 	currentColor = 0xfff;
 	re->SetColor( colorWhite );
-
-	/*currentColor = 7;
-	VectorCopy4(g_color_table[currentColor], advCurrentColor);
-	re->SetColor( g_color_table[currentColor] );	//--futuza:  set color to white?  Why not just say g_color_table[7]?  always evaluates to 7, unnecessary bit math?*/
 
 	static int iFontIndexForAsian = 0;
 	const float fFontScaleForAsian = 0.75f*con.yadjust;

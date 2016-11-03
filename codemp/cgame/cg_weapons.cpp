@@ -203,8 +203,7 @@ Ghoul2 Insert End
 	//
 	// powerups have an accompanying ring or sphere
 	//
-	if ( item->giType == IT_POWERUP || item->giType == IT_HEALTH || 
-		item->giType == IT_ARMOR || item->giType == IT_HOLDABLE ) {
+	if ( item->giType == IT_POWERUP || item->giType == IT_HEALTH || item->giType == IT_ARMOR ) {
 		if ( item->world_model[1] ) {
 			itemInfo->models[1] = trap->R_RegisterModel( item->world_model[1] );
 		}
@@ -367,47 +366,307 @@ void CG_AnimateViewWeapon ( const playerState_t *ps )
 	}
 }
 
+/*
+==============
+JKG_ViewPitchGunTilt
+
+Tilt the gun based on our pitch
+Won't occur during sprint or ironsights
+==============
+*/
+
+static void JKG_ViewPitchGunTilt(vec3_t origin, float ironSightsPhase, float sprintPhase) {
+	float sprintInverse = 1.0f - sprintPhase;
+	float sightsInverse = 1.0f - ironSightsPhase;
+
+	float zamount;
+	float xamount;
+
+	xamount = Q_powf(cg.refdef.viewangles[PITCH], 1.02f);
+	zamount = (cg.refdef.viewangles[PITCH] > 0) ? 0 : Q_powf(cg.refdef.viewangles[PITCH], 1.001f);
+
+	xamount *= 1.0f / 45.0f;
+	zamount *= 1.0f / 45.0f;
+
+	xamount += 1.0f;
+	zamount += 1.0f;
+
+	xamount *= sprintInverse * sightsInverse;
+	zamount *= sprintInverse * sightsInverse;
+
+	if (xamount > 3.0f) {
+		xamount = 3.0f;
+	}
+	else if (xamount < -2.0f) {
+		xamount = -2.0f;
+	}
+
+	if (zamount > 2.0f) {
+		zamount = 2.0f;
+	}
+	else if (zamount < -2.0f) {
+		zamount = -2.0f;
+	}
+
+	VectorMA(origin, xamount, cg.refdef.viewaxis[0], origin);
+	VectorMA(origin, zamount, cg.refdef.viewaxis[2], origin);
+}
+
+/*
+==============
+JKG_FiremodeTransitionAnimation
+
+Performs the first person animation when switching firing modes
+==============
+*/
+extern int JKG_GetTransitionForFiringModeSet(int previous, int next);
+static void JKG_FireModeTransitionAnimation(vec3_t origin, vec3_t angles, weaponData_t* prevWeaponData, weaponData_t* weaponData) {
+	if (cg.lastFiringMode != cg.predictedPlayerState.firingMode && cg.lastFiringModeGun != cg.predictedPlayerState.weaponId)
+	{
+		cg.fireModeTransition = JKG_GetTransitionForFiringModeSet(prevWeaponData->visuals.visualFireModes[cg.lastFiringMode].animType, weaponData->visuals.visualFireModes[cg.predictedPlayerState.firingMode].animType);
+
+		cg.lastFiringMode = cg.predictedPlayerState.firingMode;
+		cg.lastFiringModeTime = cg.time + 200; // matches SP 1:1
+		cg.lastFiringModeGun = cg.predictedPlayerState.weaponId;
+	}
+	else if (cg.lastFiringMode != cg.predictedPlayerState.firingMode)
+	{
+		cg.lastFiringMode = cg.predictedPlayerState.firingMode;
+		cg.lastFiringModeTime = cg.time + 200; // matches SP 1:1
+		cg.lastFiringModeGun = cg.predictedPlayerState.weaponId;
+	}
+
+	// Fire mode animations -- Jedi Knight Galaxies
+	if (!JKG_FiringModeAnimsAreTheSame(cg.fireModeTransition))
+	{
+		int transition = cg.fireModeTransition;
+		float firingModeAnimPhase = JKG_CalculateFireModePhase();
+		vec3_t beginningOrigin = { 0, 0, 0 }, endOrigin = { 0, 0, 0 };				// Start of the firing mode transition
+		vec3_t beginningDir = { 0, 0, 0 }, endDir = { 0, 0, 0 };					// End of the firing mode transition
+
+		// Get the animation along its track there.
+		switch (transition)
+		{
+		case FMTRANS_NONE_RAISED:
+		case FMTRANS_TILTED_RAISED:
+			// Final destination for these use the same as the pistol sprint
+			// animation, for now. --eez
+			endDir[PITCH] = -15.0f;
+			endOrigin[2] = -1;
+			break;
+		case FMTRANS_RAISED_NONE:
+			beginningDir[PITCH] = -15.0f;
+			beginningOrigin[2] = -1;
+			// Cancel out the beginning of the dir and origin
+			endDir[PITCH] = 15.0f;
+			endOrigin[2] = 1;
+			break;
+		}
+
+		angles[PITCH] += (beginningDir[PITCH] + (endDir[PITCH] * firingModeAnimPhase));
+		angles[YAW] += (beginningDir[YAW] + (endDir[YAW] * firingModeAnimPhase));
+		angles[ROLL] += (beginningDir[ROLL] + (endDir[ROLL] * firingModeAnimPhase));
+
+		VectorMA(origin, beginningOrigin[0] + (endOrigin[0] * firingModeAnimPhase), cg.refdef.viewaxis[0], origin);
+		VectorMA(origin, beginningOrigin[1] + (endOrigin[1] * firingModeAnimPhase), cg.refdef.viewaxis[1], origin);
+		VectorMA(origin, beginningOrigin[2] + (endOrigin[2] * firingModeAnimPhase), cg.refdef.viewaxis[2], origin);
+	}
+}
+
+/*
+==============
+JKG_SprintViewmodelAnimation
+
+Not a real animation, just faking angles
+==============
+*/
+
+static void JKG_SprintViewmodelAnimation(vec3_t origin, vec3_t angles, weaponData_t* weaponData, float sprintPhase, float scale) {
+	// Now calculate where our gun will be angled
+	float sprintXAdd = /*jkg_debugSprintX.value*/ 0;
+	float sprintYAdd = /*jkg_debugSprintY.value*/ 0;
+	float sprintZAdd = /*jkg_debugSprintZ.value*/ 0;
+	float sprintPitchAdd = /*jkg_debugSprintPitch.value*/ 0;
+	float sprintYawAdd = /*jkg_debugSprintYaw.value*/ 0;
+	float sprintRollAdd = /*jkg_debugSprintRoll.value*/ 0;
+	//int sprintStyle = (jkg_debugSprintStyle.integer != -2) ? jkg_debugSprintStyle.integer : weaponData->firstPersonSprintStyle;		// the cvar lets us switch gun sprinting styles on the fly
+	int sprintStyle = weaponData->firstPersonSprintStyle;
+	bool bExtremeYaw = false;
+
+	switch (sprintStyle)
+	{
+		// ANGLES/ORIGIN BEFORE BOBBING
+	case SPRINTSTYLE_LOWERED:
+	case SPRINTSTYLE_LOWERED_SLIGHT:
+	case SPRINTSTYLE_LOWERED_HEAVY:
+		sprintXAdd = 1;
+		sprintYAdd = -1;
+		sprintZAdd = -2;
+		sprintPitchAdd = 20;
+		break;
+
+	case SPRINTSTYLE_SIDE:
+	case SPRINTSTYLE_SIDE_SLIGHT:
+	case SPRINTSTYLE_SIDE_HEAVY:
+		sprintXAdd = 1;
+		sprintZAdd = -1;
+		sprintPitchAdd = 15;
+		sprintYawAdd = 40;
+		sprintRollAdd = -10;
+		bExtremeYaw = true;
+		break;
+
+	case SPRINTSTYLE_RAISED:
+	case SPRINTSTYLE_RAISED_SLIGHT:
+	case SPRINTSTYLE_RAISED_HEAVY:
+		sprintPitchAdd = -35;
+		sprintZAdd = 1;
+		break;
+
+	case SPRINTSTYLE_ANGLED_DOWN:
+	case SPRINTSTYLE_ANGLED_DOWN_SLIGHT:
+	case SPRINTSTYLE_ANGLED_DOWN_HEAVY:
+		sprintPitchAdd = 20;
+		sprintZAdd = -1;
+		break;
+
+	case SPRINTSTYLE_SIDE_UP:
+	case SPRINTSTYLE_SIDE_UP_SLIGHT:
+	case SPRINTSTYLE_SIDE_UP_HEAVY:
+		sprintXAdd = 1;
+		sprintZAdd = 1;
+		sprintPitchAdd = 15;
+		sprintYawAdd = 40;
+		sprintRollAdd = -10;
+		bExtremeYaw = true;
+		break;
+
+	case SPRINTSTYLE_SIDE_MEDIUM:
+	case SPRINTSTYLE_SIDE_MEDIUM_SLIGHT:
+	case SPRINTSTYLE_SIDE_MEDIUM_HEAVY:
+		sprintZAdd = -2;
+		sprintYAdd = -1;
+		sprintPitchAdd = 5;
+		sprintYawAdd = 40;
+		sprintRollAdd = -10;
+		bExtremeYaw = true;
+		break;
+	}
+
+	// Messy-ish code out the yin-yang here
+	if (bExtremeYaw) {
+		float fPitchFactor = 1.0f - (abs(cg.predictedPlayerState.viewangles[PITCH]) / 90.0f);
+		angles[PITCH] += (sprintPitchAdd * sprintPhase) * fPitchFactor;
+		angles[YAW] += (sprintYawAdd * sprintPhase) * fPitchFactor;
+		angles[ROLL] += (sprintRollAdd * sprintPhase) * fPitchFactor;
+	}
+	else {
+		angles[PITCH] += (sprintPitchAdd * sprintPhase);
+		angles[YAW] += (sprintYawAdd * sprintPhase);
+		angles[ROLL] += (sprintRollAdd * sprintPhase);
+	}
+
+	VectorMA(origin, sprintXAdd * sprintPhase, cg.refdef.viewaxis[0], origin);
+	VectorMA(origin, sprintYAdd * sprintPhase, cg.refdef.viewaxis[1], origin);
+	VectorMA(origin, sprintZAdd * sprintPhase, cg.refdef.viewaxis[2], origin);
+
+	if (JKG_CalculateSprintPhase(&cg.predictedPlayerState) > 0.001)
+	{
+		float bobPitchAdd = /*jkg_debugSprintBobPitch.value*/ 0;
+		float bobYawAdd = /*jkg_debugSprintBobYaw.value*/ 0;
+		float bobRollAdd = /*jkg_debugSprintBobRoll.value*/ 0;
+		float bobXAdd = /*jkg_debugSprintBobX.value*/ 0;
+		float bobYAdd = /*jkg_debugSprintBobY.value*/ 0;
+		float bobZAdd = /*jkg_debugSprintBobZ.value*/ 0;
+		// Calculate bobbing add
+		switch (sprintStyle)
+		{
+			// BOBBING ANGLE/ORIGIN
+		case SPRINTSTYLE_LOWERED_SLIGHT:
+			bobYAdd = 0.001;
+			bobYawAdd = 0.03;
+			break;
+
+		case SPRINTSTYLE_LOWERED_HEAVY:
+			bobYawAdd = 0.04;
+			bobPitchAdd = 0.01;
+			bobRollAdd = 0.01;
+			bobXAdd = 0.0005;
+			bobYAdd = 0.002;
+			break;
+
+		case SPRINTSTYLE_SIDE_SLIGHT:
+		case SPRINTSTYLE_SIDE_UP_SLIGHT:
+		case SPRINTSTYLE_SIDE_MEDIUM_SLIGHT:
+			bobYawAdd = 0.02;
+			break;
+
+		case SPRINTSTYLE_SIDE_HEAVY:
+		case SPRINTSTYLE_SIDE_UP_HEAVY:
+		case SPRINTSTYLE_SIDE_MEDIUM_HEAVY:
+			bobYawAdd = 0.06;
+			bobPitchAdd = 0.002;
+			bobRollAdd = 0.002;
+			break;
+
+		case SPRINTSTYLE_RAISED_SLIGHT:
+		case SPRINTSTYLE_ANGLED_DOWN_SLIGHT:
+			bobZAdd = 0.0005;
+			bobPitchAdd = 0.005;
+			break;
+
+		case SPRINTSTYLE_RAISED_HEAVY:
+		case SPRINTSTYLE_ANGLED_DOWN_HEAVY:
+			bobZAdd = 0.001;
+			bobPitchAdd = 0.01;
+			bobRollAdd = 0.004;
+			break;
+		}
+
+		angles[ROLL] += scale * cg.bobfracsin * (0.005 + (bobPitchAdd*sprintPhase));
+		angles[YAW] += scale * cg.bobfracsin * (0.01 + (bobYawAdd*sprintPhase));
+		angles[PITCH] += cg.xyspeed * cg.bobfracsin * (0.005 + (bobRollAdd*sprintPhase));
+
+		VectorMA(origin, scale * cg.bobfracsin * (bobXAdd*sprintPhase), cg.refdef.viewaxis[0], origin);
+		VectorMA(origin, scale * cg.bobfracsin * (bobYAdd*sprintPhase), cg.refdef.viewaxis[1], origin);
+		VectorMA(origin, scale * cg.bobfracsin * (bobZAdd*sprintPhase), cg.refdef.viewaxis[2], origin);
+	}
+}
 
 /*
 ==============
 CG_CalculateWeaponPosition
 ==============
 */
-extern int JKG_GetTransitionForFiringModeSet(int previous, int next);
+
 static void CG_CalculateWeaponPosition( vec3_t origin, vec3_t angles ) {
 	float	scale;
 	float	swayscale;
 	int		delta;
 	float	fracsin;
 	float	sprintPhase = JKG_CalculateSprintPhase(&cg.predictedPlayerState);
-	vec3_t defaultAngles, defaultOrigin;
+	float	ironSightsPhase = JKG_CalculateIronsightsPhase(&cg.predictedPlayerState, cg.time, &cg.ironsightsBlend);
 	weaponData_t *weaponData = GetWeaponData(cg.predictedPlayerState.weapon, cg.predictedPlayerState.weaponVariation);
 	weaponData_t *prevWeaponData = BG_GetWeaponDataByIndex(cg.lastFiringModeGun);
 
 	VectorCopy( cg.refdef.vieworg, origin );
 	VectorCopy( cg.refdef.viewangles, angles );
 
-	// on odd legs, invert some angles
+	// On odd legs, invert some angles
 	if ( cg.bobcycle & 1 ) {
 		scale = -cg.xyspeed;
 	} else {
 		scale = cg.xyspeed;
 	}
 
-	// idle drift
-	if(JKG_CalculateIronsightsPhase(&cg.predictedPlayerState, cg.time, &cg.ironsightsBlend) < 0.4)
-	{	// EDIT 9/11/12: Don't do this when we're in ironsights. Looks bad, man.
-		swayscale = cg.xyspeed + 40;
-		fracsin = sin( cg.time * 0.001 );
-		angles[ROLL] += swayscale * fracsin * 0.01;
-		angles[YAW] += swayscale * fracsin * 0.01;
-		angles[PITCH] += swayscale * fracsin * 0.01;
-	}
+	// Idle drift (not in ironsights)
+	swayscale = cg.xyspeed + 40;
+	fracsin = sin( cg.time * 0.001 );
+	angles[ROLL] += swayscale * fracsin * 0.01 * (1.0f - ironSightsPhase);
+	angles[YAW] += swayscale * fracsin * 0.01 * (1.0f - ironSightsPhase);
+	angles[PITCH] += swayscale * fracsin * 0.01 * (1.0f - ironSightsPhase);
 
-	VectorCopy( angles, defaultAngles );
-	VectorCopy( origin, defaultOrigin );
-
-	// drop the weapon when landing
+	// Drop the weapon when we have a hard landing
 	delta = cg.time - cg.landTime;
 	if ( delta < LAND_DEFLECT_TIME ) {
 		origin[2] += cg.landChange*0.25 * delta / LAND_DEFLECT_TIME;
@@ -416,217 +675,29 @@ static void CG_CalculateWeaponPosition( vec3_t origin, vec3_t angles ) {
 			(LAND_DEFLECT_TIME + LAND_RETURN_TIME - delta) / LAND_RETURN_TIME;
 	}
 
-	// Make the weapon go down whenever we aim up...
-	if( cg.refdef.viewangles[PITCH] < -50 )
-	{
-		//origin[2] -= (cg.refdef.viewangles[PITCH]+50)/20; // Trying these numbers ONE LAST TIME...
-		VectorMA( origin, (cg.refdef.viewangles[PITCH]+50)/24, cg.refdef.viewaxis[2], origin );
-	}
-	else if( cg.refdef.viewangles[PITCH] > 50 )
-	{
-		// Likewise, make the weapon get closer to us whenever we point downwards.
-		VectorMA( origin, (cg.refdef.viewangles[PITCH]-50)/24, cg.refdef.viewaxis[2], origin );
-		VectorMA( origin, (cg.refdef.viewangles[PITCH]-50)/55, cg.refdef.viewaxis[0], origin );
-	}
+	// Tilt the gun at extreme low/high pitch values
+	JKG_ViewPitchGunTilt(origin, ironSightsPhase, sprintPhase);
 
-	// oh well, i'm lumping this here too. just for the sake of the children or something --eez
-	if(cg.lastFiringMode != cg.predictedPlayerState.firingMode && cg.lastFiringModeGun != cg.predictedPlayerState.weaponId)
-	{
-		cg.fireModeTransition = JKG_GetTransitionForFiringModeSet( prevWeaponData->visuals.visualFireModes[ cg.lastFiringMode ].animType, weaponData->visuals.visualFireModes[ cg.predictedPlayerState.firingMode ].animType );
+	// Alter angles based on our firing mode
+	JKG_FireModeTransitionAnimation(origin, angles, prevWeaponData, weaponData);
 
-		cg.lastFiringMode = cg.predictedPlayerState.firingMode;
-		cg.lastFiringModeTime = cg.time + 200; // matches SP 1:1
-		cg.lastFiringModeGun = cg.predictedPlayerState.weaponId;
-	}
-	else if(cg.lastFiringMode != cg.predictedPlayerState.firingMode)
-	{
-		cg.lastFiringMode = cg.predictedPlayerState.firingMode;
-		cg.lastFiringModeTime = cg.time + 200; // matches SP 1:1
-		cg.lastFiringModeGun = cg.predictedPlayerState.weaponId;
-	}
-
-	// Fire mode animations -- Jedi Knight Galaxies
-	if(!JKG_FiringModeAnimsAreTheSame(cg.fireModeTransition))
-	{
-		int transition = cg.fireModeTransition;
-		float firingModeAnimPhase = JKG_CalculateFireModePhase();
-		vec3_t beginningOrigin = {0, 0, 0}, endOrigin = { 0, 0, 0 };				// Start of the firing mode transition
-		vec3_t beginningDir = {0, 0, 0}, endDir = {0, 0, 0 };					// End of the firing mode transition
-
-		// Get the animation along its track there.
-		switch(transition)
-		{
-			case FMTRANS_NONE_RAISED:
-			case FMTRANS_TILTED_RAISED:
-				// Final destination for these use the same as the pistol sprint
-				// animation, for now. --eez
-				endDir[PITCH] = -15.0f;
-				endOrigin[2] = -1;
-				break;
-			case FMTRANS_RAISED_NONE:
-				beginningDir[PITCH] = -15.0f;
-				beginningOrigin[2] = -1;
-				// Cancel out the beginning of the dir and origin
-				endDir[PITCH] = 15.0f;
-				endOrigin[2] = 1;
-				break;
-		}
-
-		angles[PITCH] += (beginningDir[PITCH] + (endDir[PITCH] * firingModeAnimPhase));
-		angles[YAW] += (beginningDir[YAW] + (endDir[YAW] * firingModeAnimPhase));
-		angles[ROLL] += (beginningDir[ROLL] + (endDir[ROLL] * firingModeAnimPhase));
-
-		VectorMA( origin, beginningOrigin[0] + (endOrigin[0] * firingModeAnimPhase), cg.refdef.viewaxis[0], origin );
-		VectorMA( origin, beginningOrigin[1] + (endOrigin[1] * firingModeAnimPhase), cg.refdef.viewaxis[1], origin );
-		VectorMA( origin, beginningOrigin[2] + (endOrigin[2] * firingModeAnimPhase), cg.refdef.viewaxis[2], origin );
-	}
-
-	// gun angles from bobbing
-	// Sprinting animations -- Jedi Knight Galaxies
+	// Weapon Bobbing
+	// In sprinting, we use special sprinting animations instead of bobbing
+	// In iron sights, we don't bob at all
+	// In normal situations, we use the JKA weapon bobbing system
 	if(sprintPhase > 0)
 	{
-		// Now calculate where our gun will be angled
-		float sprintXAdd = /*jkg_debugSprintX.value*/ 0;
-		float sprintYAdd = /*jkg_debugSprintY.value*/ 0;
-		float sprintZAdd = /*jkg_debugSprintZ.value*/ 0;
-		float sprintPitchAdd = /*jkg_debugSprintPitch.value*/ 0;
-		float sprintYawAdd = /*jkg_debugSprintYaw.value*/ 0;
-		float sprintRollAdd = /*jkg_debugSprintRoll.value*/ 0;
-		//int sprintStyle = (jkg_debugSprintStyle.integer != -2) ? jkg_debugSprintStyle.integer : weaponData->firstPersonSprintStyle;		// the cvar lets us switch gun sprinting styles on the fly
-		int sprintStyle = weaponData->firstPersonSprintStyle;
-
-		switch(sprintStyle)
-		{
-			// ANGLES/ORIGIN BEFORE BOBBING
-			case SPRINTSTYLE_LOWERED:
-			case SPRINTSTYLE_LOWERED_SLIGHT:
-			case SPRINTSTYLE_LOWERED_HEAVY:
-				sprintXAdd = 1;
-				sprintYAdd = -1;
-				sprintZAdd = -2;
-				sprintPitchAdd = 20;
-				break;
-
-			case SPRINTSTYLE_SIDE:
-			case SPRINTSTYLE_SIDE_SLIGHT:
-			case SPRINTSTYLE_SIDE_HEAVY:
-				sprintXAdd = 1;
-				sprintZAdd = -1;
-				sprintPitchAdd = 15;
-				sprintYawAdd = 40;
-				sprintRollAdd = -10;
-				break;
-
-			case SPRINTSTYLE_RAISED:
-			case SPRINTSTYLE_RAISED_SLIGHT:
-			case SPRINTSTYLE_RAISED_HEAVY:
-				sprintPitchAdd = -35;
-				sprintZAdd = 1;
-				break;
-
-			case SPRINTSTYLE_ANGLED_DOWN:
-			case SPRINTSTYLE_ANGLED_DOWN_SLIGHT:
-			case SPRINTSTYLE_ANGLED_DOWN_HEAVY:
-				sprintPitchAdd = 20;
-				sprintZAdd = -1;
-				break;
-
-			case SPRINTSTYLE_SIDE_UP:
-			case SPRINTSTYLE_SIDE_UP_SLIGHT:
-			case SPRINTSTYLE_SIDE_UP_HEAVY:
-				sprintXAdd = 1;
-				sprintZAdd = 1;
-				sprintPitchAdd = 15;
-				sprintYawAdd = 40;
-				sprintRollAdd = -10;
-				break;
-
-			case SPRINTSTYLE_SIDE_MEDIUM:
-			case SPRINTSTYLE_SIDE_MEDIUM_SLIGHT:
-			case SPRINTSTYLE_SIDE_MEDIUM_HEAVY:
-				sprintZAdd = -2;
-				sprintYAdd = -1;
-				sprintPitchAdd = 5;
-				sprintYawAdd = 40;
-				sprintRollAdd = -10;
-				break;
-		}
-		// Messy-ish code out the yin-yang here
-		angles[PITCH] += (sprintPitchAdd * sprintPhase);
-		angles[YAW] += (sprintYawAdd * sprintPhase);
-		angles[ROLL] += (sprintRollAdd * sprintPhase);
-
-		VectorMA( origin, sprintXAdd * sprintPhase, cg.refdef.viewaxis[0], origin );
-		VectorMA( origin, sprintYAdd * sprintPhase, cg.refdef.viewaxis[1], origin );
-		VectorMA( origin, sprintZAdd * sprintPhase, cg.refdef.viewaxis[2], origin );
-
-		if(JKG_CalculateSprintPhase(&cg.predictedPlayerState) > 0.001)
-		{
-			float bobPitchAdd = /*jkg_debugSprintBobPitch.value*/ 0;
-			float bobYawAdd = /*jkg_debugSprintBobYaw.value*/ 0;
-			float bobRollAdd = /*jkg_debugSprintBobRoll.value*/ 0;
-			float bobXAdd = /*jkg_debugSprintBobX.value*/ 0;
-			float bobYAdd = /*jkg_debugSprintBobY.value*/ 0;
-			float bobZAdd = /*jkg_debugSprintBobZ.value*/ 0;
-			// Calculate bobbing add
-			switch(sprintStyle)
-			{
-				// BOBBING ANGLE/ORIGIN
-				case SPRINTSTYLE_LOWERED_SLIGHT:
-					bobYAdd = 0.001;
-					bobYawAdd = 0.03;
-					break;
-
-				case SPRINTSTYLE_LOWERED_HEAVY:
-					bobYawAdd = 0.04;
-					bobPitchAdd = 0.01;
-					bobRollAdd = 0.01;
-					bobXAdd = 0.0005;
-					bobYAdd = 0.002;
-					break;
-				
-				case SPRINTSTYLE_SIDE_SLIGHT:
-				case SPRINTSTYLE_SIDE_UP_SLIGHT:
-				case SPRINTSTYLE_SIDE_MEDIUM_SLIGHT:
-					bobYawAdd = 0.02;
-					break;
-
-				case SPRINTSTYLE_SIDE_HEAVY:
-				case SPRINTSTYLE_SIDE_UP_HEAVY:
-				case SPRINTSTYLE_SIDE_MEDIUM_HEAVY:
-					bobYawAdd = 0.06;
-					bobPitchAdd = 0.002;
-					bobRollAdd = 0.002;
-					break;
-
-				case SPRINTSTYLE_RAISED_SLIGHT:
-				case SPRINTSTYLE_ANGLED_DOWN_SLIGHT:
-					bobZAdd = 0.0005;
-					bobPitchAdd = 0.005;
-					break;
-
-				case SPRINTSTYLE_RAISED_HEAVY:
-				case SPRINTSTYLE_ANGLED_DOWN_HEAVY:
-					bobZAdd = 0.001;
-					bobPitchAdd = 0.01;
-					bobRollAdd = 0.004;
-					break;
-			}
-
-			angles[ROLL] += scale * cg.bobfracsin * (0.005 + (bobPitchAdd*sprintPhase));
-			angles[YAW] += scale * cg.bobfracsin * (0.01 + (bobYawAdd*sprintPhase));
-			angles[PITCH] += cg.xyspeed * cg.bobfracsin * (0.005 + (bobRollAdd*sprintPhase));
-
-			VectorMA( origin, scale * cg.bobfracsin * (bobXAdd*sprintPhase), cg.refdef.viewaxis[0], origin );
-			VectorMA( origin, scale * cg.bobfracsin * (bobYAdd*sprintPhase), cg.refdef.viewaxis[1], origin );
-			VectorMA( origin, scale * cg.bobfracsin * (bobZAdd*sprintPhase), cg.refdef.viewaxis[2], origin );
-		}
+		JKG_SprintViewmodelAnimation(origin, angles, weaponData, sprintPhase, scale);
 	}
 	else
 	{
-		angles[ROLL] += scale * cg.bobfracsin * 0.005;
-		angles[YAW] += scale * cg.bobfracsin * 0.01;
-		angles[PITCH] += cg.xyspeed * cg.bobfracsin * 0.005;
+		angles[ROLL] += scale * cg.bobfracsin * 0.005 * (1.0f - ironSightsPhase);
+		angles[YAW] += scale * cg.bobfracsin * 0.01 * (1.0f - ironSightsPhase);
+		angles[PITCH] += cg.xyspeed * cg.bobfracsin * 0.005 * (1.0f - ironSightsPhase);
+
+		VectorMA(origin, jkg_sightsBobX.value * scale * cg.bobfracsin * ironSightsPhase, cg.refdef.viewaxis[0], origin);
+		VectorMA(origin, jkg_sightsBobY.value * scale * cg.bobfracsin * ironSightsPhase, cg.refdef.viewaxis[1], origin);
+		VectorMA(origin, jkg_sightsBobZ.value * scale * cg.bobfracsin * ironSightsPhase, cg.refdef.viewaxis[2], origin);
 	}
 
 #if 0
@@ -2279,13 +2350,10 @@ void CG_CheckPlayerG2Weapons(playerState_t *ps, centity_t *cent)
 	}
 }
 
-
 /*
 Ghoul2 Insert End
 */
 
-
-static weaponInfo_t defaultWeapon;
 weaponInfo_t *CG_WeaponInfo ( unsigned int weaponNum, unsigned int variation )
 {
     static weaponInfo_t *lastInfo = NULL;

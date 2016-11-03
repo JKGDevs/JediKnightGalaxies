@@ -433,8 +433,6 @@ typedef struct gameImport_s {
 	void		(*SetConfigstring)						( int num, const char *string );
 	void		(*SetServerCull)						( float cullDistance );
 	void		(*SetUserinfo)							( int num, const char *buffer );
-	void		(*SiegePersSet)							( siegePers_t *pers );
-	void		(*SiegePersGet)							( siegePers_t *pers );
 	void		(*Trace)								( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int capsule, int traceFlags, int useLod );
 	void		(*UnlinkEntity)							( sharedEntity_t *ent );
 

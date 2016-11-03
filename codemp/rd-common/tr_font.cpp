@@ -1425,60 +1425,6 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 {
 	// using ceil because we need to make sure that all the text is contained within the integer pixel width we're returning
 	return (int)ceilf( RE_Font_StrLenPixelsNew( psText, iFontHandle, fScale ) );
-#if 0
-	float		fMaxWidth = 0.0f;
-	float		fThisWidth = 0.0f;
-	CFontInfo	*curfont;
-
-	curfont = GetFont(iFontHandle);
-	if(!curfont)
-	{
-		return(0);
-	}
-
-	float fScaleAsian = fScale;
-	if (Language_IsAsian() && fScale > 0.7f )
-	{
-		fScaleAsian = fScale * 0.75f;
-	}
-
-	while(*psText)
-	{
-		int iAdvanceCount;
-		unsigned int uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
-		psText += iAdvanceCount;
-
-		if (uiLetter == '^' )
-		{
-			if (*psText >= '0' &&
-				*psText <= '9')
-			{
-				uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
-				psText += iAdvanceCount;
-				continue;
-			}
-		}
-
-		if (uiLetter == 0x0A)
-		{
-			fThisWidth = 0.0f;
-		}
-		else
-		{
-			int iPixelAdvance = curfont->GetLetterHorizAdvance( uiLetter );
-
-			float fValue = iPixelAdvance * ((uiLetter > (unsigned)g_iNonScaledCharRange) ? fScaleAsian : fScale);
-			fThisWidth += curfont->mbRoundCalcs ? Round( fValue ) : fValue;
-			if (fThisWidth > fMaxWidth)
-			{
-				fMaxWidth = fThisWidth;
-			}
-		}
-	}
-
-	// using ceil because we need to make sure that all the text is contained within the integer pixel width we're returning
-	return (int)ceilf(fMaxWidth);
-#endif
 }
 
 // not really a font function, but keeps naming consistant...

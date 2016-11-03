@@ -1,13 +1,13 @@
 /*
-¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
+=============================================================================
 Unique1's Experimental OM SpawnSys Code.
-¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
+=============================================================================
 OrgVisibleBox
 CheckAboveOK_Player
 CheckBelowOK
 CheckEntitiesInSpot
 Extrapolate_Advanced_Spawnpoint
-¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
+=============================================================================
 */
 
 #include "g_local.h"
@@ -136,7 +136,7 @@ qboolean CheckEntitiesInSpot(vec3_t point)
 		
 		if (entitynum < MAX_CLIENTS 
 			&& ent->client 
-			&& ent->client->ps.origin
+			//&& ent->client->ps.origin
 			&& Distance(point, ent->client->ps.origin) < 128)
 		{// Bad point.
 			return qtrue;

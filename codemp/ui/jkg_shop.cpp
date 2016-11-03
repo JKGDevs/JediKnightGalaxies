@@ -2,520 +2,492 @@
 #include "../game/bg_weapons.h"
 #include "ui_local.h"
 #include "jkg_inventory.h"
-#include <expat.h>
+#include <algorithm>
 
 using namespace std;
 
-struct
-{
-    qboolean active;
-    menuDef_t *menu;
-    int selectedShopItem;
-	qboolean inventoryOpen;
-} shopState;
+/* Global variables */
+static bool bLeftSelected = false;		/* Is the left side (or the right side) selected */
+static int nSelected = -1;				/* The currently selected element */
 
-vector<itemInstance_t> UIunfilteredShopItems;
-vector<itemInstance_t> UIshopItems;
-static int UInumUnfilteredShopItems = 0;
-static int UInumShopItems = 0;			//Number of items in the shop at the time
+static size_t nNumberInventoryItems;	/* The number of inventory items */
+static size_t nNumberShopItems;			/* The number of shop items */
+static size_t nNumberUnfilteredIItems;	/* The total number of inventory items before filtering */
+static size_t nNumberUnfilteredSItems;	/* The total number of shop items before filtering */
 
-static int shopMenuPosition = 0;		//First entry's position in the UIshopItems array
-static int previousFilter = JKGIFILTER_ALL;
+static vector<pair<int, itemInstance_t*>> vInventoryItems;	/* The inventory items, after filtering */
+static vector<pair<int, itemInstance_t*>> vShopItems;		/* The shop items, after filtering */
 
-void JKG_Shop_BuyConfirm_No(char **args);
+static size_t nInventoryScroll = 0;		// How far we've scrolled in the menu
+static size_t nShopScroll = 0;			// How far we've scrolled in the menu
 
-void JKG_Shop_ClearFeederItems(void)
-{
-	itemDef_t *item = Menu_FindItemByName(shopState.menu, "shop_dummyFeeder");
-	listBoxDef_t *listPtr = item->typeData.listbox;
-	int numElements = listPtr->elementHeight;
-	int i;
+// This function constructs both the inventory and shop lists
+void JKG_ConstructShopLists() {
+	vInventoryItems.clear();
+	vShopItems.clear();
 
-	for(i = 0; i < numElements; i++)
-	{
-		Menu_ShowItemByName(shopState.menu, va("shop_feederIMG%i", i+1), qfalse);
-		Menu_ShowItemByName(shopState.menu, va("shop_feederTXT%i", i+1), qfalse);
-		Menu_ShowItemByName(shopState.menu, va("shop_feederAII%i", i+1), qfalse);
+	if (cgImports == nullptr) {
+		// This gets called when the game starts, because ui_inventoryFilter gets modified
+		return;
+	}
+
+	nNumberUnfilteredIItems = *(size_t*)cgImports->InventoryDataRequest(0);
+	nNumberUnfilteredSItems = *(size_t*)cgImports->InventoryDataRequest(5);
+
+	if (nNumberUnfilteredIItems > 0) {
+		itemInstance_t* pAllInventoryItems = (itemInstance_t*)cgImports->InventoryDataRequest(1);
+
+		//
+		// Filter the items
+		//
+		for (int i = 0; i < nNumberUnfilteredIItems; i++) {
+			itemInstance_t* pThisItem = &pAllInventoryItems[i];
+			if (ui_inventoryFilter.integer == JKGIFILTER_ARMOR && pThisItem->id->itemType != ITEM_ARMOR) {
+				continue;
+			}
+			else if (ui_inventoryFilter.integer == JKGIFILTER_WEAPONS && pThisItem->id->itemType != ITEM_WEAPON) {
+				continue;
+			}
+			else if (ui_inventoryFilter.integer == JKGIFILTER_CONSUMABLES && pThisItem->id->itemType != ITEM_CONSUMABLE) {
+				continue;
+			}
+			else if (ui_inventoryFilter.integer == JKGIFILTER_MISC) {
+				continue; // FIXME
+			}
+			vInventoryItems.push_back(make_pair(i, pThisItem));
+		}
+
+		//
+		// Sort the filtered list of items
+		//
+		if (ui_inventorySortMode.integer == 0) {
+			// If it's 0, then we're sorting by item name
+			sort(vInventoryItems.begin(), vInventoryItems.end(),
+				[](const pair<int, itemInstance_t*>& a, const pair<int, itemInstance_t*>& b) -> bool {
+				if (ui_inventorySortType.integer) {
+					return Q_stricmp(UI_GetStringEdString2(a.second->id->displayName), UI_GetStringEdString3(b.second->id->displayName)) > 0;
+				}
+				else {
+					return Q_stricmp(UI_GetStringEdString2(b.second->id->displayName), UI_GetStringEdString3(a.second->id->displayName)) > 0;
+				}
+			});
+		}
+		else if (ui_inventorySortMode.integer == 1) {
+			// If it's 1, then we're sorting by price
+			sort(vInventoryItems.begin(), vInventoryItems.end(),
+				[](const pair<int, itemInstance_t*>& a, const pair<int, itemInstance_t*>& b) -> bool {
+				if (ui_inventorySortType.integer) {
+					return a.second->id->baseCost > b.second->id->baseCost;
+				}
+				else {
+					return a.second->id->baseCost < b.second->id->baseCost;
+				}
+			});
+		}
+	}
+
+	if (nNumberUnfilteredSItems > 0) {
+		itemInstance_t* pAllShopItems = (itemInstance_t*)cgImports->InventoryDataRequest(4);
+
+		//
+		// Filter the list of items
+		//
+		for (int i = 0; i < nNumberUnfilteredSItems; i++) {
+			itemInstance_t* pThisItem = &pAllShopItems[i];
+			if (ui_inventoryFilter.integer == JKGIFILTER_ARMOR && pThisItem->id->itemType != ITEM_ARMOR) {
+				continue;
+			}
+			else if (ui_inventoryFilter.integer == JKGIFILTER_WEAPONS && pThisItem->id->itemType != ITEM_WEAPON) {
+				continue;
+			}
+			else if (ui_inventoryFilter.integer == JKGIFILTER_CONSUMABLES && pThisItem->id->itemType != ITEM_CONSUMABLE) {
+				continue;
+			}
+			else if (ui_inventoryFilter.integer == JKGIFILTER_MISC) {
+				continue;
+			}
+			vShopItems.push_back(make_pair(i, pThisItem));
+		}
+
+		//
+		// Sort the filtered list of items
+		//
+		if (ui_shopSortMode.integer == 0) {
+			// If it's 0, then we're sorting by item name
+			sort(vShopItems.begin(), vShopItems.end(),
+				[](const pair<int, itemInstance_t*>& a, const pair<int, itemInstance_t*>& b) -> bool {
+				if (ui_shopSortType.integer) {
+					return Q_stricmp(UI_GetStringEdString2(a.second->id->displayName), UI_GetStringEdString3(b.second->id->displayName)) > 0;
+				}
+				else {
+					return Q_stricmp(UI_GetStringEdString2(b.second->id->displayName), UI_GetStringEdString3(a.second->id->displayName)) > 0;
+				}
+			});
+		}
+		else if (ui_shopSortMode.integer == 1) {
+			// If it's 1, then we're sorting by price
+			sort(vShopItems.begin(), vShopItems.end(),
+				[](const pair<int, itemInstance_t*>& a, const pair<int, itemInstance_t*>& b) -> bool {
+				if (ui_shopSortType.integer) {
+					return a.second->id->baseCost > b.second->id->baseCost;
+				}
+				else {
+					return a.second->id->baseCost < b.second->id->baseCost;
+				}
+			});
+		}
+	}
+
+	// Reset the selection/scroll if it goes out of bounds
+	nNumberInventoryItems = vInventoryItems.size();
+	nNumberShopItems = vShopItems.size();
+	if (bLeftSelected && nSelected >= nNumberInventoryItems) {
+		nSelected = -1;
+	}
+	else if (!bLeftSelected && nSelected >= nNumberShopItems) {
+		nSelected = -1;
+	}
+
+	if (nInventoryScroll >= nNumberInventoryItems) {
+		nInventoryScroll = 0;
+	}
+
+	if (nShopScroll >= nNumberShopItems) {
+		nShopScroll = 0;
 	}
 }
 
-void JKG_Shop_ClearSlot(int slotNum)
-{
-	itemDef_t *item;
-	item = Menu_FindItemByName(shopState.menu, va("shop_feederIMG%i", slotNum));
-	if(item)
-	{
-		Menu_ShowItemByName(shopState.menu, va("shop_feederIMG%i", slotNum), qfalse);
-	}
-	item = Menu_FindItemByName(shopState.menu, va("shop_feederTXT%i", slotNum));
-	if(item)
-	{
-		Menu_ShowItemByName(shopState.menu, va("shop_feederTXT%i", slotNum), qfalse);
-	}
-	item = Menu_FindItemByName(shopState.menu, va("shop_feederAII%i", slotNum));
-	if(item)
-	{
-		Menu_ShowItemByName(shopState.menu, va("shop_feederAII%i", slotNum), qfalse);
-	}
-	item = Menu_FindItemByName(shopState.menu, va("shop_feederHIL%i", slotNum));
-	if(item)
-	{
-		Menu_ShowItemByName(shopState.menu, va("shop_feederHIL%i", slotNum), qfalse);
-	}
-	Menu_ShowItemByName(shopState.menu, va("shop_feederBO%i", slotNum), qfalse);
+void JKG_ShopInventorySortChanged() {
+	JKG_ConstructShopLists();
 }
 
-void JKG_Shop_ClearHighlights(int maxElements)
-{
-	int i;
-	for(i = 1; i < maxElements+1; i++)
-	{
-		Menu_ShowItemByName(shopState.menu, va("shop_feederHIL%i", i), qfalse);
-		Menu_ShowItemByName(shopState.menu, va("shop_feederH2L%i", i), qfalse);
-		Menu_ShowItemByName(shopState.menu, va("shop_feederH3L%i", i), qfalse);
+// The script that gets run when a shop arrow button is pressed
+void JKG_ShopArrow(char** args) {
+	const char* side;
+	const char* direction;
+	int count;
+
+	if (!String_Parse(args, &side)) {
+		trap->Print("Couldn't parse shop_arrow jkgscript\n");
+		return;
 	}
-	Menu_ShowGroup(shopState.menu, "shop_preview", qfalse);
-	Menu_ShowGroup(shopState.menu, "shop_preview_examine", qfalse);
+	else if (!String_Parse(args, &direction)) {
+		trap->Print("Couldn't parse shop_arrow jkgscript\n");
+		return;
+	}
+	else if (!Int_Parse(args, &count)) {
+		trap->Print("Couldn't parse shop_arrow jkgscript\n");
+		return;
+	}
+
+	if (count <= 0) {
+		trap->Print("shop_arrow called with 0 or negative scroll value\n");
+		return;
+	}
+
+	if (!Q_stricmp(direction, "up")) {
+		count *= -1;
+	}
+
+	if (!Q_stricmp(side, "left")) {
+		if (nShopScroll == 0 && count < 0) {
+			nShopScroll = 0;
+		}
+		else if (nNumberInventoryItems > 0 && nInventoryScroll + count >= nNumberInventoryItems) {
+			nInventoryScroll = nNumberInventoryItems - 1;
+		}
+		else {
+			nInventoryScroll += count;
+		}
+	}
+	else if (!Q_stricmp(side, "right")) {
+		if (nShopScroll == 0 && count < 0) {
+			nShopScroll = 0;
+		}
+		else if (nNumberShopItems > 0 && nShopScroll + count >= nNumberShopItems) {
+			nShopScroll = nNumberShopItems - 1;
+		}
+		else {
+			nShopScroll += count;
+		}
+	}
+	else {
+		trap->Print("Unknown side '%s' used for shop_arrow jkgscript\n", side);
+		return;
+	}
+
+	JKG_ConstructShopLists();
 }
 
-void JKG_Shop_UpdateShopStuff(int filterVal)
-{
-	//You should call this function whenever the screen needs updating (such as a change in state)
-	//Variable declarations
-	itemDef_t *item = Menu_FindItemByName(shopState.menu, "shop_dummyFeeder");
-	itemDef_t *item2;
-	listBoxDef_t *listPtr = item->typeData.listbox;
-	int numElements = listPtr->elementHeight;
-	int i;
-	itemData_t *lookupTable = (itemData_t *)cgImports->InventoryDataRequest(6);
-
-	//Clear the crapola
-	UIshopItems.clear();
-	UInumShopItems = 0;
-
-	//Update the filters, first and foremost
-	itemInstance_t* itemInstances = (itemInstance_t*)cgImports->InventoryDataRequest(4);
-	UIunfilteredShopItems.clear();
-	UInumUnfilteredShopItems = *(size_t*)cgImports->InventoryDataRequest( 5 );
-	for (int i = 0; i < UInumUnfilteredShopItems; i++) {
-		UIunfilteredShopItems.push_back(itemInstances[i]);
+//
+// The icon that shows up for each item button
+// 
+void JKG_ShopIconLeft(itemDef_t* item, int nOwnerDrawID) {
+	if (nInventoryScroll + nOwnerDrawID >= nNumberInventoryItems) {
+		// Don't draw it if there isn't an item in the slot
+		return;
 	}
 
-	//if(ui_inventoryFilter.integer != JKGIFILTER_ALL)
-	{
-		for(i = 0; i < UInumUnfilteredShopItems; i++)
-		{
-			//int itemID = UIunfilteredShopItems[i].id->itemID;
-			switch(filterVal)
-			{
-				case JKGIFILTER_ALL:
-					UIshopItems.push_back(UIunfilteredShopItems[i]);
-					break;
-				case JKGIFILTER_ARMOR:
-					if(UIunfilteredShopItems[i].id->itemType == ITEM_ARMOR || UIunfilteredShopItems[i].id->itemType == ITEM_CLOTHING)
-					{
-						UIshopItems.push_back(UIunfilteredShopItems[i]);
-					}
-					break;
-				case JKGIFILTER_WEAPONS:
-					if(UIunfilteredShopItems[i].id->itemType == ITEM_WEAPON)
-					{
-						UIshopItems.push_back(UIunfilteredShopItems[i]);
-					}
-					break;
-				case JKGIFILTER_CONSUMABLES:
-					if(UIunfilteredShopItems[i].id->itemType == ITEM_CONSUMABLE)
-					{
-						UIshopItems.push_back(UIunfilteredShopItems[i]);
-					}
-					break;
-				case JKGIFILTER_MISC:
-					if(UIunfilteredShopItems[i].id->itemType == ITEM_UNKNOWN)
-					{
-						UIshopItems.push_back(UIunfilteredShopItems[i]);
-					}
-					break;
-			}
-		}
+	itemInstance_t* pThisItem = vInventoryItems[nInventoryScroll + nOwnerDrawID].second;
+	qhandle_t shader = trap->R_RegisterShaderNoMip(pThisItem->id->visuals.itemIcon);
+	trap->R_DrawStretchPic(item->window.rect.x, item->window.rect.y, item->window.rect.w, item->window.rect.h,
+		0, 0, 1, 1, shader);
+}
+
+void JKG_ShopIconRight(itemDef_t* item, int nOwnerDrawID) {
+	if (nShopScroll + nOwnerDrawID >= nNumberShopItems) {
+		// Don't draw it if there isn't an item in the slot
+		return;
 	}
-	UInumShopItems = UIshopItems.size();
 
-	//Update all the shop items
-	for(i = 0; i < numElements; i++)
-	{
-		if((shopMenuPosition + i) >= UInumShopItems)
-		{
-			JKG_Shop_ClearSlot(i+1);
-			continue;	//If we're past our limit...don't draw stuff!
-		}
-		item2 = Menu_FindItemByName(shopState.menu, va("shop_feederIMG%i", i+1));
-		if(item2)
-		{
-			//Image -> get the item icon for this item
-			item2->window.background = trap->R_RegisterShaderNoMip(UIshopItems[i+shopMenuPosition].id->visuals.itemIcon); //TODO: precache me
-			Menu_ShowItemByName(shopState.menu, va("shop_feederIMG%i", i+1), qtrue);
-		}
+	itemInstance_t* pThisItem = vShopItems[nShopScroll + nOwnerDrawID].second;
+	qhandle_t shader = trap->R_RegisterShaderNoMip(pThisItem->id->visuals.itemIcon);
+	trap->R_DrawStretchPic(item->window.rect.x, item->window.rect.y, item->window.rect.w, item->window.rect.h,
+		0, 0, 1, 1, shader);
+}
 
-		item2 = Menu_FindItemByName(shopState.menu, va("shop_feederTXT%i", i+1));
-		if(item2)
-		{
-			//Text-> First line (aka big line) is the name, second line is the cost
-			Menu_ShowItemByName(shopState.menu, va("shop_feederTXT%i", i+1), qtrue);
-			strcpy(item2->text, UIshopItems[i+shopMenuPosition].id->displayName);
-			if(UIshopItems[i+shopMenuPosition].id->baseCost == 0)
-			{
-				sprintf(item->text2, "Free");
-			}
-			else
-			{
-				sprintf(item2->text2, "Cost: %i", UIshopItems[i+shopMenuPosition].id->baseCost);
-			}
-			item2->textRect.w = 0;
-		}
-
-		item2 = Menu_FindItemByName(shopState.menu, va("shop_feederAII%i", i+1));
-		if(item2)
-		{
-			//Is this item already in our inventory? If so, draw a neat little graphic saying it is
-			Menu_ShowItemByName(shopState.menu, va("shop_feederAII%i", i+1), qtrue);
-		}
-
-		item2 = Menu_FindItemByName(shopState.menu, va("shop_feederBO%i", i+1));
-		if(item2)
-		{
-			int credits = *(int*)cgImports->InventoryDataRequest( 3 );
-			if(credits < UIshopItems[i+shopMenuPosition].id->baseCost)
-			{
-				Menu_ShowItemByName(shopState.menu, va("shop_feederBO%i", i+1), qtrue);
-			}
-			else
-			{
-				Menu_ShowItemByName(shopState.menu, va("shop_feederBO%i", i+1), qfalse);
-			}
-		}
+//
+// The selection highlight that shows on the item we have selected
+//
+void JKG_Shop_InventorySelection(itemDef_t* item, int nOwnerDrawID) {
+	if (!bLeftSelected) {
+		return; // An item on the left hand side is not selected.
 	}
-	//Update the selection data
-	if(shopState.selectedShopItem > 0)
-	{
-		int shopSlotNumber = shopState.selectedShopItem-shopMenuPosition;
-		if(shopSlotNumber < 0)
-		{
-			//Hide it all
-hideItAll:
-			shopState.selectedShopItem = 0;
-			JKG_Shop_UpdateShopStuff(ui_inventoryFilter.integer);
+	if (nSelected != nInventoryScroll + nOwnerDrawID) {
+		return; // The item we have selected is not this one.
+	}
+	trap->R_DrawStretchPic(item->window.rect.x, item->window.rect.y, item->window.rect.w, item->window.rect.h,
+		0, 0, 1, 1, item->window.background);
+}
+
+void JKG_Shop_ShopSelection(itemDef_t* item, int nOwnerDrawID) {
+	if (bLeftSelected) {
+		return; // An item on the right hand side is not selected.
+	}
+	if (nSelected != nShopScroll + nOwnerDrawID) {
+		return; // The item we have selected is not this one.
+	}
+	trap->R_DrawStretchPic(item->window.rect.x, item->window.rect.y, item->window.rect.w, item->window.rect.h,
+		0, 0, 1, 1, item->window.background);
+}
+
+//
+// The name of the item that shows on each button
+//
+extern void Item_Text_Paint(itemDef_t *item);
+void JKG_Shop_InventoryItemName(itemDef_t* item, int nOwnerDrawID) {
+	if (nInventoryScroll + nOwnerDrawID >= nNumberInventoryItems) {
+		memset(item->text, 0, sizeof(item->text));
+		Item_Text_Paint(item); // FIXME: should we really be trying to paint a blank string?
+		return; // There isn't an item in this slot.
+	}
+	itemInstance_t* pItem = vInventoryItems[nInventoryScroll + nOwnerDrawID].second;
+	Q_strncpyz(item->text, pItem->id->displayName, sizeof(item->text));
+	Item_Text_Paint(item);
+}
+
+void JKG_Shop_ShopItemName(itemDef_t* item, int nOwnerDrawID) {
+	if (nShopScroll + nOwnerDrawID >= nNumberShopItems) {
+		memset(item->text, 0, sizeof(item->text));
+		Item_Text_Paint(item); // FIXME: should we really be trying to paint a blank string?
+		return; // There isn't an item in this slot.
+	}
+	itemInstance_t* pItem = vShopItems[nShopScroll + nOwnerDrawID].second;
+	Q_strncpyz(item->text, pItem->id->displayName, sizeof(item->text));
+	Item_Text_Paint(item);
+}
+
+//
+// The cost of the item that shows on each button
+// 
+
+void JKG_Shop_InventoryItemCost(itemDef_t* item, int nOwnerDrawID) {
+	if (nInventoryScroll + nOwnerDrawID >= nNumberInventoryItems) {
+		memset(item->text, 0, sizeof(item->text));
+		Item_Text_Paint(item); // FIXME: should we really be trying to paint a blank string?
+		return; // There isn't an item in this slot.
+	}
+	itemInstance_t* pItem = vInventoryItems[nInventoryScroll + nOwnerDrawID].second;
+	sprintf(item->text, "%i", pItem->id->baseCost / 2);
+	Item_Text_Paint(item);
+}
+
+void JKG_Shop_ShopItemCost(itemDef_t* item, int nOwnerDrawID) {
+	if (nShopScroll + nOwnerDrawID >= nNumberShopItems) {
+		memset(item->text, 0, sizeof(item->text));
+		Item_Text_Paint(item); // FIXME: should we really be trying to paint a blank string?
+		return; // There isn't an item in this slot.
+	}
+	itemInstance_t* pItem = vShopItems[nShopScroll + nOwnerDrawID].second;
+	sprintf(item->text, "%i", pItem->id->baseCost);
+	Item_Text_Paint(item);
+}
+
+//
+// These four functions are used to calculate the width of the text for alignment purposes
+// See UI_OwnerDrawWidth in ui_main.cpp for more information.
+//
+
+char* JKG_Shop_LeftNameText(int ownerDrawID) {
+	if (nInventoryScroll + ownerDrawID >= nNumberInventoryItems) {
+		return nullptr;
+	}
+	itemInstance_t* pItem = vInventoryItems[nInventoryScroll + ownerDrawID].second;
+	return pItem->id->displayName;
+}
+
+char* JKG_Shop_LeftPriceText(int ownerDrawID) {
+	if (nInventoryScroll + ownerDrawID >= nNumberInventoryItems) {
+		return nullptr;
+	}
+	itemInstance_t* pItem = vInventoryItems[nInventoryScroll + ownerDrawID].second;
+	return va("%i", pItem->id->baseCost / 2);
+}
+
+char* JKG_Shop_RightNameText(int ownerDrawID) {
+	if (nShopScroll + ownerDrawID >= nNumberShopItems) {
+		return nullptr;
+	}
+	itemInstance_t* pItem = vShopItems[nShopScroll + ownerDrawID].second;
+	return pItem->id->displayName;
+}
+
+char* JKG_Shop_RightPriceText(int ownerDrawID) {
+	if (nShopScroll + ownerDrawID >= nNumberShopItems) {
+		return nullptr;
+	}
+	itemInstance_t* pItem = vShopItems[nShopScroll + ownerDrawID].second;
+	return va("%i", pItem->id->baseCost);
+}
+
+//
+// The action that gets performed when we select an item
+//
+
+void JKG_Shop_SelectLeft(char** args) {
+	int id;
+	if (!Int_Parse(args, &id)) {
+		trap->Print("Couldn't parse selectleft object\n");
+		return;
+	}
+	if (id + nInventoryScroll >= nNumberInventoryItems) {
+		nSelected = -1;
+		return;
+	}
+	bLeftSelected = true;
+	nSelected = nInventoryScroll + id;
+}
+
+void JKG_Shop_SelectRight(char** args) {
+	int id;
+	if (!Int_Parse(args, &id)) {
+		trap->Print("Couldn't parse selectleft object\n");
+		return;
+	}
+	if (id + nShopScroll >= nNumberShopItems) {
+		nSelected = -1;
+		return;
+	}
+	bLeftSelected = false;
+	nSelected = nShopScroll + id;
+}
+
+void JKG_Shop_Sort(char** args) {
+	const char* side;
+	const char* criteria;
+
+	if (!String_Parse(args, &side)) {
+		trap->Print("Couldn't parse shop_sort script\n");
+		return;
+	}
+	else if (!String_Parse(args, &criteria)) {
+		trap->Print("Couldn't parse shop_sort script\n");
+		return;
+	}
+
+	if (!Q_stricmp(side, "left")) {
+		if (!Q_stricmp(criteria, "name")) {
+			trap->Cvar_Set("ui_inventorySortMode", "0");
+			trap->Cvar_Set("ui_inventorySortType", va("%i", !ui_inventorySortType.integer));
+		}
+		else if (!Q_stricmp(criteria, "price")) {
+			trap->Cvar_Set("ui_inventorySortMode", "1");
+			trap->Cvar_Set("ui_inventorySortType", va("%i", !ui_inventorySortType.integer));
+		}
+		else {
+			trap->Print("Side %s has bad criteria '%s' for filter!\n", side, criteria);
 			return;
 		}
-		else if(shopSlotNumber > numElements)
-		{
-			//Hide the selection stuff
-			goto hideItAll;
-		}
-		//Hide all the other highlights
-		JKG_Shop_ClearHighlights(numElements);
-
-		//Draw the selection stuff
-		item2 = Menu_FindItemByName(shopState.menu, va("shop_feederHIL%i", shopSlotNumber));
-		if(item2)
-		{
-			Menu_ShowItemByName(shopState.menu, va("shop_feederHIL%i", shopSlotNumber), qtrue);
-		}
-		item2 = Menu_FindItemByName(shopState.menu, va("shop_feederH2L%i", shopSlotNumber));
-		if(item2)
-		{
-			Menu_ShowItemByName(shopState.menu, va("shop_feederH2L%i", shopSlotNumber), qtrue);
-		}
-		item2 = Menu_FindItemByName(shopState.menu, va("shop_feederH3L%i", shopSlotNumber));
-		if(item2)
-		{
-			Menu_ShowItemByName(shopState.menu, va("shop_feederH3L%i", shopSlotNumber), qtrue);
-		}
-
-		//Draw the preview stuff
-		item2 = Menu_FindItemByName(shopState.menu, "shop_previewIcon");
-		if(item2)
-		{
-			item2->window.background = trap->R_RegisterShaderNoMip(UIshopItems[shopSlotNumber+shopMenuPosition-1].id->visuals.itemIcon);
-		}
-
-		item2 = Menu_FindItemByName(shopState.menu, "shop_previewItemName");
-		if(item2)
-		{
-			strcpy(item2->text, UIshopItems[shopSlotNumber+shopMenuPosition-1].id->displayName);
-			//Recalculate the positioning
-			item2->textRect.w = 0;
-		}
-
-		item2 = Menu_FindItemByName(shopState.menu, "shop_previewItemCost");
-		if(item2)
-		{
-			sprintf(item2->text, va("Cost: %i", UIshopItems[shopSlotNumber+shopMenuPosition-1].id->baseCost));
-			//Recalculate the positioning
-			item2->textRect.w = 0;
-		}
-
-		//Show the preview group
-		Menu_ShowGroup(shopState.menu, "shop_preview", qtrue);
-		Menu_ShowGroup(shopState.menu, "shop_preview_examine", qtrue);
+		// Set selection cursor back to first so we go back to the top of the list automatically
+		nInventoryScroll = 0;
 	}
-	else
-	{
-		//Hide the selection stuff
-		JKG_Shop_ClearHighlights(numElements);
+	else if (!Q_stricmp(side, "right")) {
+		if (!Q_stricmp(criteria, "name")) {
+			trap->Cvar_Set("ui_shopSortMode", "0");
+			trap->Cvar_Set("ui_shopSortType", va("%i", !ui_shopSortType.integer));
+		}
+		else if (!Q_stricmp(criteria, "price")) {
+			trap->Cvar_Set("ui_shopSortMode", "1");
+			trap->Cvar_Set("ui_shopSortType", va("%i", !ui_shopSortType.integer));
+		}
+		else {
+			trap->Print("Side %s has bad criteria '%s' for filter!\n", side, criteria);
+			return;
+		}
+		// Set selection cursor back to first so we go back to the top of the list automatically
+		nShopScroll = 0;
 	}
-}
-
-void JKG_Shop_UpdateCreditDisplay(void)
-{
-	itemDef_t *item = Menu_FindItemByName(shopState.menu, "shopmain_credits");
-	int credits = *(int*)cgImports->InventoryDataRequest( 3 );
-	if(!item)
-	{
+	else {
+		trap->Print("Bad side '%s'\n", side);
 		return;
 	}
-	sprintf(item->text, "Credits: %i", credits);
-	item->textRect.w = 0; //Hack to recalculate positioning
+	JKG_ConstructShopLists();
 }
 
-void JKG_Shop_UpdateNotify(int msg)
-{
-	switch(msg)
-	{
-		case 0:
-			//Open the shop menu
-			memset(&shopState, 0, sizeof(shopState));
-			shopState.active = qtrue;
-
-			shopState.menu = Menus_FindByName("jkg_shop");
-			if(shopState.menu && Menus_ActivateByName("jkg_shop"))
-			{
-				trap->Key_SetCatcher (trap->Key_GetCatcher() | KEYCATCH_UI /*& ~KEYCATCH_CONSOLE*/);
-			}
-			shopState.selectedShopItem = 0;
-			break;
-		case 1:
-			{
-				JKG_Shop_UpdateShopStuff(ui_inventoryFilter.integer);
-				JKG_Shop_UpdateCreditDisplay();
-			}
-			break;
-	}
-}
-
-void JKG_Shop_OpenDialog(char **args)
-{
-	trap->Cvar_Set ("ui_hidehud", "1");
-	shopState.active = qtrue;
-	shopState.inventoryOpen = qfalse;
-
-	Menu_ClearFocus(shopState.menu);
-	JKG_Shop_UpdateCreditDisplay();
-
-	//JKG_Shop_UpdateShopStuff(ui_inventoryFilter.integer);
-	JKG_Shop_BuyConfirm_No(NULL);
-}
-
-void JKG_Shop_CloseDialog(char **args)
-{
-	if(!shopState.inventoryOpen)
-	{
-		trap->Cvar_Set ("ui_hidehud", "0");
-	}
-	shopState.active = qfalse;
-	cgImports->SendClientCommand ("closeVendor");
-}
-
-void JKG_Shop_ItemSelect(char **args)
-{
-	itemDef_t *item = Menu_FindItemByName(shopState.menu, "shop_dummyFeeder");
-	listBoxDef_t *listPtr = item->typeData.listbox;
-	itemData_t *lookupTable = (itemData_t *)cgImports->InventoryDataRequest( 6 );
-	int credits = *(int*)cgImports->InventoryDataRequest( 3 );
-	int arg0 = atoi(args[0]);
-	if(arg0 <= 0)
-	{
-		//Not valid
+void JKG_Shop_SortSelectionName(itemDef_t* item, int ownerDrawID) {
+	if (ownerDrawID && ui_shopSortMode.integer != 0) {
 		return;
 	}
-	else if(arg0 > listPtr->elementHeight)
-	{
-		//Too high...bug?
-		return;
-	}
-	else if (shopMenuPosition + arg0 > UInumShopItems) {
+	else if (!ownerDrawID && ui_inventorySortMode.integer != 0) {
 		return;
 	}
 
-	shopState.selectedShopItem = shopMenuPosition+arg0;
-	JKG_Shop_UpdateShopStuff(ui_inventoryFilter.integer);
+	trap->R_DrawStretchPic(item->window.rect.x, item->window.rect.y, item->window.rect.w, item->window.rect.h,
+		0, 0, 1, 1, item->window.background);
 }
 
-void JKG_Shop_ArrowPrevClean(void)
-{
-	itemDef_t *item = Menu_FindItemByName(shopState.menu, "shop_dummyFeeder");
-	listBoxDef_t *listPtr = item->typeData.listbox;
-	int numElements = listPtr->elementHeight;
-	if(shopMenuPosition-1 < 0)
-	{
-		shopMenuPosition = 0;
+void JKG_Shop_SortSelectionPrice(itemDef_t* item, int ownerDrawID) {
+	if (ownerDrawID && ui_shopSortMode.integer != 1) {
+		return;
 	}
-	else
-	{
-		shopMenuPosition--;
-	}
-	//Check and see if the currently selected item is offscreen
-	if(shopState.selectedShopItem > shopMenuPosition+numElements)
-	{
-		//It's offscreen, so deselect it
-		shopState.selectedShopItem = 0;
-	}
-	//Update the shop menu
-	JKG_Shop_UpdateShopStuff(ui_inventoryFilter.integer);
-}
-void JKG_Shop_ArrowNextClean(void)
-{
-	int arg = 1;
-	
-	//Check if we're approaching out of bounds area
-	if(arg+shopMenuPosition > UInumShopItems)
-	{
-		shopMenuPosition = UInumShopItems;
-	}
-	else
-	{
-		shopMenuPosition += arg;
+	else if (!ownerDrawID && ui_inventorySortMode.integer != 1) {
+		return;
 	}
 
-	//Check and see if the currently selected item is offscreen
-	if(shopState.selectedShopItem < shopMenuPosition)
-	{
-		//Deselect it
-		shopState.selectedShopItem = 0;
-	}
-
-	//Update the shop menu display
-	JKG_Shop_UpdateShopStuff(ui_inventoryFilter.integer);
-}
-void JKG_Shop_ArrowPrev(char **args)
-{
-	int arg = atoi(args[0]);
-	itemDef_t *item = Menu_FindItemByName(shopState.menu, "shop_dummyFeeder");
-	listBoxDef_t *listPtr = item->typeData.listbox;
-	int numElements = listPtr->elementHeight;
-
-	//Check if we're approaching 0
-	if(shopMenuPosition-arg < 0)
-	{
-		shopMenuPosition = 0;
-	}
-	else
-	{
-		shopMenuPosition -= arg;
-	}
-	//Check and see if the currently selected item is offscreen
-	if(shopState.selectedShopItem > shopMenuPosition+numElements)
-	{
-		//It's offscreen, so deselect it
-		shopState.selectedShopItem = 0;
-	}
-	//Update the shop menu
-	JKG_Shop_UpdateShopStuff(ui_inventoryFilter.integer);
+	trap->R_DrawStretchPic(item->window.rect.x, item->window.rect.y, item->window.rect.w, item->window.rect.h,
+		0, 0, 1, 1, item->window.background);
 }
 
-void JKG_Shop_ArrowNext(char **args)
-{
-	int arg = atoi(args[0]);
-	
-	//Check if we're approaching out of bounds area
-	if(arg+shopMenuPosition > UInumShopItems)
-	{
-		shopMenuPosition = UInumShopItems;
+void JKG_Shop_BuyItem(char** args) {
+	if (bLeftSelected) {
+		return; // Can't buy an item from your inventory
 	}
-	else
-	{
-		shopMenuPosition += arg;
+	if (nSelected < 0 || nSelected >= nNumberShopItems) {
+		return; // Invalid selection
 	}
-
-	//Check and see if the currently selected item is offscreen
-	if(shopState.selectedShopItem < shopMenuPosition)
-	{
-		//Deselect it
-		shopState.selectedShopItem = 0;
-	}
-
-	//Update the shop menu display
-	JKG_Shop_UpdateShopStuff(ui_inventoryFilter.integer);
+	cgImports->SendClientCommand(va("buyVendor %i", nSelected));
 }
 
-void JKG_Shop_Update(char **args)
-{
-	//Double hack
-	if(atoi(args[0]) <= 0)
-	{
-		shopState.selectedShopItem = 0;
-		JKG_Shop_UpdateShopStuff(atoi(args[0])*-1);
+void JKG_Shop_SellItem(char** args) {
+	if (!bLeftSelected) {
+		return; // Can't sell an item from the shop
 	}
-	else
-	{
-		JKG_Shop_UpdateShopStuff(ui_inventoryFilter.integer);
+	if (nSelected < 0 || nSelected >= nNumberInventoryItems) {
+		return; // Invalid selection
 	}
+	cgImports->SendClientCommand(va("inventorySell %i", nSelected));
 }
 
-void JKG_Shop_ClearFocus(char **args)
-{
-	shopState.selectedShopItem = 0;
-}
-
-void JKG_Shop_BuyConfirm_Yes(char **args)
-{
-	//Buying the item
-	//Make sure we don't buy an item that we didn't mean to buy
-	int desiredItemID = UIshopItems[shopState.selectedShopItem-1].id->itemID;
-	int actualItemID;
-	Menu_ShowGroup(shopState.menu, "shop_buyconfirm", qfalse);
-	JKG_Shop_UpdateShopStuff(ui_inventoryFilter.integer);
-	actualItemID = UIshopItems[shopState.selectedShopItem-1].id->itemID;
-	if(actualItemID == desiredItemID)
-	{
-		// Here's a thought...why not send the item ID _instead_ of the selected index?
-		// 100% guaranteed to work then --eez
-		cgImports->SendClientCommand(va("buyVendor %i", shopState.selectedShopItem-1));
-	}
-	Menu_ItemDisable(shopState.menu, "shop_preview", qfalse);
-	Menu_ItemDisable(shopState.menu, "shop_feederSel", qfalse);
-	Menu_ItemDisable(shopState.menu, "shop_arrows", qfalse);
-	Menu_ItemDisable(shopState.menu, "main_dialog", qfalse);
-	JKG_Shop_UpdateCreditDisplay();
-}
-
-void JKG_Shop_BuyConfirm_No(char **args)
-{
-	Menu_ShowGroup(shopState.menu, "shop_buyconfirm", qfalse);
-	JKG_Shop_UpdateShopStuff(ui_inventoryFilter.integer);
-	Menu_ItemDisable(shopState.menu, "shop_preview", qfalse);
-	Menu_ItemDisable(shopState.menu, "shop_feederSel", qfalse);
-	Menu_ItemDisable(shopState.menu, "shop_arrows", qfalse);
-	Menu_ItemDisable(shopState.menu, "main_dialog", qfalse);
-}
-
-void JKG_Shop_BuyConfirm_Display(char **args)
-{
-	//This sets the text on the display
-	itemDef_t *item = Menu_FindItemByName(shopState.menu, "shop_buyconfirm_text");
-	//itemData_t *lookupTable = (itemData_t *)cgImports->InventoryDataRequest( 6 );
-	if(item)
-	{
-		strcpy(item->text, va("Buy this item for %i credits?", UIshopItems[shopState.selectedShopItem - 1].id->baseCost));
-		item->textRect.w = 0;
-	}
-}
-
-void JKG_Shop_OpenInventoryMenu(char **args)
-{
-	Menus_CloseByName(shopState.menu->window.name);
-}
-
-void JKG_Shop_RestoreShopMenu(void)
-{
-	Menus_OpenByName("jkg_shop");
+void JKG_Shop_Closed(char** args) {
+	cgImports->SendClientCommand("closeVendor");
 }

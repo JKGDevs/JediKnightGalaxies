@@ -636,7 +636,7 @@ static int GLua_NPC_SetBehaviorState(lua_State *L) {
 		bSID = (bState_t)luaL_checkinteger(L,2);
 	}
 
-	if ( bSID > -1 )
+	if ( bSID != (bState_t)-1 )
 	{
 		if ( bSID == BS_SEARCH || bSID == BS_WANDER )
 		{
@@ -669,7 +669,6 @@ static int GLua_NPC_SetBehaviorState(lua_State *L) {
 				}
 			}
 		}
-		
 
 		npc->NPC->tempBehavior = BS_DEFAULT;//need to clear any temp behaviour
 		if ( npc->NPC->behaviorState == BS_NOCLIP && bSID != BS_NOCLIP )

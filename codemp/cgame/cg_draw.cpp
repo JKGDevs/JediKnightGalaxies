@@ -4738,7 +4738,6 @@ void CG_DrawNPCNames( void )
 		float			size, x, y, x2, y2, dist;
 		vec4_t			tclr =	{ 0.325f,	0.325f,	1.0f,	1.0f	};
 		vec4_t			tclr2 = { 0.325f,	0.325f,	1.0f,	1.0f	};
-		int				baseColor = CT_BLUE;
 		float			multiplier = 1.0f;
 
 		if (!cent)
@@ -6476,17 +6475,6 @@ void CG_ChatBox_AddString(char *chatStr, int fadeLevel)
 				i+=colorLen;
 				continue;
 			}
-			/*if (chat->string[i] == '^') {
-				// Dont include color codes in here :P
-				if (chat->string[i+1] >= '0' && chat->string[i+1] <= '9') {
-					i+=2;
-					continue;
-				}
-				if (chat->string[i + 1] == 'x' && Text_IsExtColorCode(&chat->string[i + 1]) || chat->string[i + 1] == 'X' && Text_IsExtColorCode(&chat->string[i + 1])) {		//futuza also allow 'X'
-					i+=5;
-					continue;
-				}
-			}*/
 			*writeptr = chat->string[i];
 			//chatLen = ((float)trap->R_Font_StrLenPixels(buffer, cgDC.Assets.qhSmall4Font, 1) * 0.5f); //CG_Text_Width(s, 0.65f, FONT_SMALL);
 			//chatLen += trap->R_Font_StrLenPixels(s, cgDC.Assets.qhSmallFont, 0.4f); //CG_Text_Width(s, 0.65f, FONT_SMALL);

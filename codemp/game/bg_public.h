@@ -539,7 +539,7 @@ extern int bgForcePowerCost[NUM_FORCE_POWERS][NUM_FORCE_POWER_LEVELS];
 #define	PMF_FIX_MINS		128		// mins have been brought up, keep tracing down to fix them
 #define	PMF_TIME_WATERJUMP	256		// pm_time is waterjump
 #define	PMF_RESPAWNED		512		// clear after attack and jump buttons come up
-#define	PMF_USE_ITEM_HELD	1024
+#define	PMF_UNUSED			1024
 #define PMF_UPDATE_ANIM		2048	// The server updated the animation, the pmove should set the ghoul2 anim to match.
 #define PMF_FOLLOW			4096	// spectate following another player
 #define PMF_SCOREBOARD		8192	// spectate as a scoreboard
@@ -819,26 +819,6 @@ typedef enum {
 } powerup_t;
 
 typedef enum {
-	HI_NONE,
-
-	HI_SEEKER,
-	HI_SHIELD,
-	HI_MEDPAC,
-	HI_MEDPAC_BIG,
-	HI_BINOCULARS,
-	HI_SENTRY_GUN,
-	HI_JETPACK,
-
-	HI_HEALTHDISP,
-	HI_AMMODISP,
-	HI_EWEB,
-	HI_CLOAK,
-
-	HI_NUM_HOLDABLE
-} holdable_t;
-
-
-typedef enum {
 	CTFMESSAGE_FRAGGED_FLAG_CARRIER,
 	CTFMESSAGE_FLAG_RETURNED,
 	CTFMESSAGE_PLAYER_RETURNED_FLAG,
@@ -937,25 +917,6 @@ typedef enum {
 	EV_LOCALTIMER,
 
 	EV_USE,			// +Use key
-
-	EV_USE_ITEM0,
-	EV_USE_ITEM1,
-	EV_USE_ITEM2,
-	EV_USE_ITEM3,
-	EV_USE_ITEM4,
-	EV_USE_ITEM5,
-	EV_USE_ITEM6,
-	EV_USE_ITEM7,
-	EV_USE_ITEM8,
-	EV_USE_ITEM9,
-	EV_USE_ITEM10,
-	EV_USE_ITEM11,
-	EV_USE_ITEM12,
-	EV_USE_ITEM13,
-	EV_USE_ITEM14,
-	EV_USE_ITEM15,
-
-	EV_ITEMUSEFAIL,
 
 	EV_ITEM_RESPAWN,
 	EV_ITEM_POP,
@@ -1243,8 +1204,6 @@ typedef enum {
 	IT_HEALTH,				// EFX: static external sphere + rotating internal
 	IT_POWERUP,				// instant on, timer based
 							// EFX: rotate + external ring that rotates
-	IT_HOLDABLE,			// single use, holdable item
-							// EFX: rotate + bob
 	IT_PERSISTANT_POWERUP,
 	IT_TEAM
 } itemType_t;
@@ -1279,7 +1238,6 @@ float vectoyaw( const vec3_t vec );
 gitem_t	*BG_FindItem( const char *classname );
 gitem_t	*BG_FindItemForWeapon( weapon_t weapon );
 gitem_t	*BG_FindItemForPowerup( powerup_t pw );
-gitem_t	*BG_FindItemForHoldable( holdable_t pw );
 #define	ITEM_INDEX(x) ((x)-bg_itemlist)
 
 qboolean	BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const playerState_t *ps );
@@ -2095,6 +2053,20 @@ typedef struct {
 	float walkSpeedModifier;
 	float minimumSpeedModifier;
 	float sprintSpeedModifier;
+
+	// Stuff pertaining to stamina drains
+	struct Stamina {
+		int lossFromRolling;
+		int lossFromPunching;
+		int lossFromJumping;
+		int lossFromKicking;
+		int minSprintThreshold;
+		int minRollThreshold;
+		int minJumpThreshold;
+		int minPunchThreshold;
+		int minKickThreshold;
+	};
+	Stamina staminaDrains;
 } bgConstants_t;
 
 extern bgConstants_t bgConstants;

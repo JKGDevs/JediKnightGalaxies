@@ -89,7 +89,6 @@ set(MPUIUIFiles
 	"${MPDir}/ui/keycodes.h"
 	"${CMAKE_SOURCE_DIR}/JKGalaxies/ui/menudef.h" #Fixme: Better location plz
 	"${MPDir}/ui/ui_force.h"
-	"${MPDir}/ui/jkg_ui_auxlib.h"
 	"${MPDir}/ui/jkg_conversations.h"
 	"${MPDir}/ui/jkg_gangwars_ui.h"
 	"${MPDir}/ui/jkg_inventory.h"

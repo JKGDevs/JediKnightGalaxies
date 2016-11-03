@@ -1740,7 +1740,7 @@ int NAV_GetStoredWaypoint( char *targetname )
 {
 	int i;
 
-	if ( !tempWaypointList || !targetname || !targetname[0] )
+	if ( !numStoredWaypoints || !targetname || !targetname[0] )
 	{
 		return -1;
 	}

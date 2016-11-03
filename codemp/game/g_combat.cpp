@@ -2170,7 +2170,6 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	int			i;
 	char		*killerName, *obit;
 	int			sPMType = 0;
-	char		buf[512] = {0};
 
 	if ( self->client->ps.pm_type == PM_DEAD ) {
 		return;
@@ -2326,7 +2325,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 #endif
 
 	// JKG: Give credits for each kill
-	if(attacker->s.number < MAX_CLIENTS && (self->s.number < MAX_CLIENTS || self->s.eType == ET_NPC))
+	if(attacker->s.number < MAX_CLIENTS && ( self->s.number < MAX_CLIENTS || self->s.eType == ET_NPC))
 	{
 		// TODO: Divide equally amongst party (once new party interface is done)
 		if(!OnSameTeam(attacker, self) && attacker != self)
@@ -2674,7 +2673,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		
 		if (killerEnt && killerEnt->inuse && killerEnt->s.eType == ET_NPC)
 		{
-			if (killerEnt->client->pers.netname && killerEnt->client->pers.netname[0])
+			if (killerEnt->client->pers.netname[0])
 				killerName = killerEnt->client->pers.netname; // UQ1: NPCs have names now...
 			else
 				killerName = va("A %s NPC", killerEnt->NPC_type);
@@ -4802,9 +4801,34 @@ void G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t pushDir, fl
 	}
 }
 
+static QINLINE qboolean ShouldHitmarker( const gentity_t *attacker, const gentity_t *target, const int mod )
+{
+	if( !attacker->client )
+		return qfalse;
+	if( attacker->NPC )
+		return qfalse;
+	if ( target->health <= 0 )
+		return qfalse;
+	if( target->s.eType == ET_MISSILE )
+		return qfalse;
+	if( target->s.eType == ET_GENERAL )
+	{
+		qboolean explosive = ( mod == MOD_TRIP_MINE_SPLASH || mod == MOD_TIMED_MINE_SPLASH || mod == MOD_DET_PACK_SPLASH );
+		if( ( target->s.weapon == WP_TRIP_MINE || target->s.weapon == WP_DET_PACK ) && target->parent == attacker && explosive )
+			return qfalse;
+	}
+	if( !target->client )
+	{
+		if ( target->s.eType == ET_GENERAL && target->s.eType == WP_TURRET )
+			return qtrue;
+		return qfalse;
+	}
+	return qtrue;
+}
+
 /*
 ============
-T_Damage
+G_Damage
 
 targ		entity that is being damaged
 inflictor	entity that is causing the damage
@@ -5203,32 +5227,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		targ->client->ps.otherKillerDebounceTime = level.time + 25000;
 	}
 
-	if(attacker->client && !attacker->NPC)
-	{
-		if( mod >= MOD_STUN_BATON && mod <= MOD_SENTRY && attacker != targ )
-		{
-			if(mod == MOD_REPEATER && attacker->client->lastHitmarkerTime < (level.time-250))
-			{
-				// Small hack to prevent the ACP array gun from ear-raping people so much --eez
-#ifndef __MMO__ // UQ1: This is just a sound and a message? Worth the spam????
-				trap->SendServerCommand(attacker->client->ps.clientNum, "hitmarker");
-#else //!__MMO__
-				G_AddEvent(attacker, EV_HITMARKER_ASSIST, 0);
-#endif //__MMO__
-				attacker->client->lastHitmarkerTime = level.time;
-			}
-			else if(attacker->client->lastHitmarkerTime < (level.time-100))
-			{
-#ifndef __MMO__
-				trap->SendServerCommand(attacker->client->ps.clientNum, "hitmarker");
-#else //!__MMO__
-				G_AddEvent(attacker, EV_HITMARKER_ASSIST, 0);
-#endif //__MMO__
-				attacker->client->lastHitmarkerTime = level.time;
-			}
-		}
-	}
-
 	// check for completely getting out of the damage
 	if ( !(dflags & DAMAGE_NO_PROTECTION) ) {
 
@@ -5334,6 +5332,33 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 						}
 					}
 				}
+			}
+		}
+	}
+
+	// hitmarker should use same ruels as base hit counter
+	if( ShouldHitmarker( attacker, targ, mod ) )
+	{
+		if( mod >= MOD_STUN_BATON && mod <= MOD_SENTRY )
+		{
+			if(mod == MOD_REPEATER && attacker->client->lastHitmarkerTime < (level.time-250))
+			{
+				// Small hack to prevent the ACP array gun from ear-raping people so much --eez
+#ifndef __MMO__ // UQ1: This is just a sound and a message? Worth the spam????
+				trap->SendServerCommand(attacker->client->ps.clientNum, "hitmarker");
+#else //!__MMO__
+				G_AddEvent(attacker, EV_HITMARKER_ASSIST, 0);
+#endif //__MMO__
+				attacker->client->lastHitmarkerTime = level.time;
+			}
+			else if(attacker->client->lastHitmarkerTime < (level.time-100))
+			{
+#ifndef __MMO__
+				trap->SendServerCommand(attacker->client->ps.clientNum, "hitmarker");
+#else //!__MMO__
+				G_AddEvent(attacker, EV_HITMARKER_ASSIST, 0);
+#endif //__MMO__
+				attacker->client->lastHitmarkerTime = level.time;
 			}
 		}
 	}

@@ -1137,8 +1137,8 @@ static void ClientCleanName( const char *in, char *out, int outSize ) {
 		}
 
 		//[FixMultilineNames]
-		if (ch == '\n') {
-			continue; // No multiline names
+		if ((unsigned char)ch < ' ') {
+			continue; // No control char names
 		}
 
 		// check colors
@@ -2506,7 +2506,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	G_ClearClientLog(clientNum);
 }
 
-static qboolean AllForceDisabled(int force)
+/*static qboolean AllForceDisabled(int force)
 {
 	int i;
 
@@ -2524,7 +2524,7 @@ static qboolean AllForceDisabled(int force)
 	}
 
 	return qfalse;
-}
+}*/
 
 //Convenient interface to set all my limb breakage stuff up -rww
 void G_BreakArm(gentity_t *ent, int arm)
@@ -2888,7 +2888,6 @@ void ClientSpawn(gentity_t *ent, qboolean respawn) {
 	char				*value;
 	char				*saber;
 	qboolean			changedSaber = qfalse;
-	qboolean			inSiegeWithClass = qfalse;
 	int                 savedWeaponId = 0;
 	int					topAmmoValues[JKG_MAX_AMMO_INDICES];
 	qboolean			haveItem = qfalse;
@@ -3335,15 +3334,13 @@ void ClientSpawn(gentity_t *ent, qboolean respawn) {
 	}
 	else
 	{
-		if (level.startingWeapon)
+		if (level.startingWeapon[0])
 		{
-			weaponData_t *weapon;
-			weapon = BG_GetWeaponByClassName (level.startingWeapon);
+			const weaponData_t *weapon = BG_GetWeaponByClassName (level.startingWeapon);
 			if(weapon)
 			{
-				int itemID;
 				//FIXME: The below assumes that there is a valid weapon item
-				itemID = BG_GetItemByWeaponIndex(BG_GetWeaponIndex((unsigned int)weapon->weaponBaseIndex, (unsigned int)weapon->weaponModIndex))->itemID;
+				int itemID = BG_GetItemByWeaponIndex(BG_GetWeaponIndex((unsigned int)weapon->weaponBaseIndex, (unsigned int)weapon->weaponModIndex))->itemID;
 
 				for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
 					if (it->id) {
@@ -3606,7 +3603,7 @@ void ClientSpawn(gentity_t *ent, qboolean respawn) {
 	// set their weapon
 #ifndef __MMO__
 	trap->SendServerCommand(client->ps.clientNum, "aciset 1");
-#else __MMO__
+#else //__MMO__
 	G_AddEvent(ent, EV_GOTO_ACI, 1);
 #endif //__MMO__
 

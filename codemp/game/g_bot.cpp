@@ -742,6 +742,7 @@ void G_CheckVendorNPCs( void )
 
 		if (!npc) continue;
 		if (npc->s.eType != ET_NPC) continue;
+		if (!npc->client) continue; // ?
 
 		switch( npc->client->NPC_class )
 		{// UQ1: Vendor types... Stand still for now...
@@ -785,7 +786,6 @@ void G_CheckVendorNPCs( void )
 	{
 		gentity_t	*npc = NULL;
 		int			waypoint = irand(0, gWPNum-1);
-		int			random = irand(0,36);
 		int			tries = 0;
 
 		while (gWPArray[waypoint]->inuse == qfalse || !JKG_CheckBelowWaypoint(waypoint) || !JKG_CheckRoutingFrom( waypoint ))
@@ -1020,7 +1020,6 @@ extern int WARZONE_GetNumberOfRedFlags();
 void G_CheckMinimumNpcs( void ) {
 	int			minplayers;
 	int			botplayers = 0, i;
-	static int	checkminimumplayers_time;
 
 	if (gWPNum <= 0)
 	{

@@ -1419,66 +1419,6 @@ static int GLua_Player_GetNoMove(lua_State *L) {
 	return 1;
 }
 
-static int GLua_Player_GiveHoldable(lua_State *L) {
-	GLua_Data_Player_t *ply = GLua_CheckPlayer(L,1);
-	gentity_t *ent;
-	int item = luaL_checkinteger(L,2);
-	if (!ply) return 0;
-	ent = &g_entities[ply->clientNum];
-	if (item < 0 || item >= HI_NUM_HOLDABLE) {
-		return 0;
-	}
-	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << item);
-	return 0;
-}
-
-void Jetpack_Off(gentity_t *ent);
-void NPC_Humanoid_Decloak( gentity_t *self );
-
-static int GLua_Player_TakeHoldable(lua_State *L) {
-	GLua_Data_Player_t *ply = GLua_CheckPlayer(L,1);
-	gentity_t *ent;
-	int item = luaL_checkinteger(L,2);
-	if (!ply) return 0;
-	ent = &g_entities[ply->clientNum];
-	if (item < 0 || item >= HI_NUM_HOLDABLE) {
-		return 0;
-	}
-	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << item);
-	switch (item) {
-		case HI_JETPACK:
-			Jetpack_Off(ent);
-			break;
-		case HI_CLOAK:
-			NPC_Humanoid_Decloak(ent);
-			break;
-		default:
-			break;
-	}
-	return 0;
-}
-
-static int GLua_Player_HasHoldable(lua_State *L) {
-	GLua_Data_Player_t *ply = GLua_CheckPlayer(L,1);
-	gentity_t *ent;
-	int item = luaL_checkinteger(L,2);
-	if (!ply) return 0;
-	ent = &g_entities[ply->clientNum];
-	if (item < 0 || item >= HI_NUM_HOLDABLE) {
-		return 0;
-	}
-	lua_pushboolean(L, (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & item));;
-	return 1;
-}
-
-static int GLua_Player_StripHoldables(lua_State *L) {
-	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 1);
-	if (!ply) return 0;
-	level.clients[ply->clientNum].ps.stats[STAT_HOLDABLE_ITEMS] = 0;
-	level.clients[ply->clientNum].pers.cmd.invensel = 0;
-	return 0;
-}
-
 static int GLua_Player_InDeathcam(lua_State *L) {
 	GLua_Data_Player_t *ply = GLua_CheckPlayer(L,1);
 	if (!ply) return 0;
@@ -1674,7 +1614,6 @@ static int GLua_Player_PossessingItem(lua_State *L)
 	GLua_Data_Player_t *ply = GLua_CheckPlayer(L,1);
 	int itemID = lua_tointeger(L,2);
 	gentity_t *ent;
-	int i;
 
 	if(!ply) return 0;
 
@@ -1695,7 +1634,6 @@ static int GLua_Player_PossessingWeapon(lua_State *L)
 	int weapon = lua_tointeger(L, 2);
 	int variation = lua_tointeger(L, 3);
 	gentity_t *ent;
-	int i;
 
 	if(!ply) return 0;
 
@@ -1812,10 +1750,6 @@ static const struct luaL_reg player_m [] = {
 	{"GetFreeze", GLua_Player_GetFreeze},
 	{"SetNoMove", GLua_Player_SetNoMove},
 	{"GetNoMove", GLua_Player_GetNoMove},
-	{"GiveHoldable", GLua_Player_GiveHoldable},
-	{"TakeHoldable", GLua_Player_TakeHoldable},
-	{"HasHoldable", GLua_Player_HasHoldable},
-	{"StripHoldables", GLua_Player_StripHoldables},
 	{"ServerTransfer", GLua_Player_ServerTransfer},
 	// stuff for credits --eez
 	{"GetCreditCount", GLua_Player_GetCreditCount},

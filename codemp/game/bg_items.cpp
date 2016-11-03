@@ -239,7 +239,7 @@ void BG_SendItemPacket(itemPacketType_t packetType, gentity_t* ent, void* memDat
 			Com_sprintf(packet, sizeof(packet), "pInv %s %i ", packetName, intData);
 			{
 				for(auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
-					Q_strcat(packet, sizeof(packet), va("%i %i", it->id->itemID, it->quantity));
+					Com_sprintf(packet, sizeof(packet), "%s %i %i", packet, it->id->itemID, it->quantity);
 				}
 			}
 			break;
@@ -585,7 +585,6 @@ void BG_GiveItemNonNetworked(gentity_t* ent, itemInstance_t item) {
 	// Fill any incomplete stacks.
 	int nItemID = item.id->itemID;
 	int nMaxStack = item.id->maxStack;
-	int nOriginalQuantity = item.quantity;
 	if (nMaxStack > 0) {
 		for (int nStack = BG_FirstStack(*ent->inventory, nItemID); nStack != -1; nStack = BG_NextStack(*ent->inventory, nItemID, nStack)) {
 			if ((*ent->inventory)[nStack].quantity < nMaxStack) {

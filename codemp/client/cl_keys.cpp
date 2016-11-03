@@ -1190,6 +1190,8 @@ static qboolean CL_BindUICommand( const char *cmd ) {
 		return qtrue;
 	if ( !Q_stricmp( cmd, "togglemenu" ) )
 		return qtrue;
+	if ( !Q_stricmp( cmd, "inventory" ) )
+		return qtrue;
 
 	return qfalse;
 }

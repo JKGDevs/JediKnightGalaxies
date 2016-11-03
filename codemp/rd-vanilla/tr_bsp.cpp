@@ -1795,9 +1795,7 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 
 		out++;
 	}
-
 }
-
 
 /*
 ================

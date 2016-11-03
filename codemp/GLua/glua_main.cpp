@@ -9,7 +9,7 @@
 static lua_State *LuaInstance;
 
 // Framework functions constants
-typedef enum {
+enum {
 	GLUA_HOOK,
 	GLUA_CMD,
 	GLUA_CMDRCON,

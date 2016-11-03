@@ -61,29 +61,14 @@ LANG_ENGLISH		"Equipped in ACI Slot %i"
 REFERENCE           DESTROY
 LANG_ENGLISH        "Destroy"
 
-REFERENCE	    SELL
-LANG_ENGLISH	    "Sell"
-
 REFERENCE           DESTROYTHISITEM
 LANG_ENGLISH        "Destroy this item?"
-
-REFERENCE           SELLTHISITEM
-LANG_ENGLISH        "Sell this item?"
-
-REFERENCE           BUYTHISITEM
-LANG_ENGLISH        "Buy this item?"
 
 REFERENCE           YES
 LANG_ENGLISH        "Yes"
 
 REFERENCE           NO
 LANG_ENGLISH        "No"
-
-REFERENCE           TOINVENTORY
-LANG_ENGLISH        "View Inventory"
-
-REFERENCE           TOSHOP
-LANG_ENGLISH        "Back to Shop"
 
 REFERENCE			FILTER_ALL
 LANG_ENGLISH		"All"

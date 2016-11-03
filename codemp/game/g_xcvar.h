@@ -168,7 +168,6 @@ XCVAR_DEF( timelimit,					"45",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_NOR
 
 // Jedi Knight Galaxies
 XCVAR_DEF( jkg_shop_replenish_time,		"300",			NULL,				CVAR_ARCHIVE,									true )
-XCVAR_DEF( jkg_debugThreading,			"0",			NULL,				CVAR_CHEAT,										true )
 XCVAR_DEF( jkg_startingStats,			"100/25",		NULL,				CVAR_ARCHIVE,									true )
 XCVAR_DEF( jkg_startingCredits,			"500",			NULL,				CVAR_ARCHIVE|CVAR_LATCH|CVAR_SERVERINFO,		false )
 XCVAR_DEF( jkg_bounty,					"10",			NULL,				CVAR_ARCHIVE,									true )
@@ -178,8 +177,8 @@ XCVAR_DEF( jkg_arearestrictions,		"0",			NULL,				CVAR_ARCHIVE,									true )
 XCVAR_DEF( jkg_deathTimer,				"1",			NULL,				CVAR_ARCHIVE,									true )
 XCVAR_DEF( jkg_antifakeplayer,			"0",			NULL,				CVAR_ARCHIVE,									false )
 XCVAR_DEF( jkg_chatFloodProtect,		"1",			NULL,				CVAR_ARCHIVE,									false )
-XCVAR_DEF( jkg_startingGun,				"pistol_DL-18",	NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					true )
-XCVAR_DEF( jkg_startingSaberDuel,		"saber_kyle",	NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					true )
+XCVAR_DEF( jkg_startingGun,				"pistol_DL-18",	CacheOldGun,		CVAR_ARCHIVE|CVAR_SERVERINFO,					true )
+XCVAR_DEF( jkg_startingSaberDuel,		"saber_kyle",	CacheOldSaber,		CVAR_ARCHIVE|CVAR_SERVERINFO,					true )
 XCVAR_DEF( g_banfile,					"",				NULL,				CVAR_ARCHIVE,									false )
 XCVAR_DEF( jkg_healthRegen,				"1",			NULL,				CVAR_ARCHIVE,									true )
 XCVAR_DEF( jkg_healthRegenDelay,		"60000",		NULL,				CVAR_ARCHIVE,									true )

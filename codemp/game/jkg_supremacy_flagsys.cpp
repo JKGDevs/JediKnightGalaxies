@@ -1,14 +1,14 @@
 /*
-¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
+=============================================================================
 Unique1's FlagSys Code.
-¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
+=============================================================================
 Spawn_Flag_Base
 flag_AI_Think_Axis
 flag_AI_Think_Allied
 flag_AI_Think
 OM_Flag_Spawn_Test
 OM_Flag_Spawn
-¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
+=============================================================================
 */
 
 #include "g_local.h"
@@ -769,7 +769,6 @@ void Spawn_Scenario_Flag_Auto ( vec3_t origin, int teamowner )
 
 gentity_t *EnemyCapturingFlag ( gentity_t *self, int flag_entitynum )
 {// Should return an enemy that is trying to capture the same flag as us...
-	gentity_t *flag = &g_entities[flag_entitynum];
 	int client = 0;
 
 	for (client = 0; client < MAX_GENTITIES; client++)

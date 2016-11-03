@@ -326,7 +326,7 @@ void JKG_Slice_ProcessCommand_f(void)
 			Menus_CloseAll();
 			if (Menus_ActivateByName("jkg_slice"))
 			{
-				trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI /*& ~KEYCATCH_CONSOLE*/ );
+				trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI );
 			}
 			Menu_ClearFocus(Menus_FindByName("jkg_slice"));
 

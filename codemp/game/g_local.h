@@ -1354,7 +1354,6 @@ void BroadcastTeamChange( gclient_t *client, int oldTeam );
 void SetTeam( gentity_t *ent, char *s );
 void Cmd_FollowCycle_f( gentity_t *ent, int dir );
 void Cmd_SaberAttackCycle_f(gentity_t *ent);
-int G_ItemUsable(playerState_t *ps, int forcedUse);
 void Cmd_ToggleSaber_f(gentity_t *ent);
 void Cmd_EngageDuel_f(gentity_t *ent);
 void G_LeaveVehicle( gentity_t *ent, qboolean ConCheck );
@@ -1367,21 +1366,10 @@ void CCmd_Cleanup();
 //
 // g_items.c
 //
-void ItemUse_Binoculars(gentity_t *ent);
-void ItemUse_Shield(gentity_t *ent);
-void ItemUse_Sentry(gentity_t *ent);
 
 void Jetpack_Off(gentity_t *ent);
 void Jetpack_On(gentity_t *ent);
 void ItemUse_Jetpack(gentity_t *ent);
-void ItemUse_UseCloak( gentity_t *ent );
-void ItemUse_UseDisp(gentity_t *ent, int type);
-void ItemUse_UseEWeb(gentity_t *ent);
-void G_PrecacheDispensers(void);
-
-void ItemUse_Seeker(gentity_t *ent);
-void ItemUse_MedPack(gentity_t *ent);
-void ItemUse_MedPack_Big(gentity_t *ent);
 
 void G_CheckTeamItems( void );
 void G_RunItem( gentity_t *ent );

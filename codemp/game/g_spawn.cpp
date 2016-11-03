@@ -1615,8 +1615,6 @@ BSP Options
 extern void EWebPrecache(void); //g_items.c
 float g_cullDistance;
 
-extern vmCvar_t jkg_startingGun;
-extern vmCvar_t jkg_startingSaberDuel;
 void SP_worldspawn( void ) 
 {
 	char		*text, temp[32];
@@ -1700,16 +1698,29 @@ void SP_worldspawn( void )
 	switch( level.gametype ) {
 		case GT_DUEL:
 		case GT_POWERDUEL:
-			G_SpawnString( "defaultWeapon", jkg_startingSaberDuel.string, &text );
+			{
+				G_SpawnString( "defaultWeapon", jkg_startingSaberDuel.string, &text );
+				if(text && *text)
+				{
+					Q_strncpyz(level.startingWeapon, text, sizeof(level.startingWeapon));
+					trap->Cvar_Set( "jkg_startingSaberDuel", text );
+				}
+				else
+					Q_strncpyz(level.startingWeapon, jkg_startingSaberDuel.string, sizeof(level.startingWeapon));
+			}
 			break;
 		default:
-			G_SpawnString( "defaultWeapon", jkg_startingGun.string, &text );//pistol_DL-18
+			{
+				G_SpawnString( "defaultWeapon", jkg_startingGun.string, &text );//pistol_DL-18
+				if(text && *text)
+				{
+					Q_strncpyz(level.startingWeapon, text, sizeof(level.startingWeapon));
+					trap->Cvar_Set( "jkg_startingGun", text );
+				}
+				else
+					Q_strncpyz(level.startingWeapon, jkg_startingGun.string, sizeof(level.startingWeapon));
+			}
 			break;
-	}
-	if(text)
-	{
-		strcpy(level.startingWeapon, text);
-		trap->Cvar_Set("jkg_startingGun", text);
 	}
 	g_entities[ENTITYNUM_WORLD].s.number = ENTITYNUM_WORLD;
 	g_entities[ENTITYNUM_WORLD].r.ownerNum = ENTITYNUM_NONE;

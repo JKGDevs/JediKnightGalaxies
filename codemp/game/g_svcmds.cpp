@@ -31,8 +31,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifdef __UNUSED__
 #include "jkg_navmesh_creator.h"
 #endif //__UNUSED__
-#include "jkg_threading.h"
-#include "json/cJSON.h"
 
 
 /*
@@ -480,18 +478,6 @@ ConsoleCommand
 
 =================
 */
-
-int testMasterFinalFunc (struct asyncTask_s *task) {
-	cJSON *data = (cJSON *)task->finalData;
-
-	if (task->errorCode == 0) {
-		trap->Print("Test successful! (bounce: %i - %i)", cJSON_ToInteger(cJSON_GetObjectItem(data, "bounce")), level.time);
-	} else {
-		trap->Print("Test failed!");
-	}
-	return 0;
-}
-
 qboolean	ConsoleCommand( void ) {
 	char	cmd[MAX_TOKEN_CHARS];
 
@@ -587,7 +573,7 @@ qboolean	ConsoleCommand( void ) {
 	}
 
 	if (Q_stricmp (cmd, "listip") == 0) {
-		trap->SendConsoleCommand( EXEC_NOW, "g_banIPs\n" );
+		Svcmd_ListIP_f();
 		return qtrue;
 	}
 

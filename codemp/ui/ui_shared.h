@@ -526,7 +526,7 @@ typedef struct displayContextDef_s {
 	void			(*Error)							( int level, const char *error, ... );
 	void			(*Print)							( const char *msg, ... );
 	void			(*Pause)							( qboolean b );
-	int				(*ownerDrawWidth)					( int ownerDraw, float scale );
+	int				(*ownerDrawWidth)					( int ownerDraw, int ownerDrawID, float scale );
 	sfxHandle_t		(*registerSound)					( const char *name );
 	void			(*startBackgroundTrack)				( const char *intro, const char *loop, qboolean bReturnWithoutStarting );
 	void			(*stopBackgroundTrack)				( void );
@@ -651,6 +651,7 @@ typedef struct uiCrossoverExports_s
 	void			(*PartyMngtNotify)( int msg );
 	void			(*InventoryNotify)( int msg );
 	void			(*ShopNotify)( int msg );
+	void			(*ItemsUpdated)();
 } uiCrossoverExports_t;
 
 typedef struct cgCrossoverExports_s

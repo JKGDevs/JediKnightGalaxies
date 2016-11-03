@@ -1339,7 +1339,7 @@ void AIMOD_SaveCoverPoints ( void )
 
 	for ( i = 0; i < num_cover_spots; i++ )											//loop through all the nodes
 	{
-		int j = 0;
+		//int j = 0;
 
 		trap->FS_Write( &(cover_nodes[i]), sizeof(int), f );
 
@@ -1391,8 +1391,6 @@ qboolean AIMOD_LoadCoverPoints ( void )
 
 	for ( i = 0; i < num_cover_spots; i++ )
 	{
-		int j = 0;
-
 		trap->FS_Read( &(cover_nodes[i]), sizeof(int), f );
 
 		if (!(nodes[cover_nodes[i]].type & NODE_COVER))
@@ -1756,8 +1754,8 @@ AIMOD_MAPPING_CreateSpecialNodeFlags ( int node )
 {	// Need to check for duck (etc) nodes and mark them...
 	trace_t tr;
 	vec3_t	up, temp, uporg;
-	vec3_t	tankMaxsSize = {96, 96, 0};
-	vec3_t	tankMinsSize = {-96, -96, 0};
+	//vec3_t	tankMaxsSize = {96, 96, 0};
+	//vec3_t	tankMinsSize = {-96, -96, 0};
 
 	VectorCopy( nodes[node].origin, temp );
 	temp[2] += 1;

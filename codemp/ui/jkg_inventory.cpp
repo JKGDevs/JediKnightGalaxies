@@ -7,7 +7,7 @@ static int nPosition = 0;					// position in the item list (changed with arrow b
 static int nSelected = -1;					// selected item in the list (-1 for no selection)
 
 
-static void JKG_ConstructInventoryList() {
+void JKG_ConstructInventoryList() {
 	itemInstance_t* pAllItems = nullptr;
 
 	pItems.clear();
@@ -42,6 +42,10 @@ static void JKG_ConstructInventoryList() {
 	if (nSelected >= pItems.size()) {
 		nSelected = -1;
 		Menu_ShowItemByName(Menus_FindByName("jkg_inventory"), "shop_preview", qfalse);
+	}
+
+	if (nPosition >= pItems.size()) {
+		nPosition = 0;
 	}
 }
 
@@ -553,7 +557,7 @@ void JKG_Inventory_OwnerDraw_ItemTagTop(itemDef_t* item, int ownerDrawID) {
 		Item_Text_Paint(item);
 		return;
 	}
-	itemInstance_t* pItem = pItems[nItemNum].second;
+	//UNUSED see below itemInstance_t* pItem = pItems[nItemNum].second;
 	// If it's in an ACI slot, mention this
 	// FIXME: pItem->equipped should be valid!! but it's not!!
 	int* pACI = (int*)cgImports->InventoryDataRequest(2);
@@ -570,7 +574,7 @@ void JKG_Inventory_OwnerDraw_ItemTagTop(itemDef_t* item, int ownerDrawID) {
 
 // Bottom line. OwnerDrawID is the item slot number
 void JKG_Inventory_OwnerDraw_ItemTagBottom(itemDef_t* item, int ownerDrawID) {
-	int nItemNum = ownerDrawID + nPosition;
+	//int nItemNum = ownerDrawID + nPosition;
 	memset(item->text, 0, sizeof(item->text));
 	// Currently not used
 	//if (nItemNum >= nNumInventoryItems) {
@@ -798,29 +802,37 @@ void JKG_Inventory_ReconstructList(char** args) {
 }
 
 void JKG_UI_InventoryFilterChanged() {
-	JKG_ConstructInventoryList();
+	menuDef_t* focusedMenu = Menu_GetFocused();
+	if (focusedMenu == nullptr) {
+		return;
+	}
+	if (!Q_stricmp(focusedMenu->window.name, "jkg_inventory")) {
+		JKG_ConstructInventoryList();
+	}
+	else if (!Q_stricmp(focusedMenu->window.name, "jkg_shop")) {
+		JKG_ConstructShopLists();
+	}
 }
 
 void JKG_Inventory_UpdateNotify(int msg) {
+	menuDef_t* focusedMenu = Menu_GetFocused();
+
 	switch (msg)
 	{
 	case 0: // open
+		if (focusedMenu != nullptr && !Q_stricmp(focusedMenu->window.name, "jkg_inventory")) {
+			Menus_CloseByName("jkg_inventory");
+			return;
+		}
 		if (Menus_FindByName("jkg_inventory") && Menus_ActivateByName("jkg_inventory"))
 		{
-			trap->Key_SetCatcher(trap->Key_GetCatcher() | KEYCATCH_UI /*& ~KEYCATCH_CONSOLE*/);
+			trap->Key_SetCatcher(trap->Key_GetCatcher() | KEYCATCH_UI);
 		}
 		JKG_ConstructInventoryList();
 		break;
 
 	case 1: // update!
-		trap->Print("debug: [Inventory::UpdateNotify]\n");
 		JKG_ConstructInventoryList();
-		break;
-	case 2:	// open as shop menu
-		if (Menus_FindByName("jkg_inventory") && Menus_ActivateByName("jkg_inventory"))
-		{
-			trap->Key_SetCatcher(trap->Key_GetCatcher() | KEYCATCH_UI/* & ~KEYCATCH_CONSOLE*/);
-		}
 		break;
 	}
 }

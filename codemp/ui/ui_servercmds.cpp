@@ -2,9 +2,9 @@
 
 #include "ui_local.h"
 
+#if 0
 static void UI_ServerRedirect( void )
 {
-#if 0
 	// clc.serverMessage will be no more than 1024 bytes so there's
 	// no need to buffer these, we can just pass the argv pointers :D
 	char *connAddress = Cmd_Argv(1);
@@ -26,12 +26,12 @@ static void UI_ServerRedirect( void )
 	trap->Cvar_Set( "cflag", Cmd_Argv(2) );
 	trap->Cvar_Set( "connmsg", Cmd_Argv(3) );
 	trap->Cmd_ExecuteText( EXEC_NOW, va( "connect \"%s\"", connAddress ) ); // Also with EXEC_NOW, no need to pass a trailing \n
-#endif
 }
+#endif
 
 qboolean UI_ServerCommand( const char *cmd_string )
 {
-	char *cmd;
+	//char *cmd;
 
 	if ( !cmd_string[0] ) {
 		return qfalse;

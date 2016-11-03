@@ -14,7 +14,7 @@ void JKG_GangWars_TeamREDText( rectDef_t *rect, float scale, vec4_t color, int i
 	int iFontIndex = MenuFontToHandle(iMenuFont);
 	int gwTeam = cgImports->GetRedTeam();
 	float scale2 = scale;
-	if(gwTeam < 0 || !bgGangWarsTeams[gwTeam].menustring[0] || !bgGangWarsTeams[gwTeam].menustring)
+	if(gwTeam < 0 || !bgGangWarsTeams[gwTeam].menustring[0])
 	{
 		return;
 	}
@@ -32,7 +32,7 @@ void JKG_GangWars_TeamBLUEText( rectDef_t *rect, float scale, vec4_t color, int 
 	float scale2 = scale;
 	int iFontIndex = MenuFontToHandle(iMenuFont);
 	int gwTeam = cgImports->GetBlueTeam();
-	if(gwTeam < 0 || !bgGangWarsTeams[gwTeam].menustring[0] || !bgGangWarsTeams[gwTeam].menustring)
+	if(gwTeam < 0 || !bgGangWarsTeams[gwTeam].menustring[0])
 	{
 		return;
 	}

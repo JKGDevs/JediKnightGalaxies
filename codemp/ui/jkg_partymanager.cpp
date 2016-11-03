@@ -290,7 +290,7 @@ void JKG_PartyMngt_UpdateNotify(int msg) {
 		PMngtData.active = 1;
 		if (Menus_ActivateByName("jkg_partymanagement"))
 		{
-			trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI /*& ~KEYCATCH_CONSOLE*/ );			
+			trap->Key_SetCatcher( trap->Key_GetCatcher() | KEYCATCH_UI );
 		}
 	}
 }

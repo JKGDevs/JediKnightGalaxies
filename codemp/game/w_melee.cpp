@@ -136,7 +136,7 @@ gentity_t *G_KickTrace( gentity_t *ent, vec3_t kickDir, float kickDist, vec3_t k
 					G_Damage( hitEnt, ent, ent, kickDir, trace.endpos, kickDamage, DAMAGE_NO_KNOCKBACK, MOD_MELEE );
 				}
 			}
-			if ( hitEnt->client 
+			if (hitEnt->client  && hitEnt->takedamage && !(hitEnt->flags & FL_GODMODE)
 				&& !(hitEnt->client->ps.pm_flags&PMF_TIME_KNOCKBACK) //not already flying through air?  Intended to stop multiple hits, but...
 				&& G_CanBeEnemy(ent, hitEnt) )
 			{//FIXME: this should not always work

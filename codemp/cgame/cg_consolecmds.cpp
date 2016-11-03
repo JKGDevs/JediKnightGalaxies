@@ -29,10 +29,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../ui/ui_shared.h"
 #include "game/bg_saga.h"
 
-// TEST
-#include "jkg_cg_auxlib.h"
-#include "json/cJSON.h"
-
 extern menuDef_t *menuScoreboard;
 
 void CG_CameraZoomIn( void )
@@ -315,32 +311,16 @@ static void CG_PrintWeaponMuzzleOffset_f ( void )
     }
 }
 
-
-// TEST
-int testMasterFinalFunc (asyncTask_t *task) {
-	cJSON *data = (cJSON *)task->finalData;
-	
-	if (task->errorCode == 0) {
-		Com_Printf("Test successful! (bounce: %i - %i)\n", cJSON_ToInteger(cJSON_GetObjectItem(data, "bounce")), trap->Milliseconds());
-	} else {
-		Com_Printf("Test failed!\n");
-	}
-	return 0;
-}
-
 static void JKG_OpenInventoryMenu_f ( void )
 {
 	if (cgs.gametype != GT_DUEL) 
-	{
-    uiImports->InventoryNotify (0);
-	}
+		uiImports->InventoryNotify (0);
 }
 
 void JKG_OpenShopMenu_f ( void )
-{	if (cgs.gametype != GT_DUEL) 
-	{
-	uiImports->ShopNotify( 0 );
-	}
+{
+	if (cgs.gametype != GT_DUEL) 
+		uiImports->ShopNotify( 0 );
 }
 
 static void JKG_UseACI_f ( void )

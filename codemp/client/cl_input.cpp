@@ -159,26 +159,22 @@ void IN_GenCMD12( void )
 
 void IN_GenCMD13( void )
 {
-	cl.gcmdSendValue = qtrue;
-	cl.gcmdValue = GENCMD_USE_SEEKER;
+	return;
 }
 
 void IN_GenCMD14( void )
 {
-	cl.gcmdSendValue = qtrue;
-	cl.gcmdValue = GENCMD_USE_FIELD;
+	return;
 }
 
 void IN_GenCMD15( void )
 {
-	cl.gcmdSendValue = qtrue;
-	cl.gcmdValue = GENCMD_USE_BACTA;
+	return;
 }
 
 void IN_GenCMD16( void )
 {
-	cl.gcmdSendValue = qtrue;
-	cl.gcmdValue = GENCMD_USE_ELECTROBINOCULARS;
+	return;
 }
 
 void IN_GenCMD17( void )
@@ -189,8 +185,7 @@ void IN_GenCMD17( void )
 
 void IN_GenCMD18( void )
 {
-	cl.gcmdSendValue = qtrue;
-	cl.gcmdValue = GENCMD_USE_SENTRY;
+	return;
 }
 
 void IN_GenCMD19( void )
@@ -210,38 +205,32 @@ void IN_GenCMD20( void )
 
 void IN_GenCMD21( void )
 {
-	cl.gcmdSendValue = qtrue;
-	cl.gcmdValue = GENCMD_USE_JETPACK;
+	return;
 }
 
 void IN_GenCMD22( void )
 {
-	cl.gcmdSendValue = qtrue;
-	cl.gcmdValue = GENCMD_USE_BACTABIG;
+	return;
 }
 
 void IN_GenCMD23( void )
 {
-	cl.gcmdSendValue = qtrue;
-	cl.gcmdValue = GENCMD_USE_HEALTHDISP;
+	return;
 }
 
 void IN_GenCMD24( void )
 {
-	cl.gcmdSendValue = qtrue;
-	cl.gcmdValue = GENCMD_USE_AMMODISP;
+	return;
 }
 
 void IN_GenCMD25( void )
 {
-	cl.gcmdSendValue = qtrue;
-	cl.gcmdValue = GENCMD_USE_EWEB;
+	return;
 }
 
 void IN_GenCMD26( void )
 {
-	cl.gcmdSendValue = qtrue;
-	cl.gcmdValue = GENCMD_USE_CLOAK;
+	return;
 }
 
 void IN_GenCMD27( void )
@@ -287,21 +276,6 @@ extern cvar_t *r_autoMap;
 void IN_AutoMapToggle(void)
 {
 	Cvar_User_SetValue("cg_drawRadar", !Cvar_VariableValue("cg_drawRadar"));
-	/*
-	if (r_autoMap && r_autoMap->integer)
-	{ //automap off, radar on
-		Cvar_Set("r_autoMap", "0");
-		Cvar_Set("cg_drawRadar", "1");
-	}
-	else if (Cvar_VariableIntegerValue("cg_drawRadar"))
-	{ //radar off, automap should be off too
-		Cvar_Set("cg_drawRadar", "0");
-	}
-	else
-	{ //turn automap on
-		Cvar_Set("r_autoMap", "1");
-	}
-	*/
 }
 
 void IN_VoiceChatButton(void)
@@ -1132,15 +1106,6 @@ void CL_CmdButtons( usercmd_t *cmd ) {
 			cmd->buttons |= 1 << i;
 		}
 		in_buttons[i].wasPressed = qfalse;
-	}
-
-	if (cmd->buttons & BUTTON_FORCEPOWER)
-	{ //check for transferring a use force to a use inventory...
-		if ((cmd->buttons & BUTTON_USE) || CL_NoUseableForce())
-		{ //it's pushed, remap it!
-			cmd->buttons &= ~BUTTON_FORCEPOWER;
-			cmd->buttons |= BUTTON_USE_HOLDABLE;
-		}
 	}
 
 	if ( Key_GetCatcher( ) ) {

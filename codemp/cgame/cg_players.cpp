@@ -1072,13 +1072,13 @@ qboolean CG_RegisterClientArmorModelname( centity_t *cent, int armorNum, int cli
 	void *armorGhoul2; // eez -- Armor for this slot
 
 	// rsus -- First things first.  If this is a ghoul2 model, then let's make sure we demolish this first.
-	if (cent->armorGhoul2 && trap->G2_HaveWeGhoul2Models(cent->armorGhoul2[slot]))
+	if (cent->armorGhoul2[slot] && trap->G2_HaveWeGhoul2Models(cent->armorGhoul2[slot]))
 	{
 		trap->G2API_CleanGhoul2Models(&(cent->armorGhoul2[slot]));
 	}
 	
 	// eez - Check if armorNum is out of bounds
-	if(!armorNum || !armorMasterTable[armorNum].model)
+	if(!armorNum || !armorMasterTable[armorNum].model[0])
 	{
 		cent->armorGhoul2[slot] = NULL;
 		return qfalse;
@@ -1126,7 +1126,7 @@ qboolean CG_RegisterClientArmorModelname( centity_t *cent, int armorNum, int cli
 		const char   *p;
 
 		// rsus -- Now turn on/off any surfaces
-		if ( surfOff && surfOff[0] )
+		if ( surfOff[0] )
 		{
 			p = surfOff;
 			while ( 1 )
@@ -1140,7 +1140,7 @@ qboolean CG_RegisterClientArmorModelname( centity_t *cent, int armorNum, int cli
 				trap->G2API_SetSurfaceOnOff( armorGhoul2, token, 0x00000002/*G2SURFACEFLAG_OFF*/ );
 			}
 		}
-		if ( surfOn && surfOn[0] )
+		if ( surfOn[0] )
 		{
 			p = surfOn;
 			while ( 1 )
@@ -1325,7 +1325,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded, int clientNum)
 
 	dir = ci->modelName;
 
-	if ( !ci->skinName || !Q_stricmp( "default", ci->skinName ) )
+	if ( !ci->skinName[0] || !Q_stricmp( "default", ci->skinName ) )
 	{//try default sounds.cfg first
 		fLen = trap->FS_Open(va("models/players/%s/sounds.cfg", dir), &f, FS_READ);
 		if ( !f ) 
@@ -1640,11 +1640,11 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 				//First loop: surf off lower pieces
 				while ( 1 )
 				{
-					if(armorMasterTable[cg_entities[clientNum].equippedArmor[ijk]].surfOffLowerString)
+					if(armorMasterTable[cg_entities[clientNum].equippedArmor[ijk]].surfOffLowerString[0])
 					{
 						//Our armor piece in this slot has a lower slot that isn't accounted for!
 						JKG_CG_Armor_GetPartFromSurfString(i, armorMasterTable[cg_entities[clientNum].equippedArmor[ijk]].surfOffLowerString, surfOff);
-						if(!surfOff || !surfOff[0] || surfOff[0] == ',')
+						if(!surfOff[0] || surfOff[0] == ',')
 							break; //Piece isn't valid
 						trap->G2API_SetSurfaceOnOff( cg_entities[clientNum].ghoul2, surfOff, 0x00000002/*G2SURFACEFLAG_OFF*/ );
 						i++;
@@ -1658,11 +1658,11 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 				//Second loop: surf off upper pieces
 				while ( 1 )
 				{
-					if(armorMasterTable[cg_entities[clientNum].equippedArmor[ijk]].surfOffThisString)
+					if(armorMasterTable[cg_entities[clientNum].equippedArmor[ijk]].surfOffThisString[0])
 					{
 						//Our armor piece in this slot has a part that we need removed
 						JKG_CG_Armor_GetPartFromSurfString(i, armorMasterTable[cg_entities[clientNum].equippedArmor[ijk]].surfOffThisString, surfOff);
-						if(!surfOff || !surfOff[0] || surfOff[0] == ',')
+						if(!surfOff[0] || surfOff[0] == ',')
 							break; //Piece isn't valid
 						trap->G2API_SetSurfaceOnOff( cg_entities[clientNum].armorGhoul2, surfOff, 0x00000002/*G2SURFACEFLAG_OFF*/ );
 						i++;
@@ -2433,10 +2433,10 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 				//First Loop - Surf off the lower parts.
 				while ( 1 )
 				{
-					if(armor.surfOffLowerString)
+					if(armor.surfOffLowerString[0])
 					{
 						JKG_CG_Armor_GetPartFromSurfString(i, armor.surfOffLowerString, surfOff);
-						if(!surfOff || !surfOff[0] || surfOff[0] == ',')
+						if(!surfOff[0] || surfOff[0] == ',')
 							break;
 						trap->G2API_SetSurfaceOnOff( cg_entities[clientNum].ghoul2, surfOff, 0x00000002/*G2SURFACEFLAG_OFF*/ );
 						i++;
@@ -2450,10 +2450,10 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 				//Second loop - Surf off the upper parts
 				while ( 1 )
 				{
-					if(armor.surfOffThisString)
+					if(armor.surfOffThisString[0])
 					{
 						JKG_CG_Armor_GetPartFromSurfString(i, armor.surfOffThisString, surfOff);
-						if(!surfOff || !surfOff[0] || surfOff[0] == ',')
+						if(!surfOff[0] || surfOff[0] == ',')
 							break;
 						trap->G2API_SetSurfaceOnOff( cg_entities[clientNum].armorGhoul2, surfOff, 0x00000002/*G2SURFACEFLAG_OFF*/ );
 						i++;
@@ -7290,7 +7290,7 @@ CheckTrail:
 						else
 						{
 							if( cent->currentState.saberCrystal[saberNum] >= 0 &&
-								(saberCrystalsLookup[cent->currentState.saberCrystal[saberNum]].trailEffect &&
+								(saberCrystalsLookup[cent->currentState.saberCrystal[saberNum]].trailEffect[0] &&
 								Q_stricmp(saberCrystalsLookup[cent->currentState.saberCrystal[saberNum]].trailEffect, "NULL_TRAIL")))
 							{
 								fx.mShader = trap->R_RegisterShader(va("gfx/lightsabers/rgb_trail_%s", saberCrystalsLookup[cent->currentState.saberCrystal[saberNum]].trailEffect));
@@ -9418,7 +9418,7 @@ void SmoothTrueView(vec3_t eyeAngles)
 	//Flips
 	if( cg_trueflip.integer )
 	{
-		if( ((cg.predictedPlayerState.legsAnim) == BOTH_WALL_FLIP_BACK1) )
+		if( cg.predictedPlayerState.legsAnim == BOTH_WALL_FLIP_BACK1 )
 		{//Flip moves that look good with the eyemovement locked
 			eyeRange = qfalse;
 			DidSpecial = qtrue;

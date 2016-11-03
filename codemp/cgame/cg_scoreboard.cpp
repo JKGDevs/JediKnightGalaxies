@@ -200,7 +200,7 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 		CG_FillRect( SB_SCORELINE_X - 5, y + 2, 640 - SB_SCORELINE_X * 2 + 10, largeFormat?SB_NORMAL_HEIGHT:SB_INTER_HEIGHT, hcolor );
 	}
 
-	Text_DrawText(SB_NAME_X, y, ci->name, colorWhite, FONT_MEDIUM, -1, 0.9f*scale);	//draw scoreboard.  --futuza: new better way, allows us to use RBG colors
+	Text_DrawText(SB_NAME_X, y, ci->name, colorWhite, FONT_MEDIUM, -1, 0.9f*scale);	//draw scoreboard.
 
 	if ( score->ping != -1 )
 	{

@@ -26,8 +26,6 @@ endif(NOT InOpenJK)
 set(MPGameIncludeDirectories "${MPDir}" "${MPDir}/libraries")
 if(WIN32)
 	set(MPGameLibraries "winmm")
-else()
-	set(MPGameLibraries "pthread")
 endif(WIN32)
 
 set(MPGameDefines ${MPSharedDefines} "_GAME" )
@@ -99,8 +97,6 @@ set(MPGameGameFiles
 	"${MPDir}/game/jkg_supremacy_flagsys.cpp"
 	"${MPDir}/game/jkg_supremacy_spawnsys.cpp"
 	"${MPDir}/game/jkg_team.cpp"
-	"${MPDir}/game/jkg_threading.cpp"
-	"${MPDir}/game/jkg_threadingsq.cpp"
 	"${MPDir}/game/jkg_trade.cpp"
 	"${MPDir}/game/jkg_treasureclass.cpp"
 	"${MPDir}/game/jkg_utilityfunc.cpp"
@@ -175,8 +171,6 @@ set(MPGameGameFiles
 	"${MPDir}/game/jkg_gangwars.h"
 	"${MPDir}/game/jkg_keypairs.h"
 	"${MPDir}/game/jkg_navmesh_creator.h"
-	"${MPDir}/game/jkg_threading.h"
-	"${MPDir}/game/jkg_threadingsq.h"
 	"${MPDir}/game/jkg_utilityfunc.h"
 	"${MPDir}/game/match.h"
 	"${MPDir}/game/npc_headers.h"

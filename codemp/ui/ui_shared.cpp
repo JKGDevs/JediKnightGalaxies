@@ -40,7 +40,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "ghoul2/G2.h"
 
 extern void UI_UpdateCharacterSkin( void );
-extern void JKG_Shop_UpdateShopStuff(int filterVal);
 
 const char *HolocronIcons[NUM_FORCE_POWERS] = {
 	"gfx/mp/f_icon_lt_heal",		//FP_HEAL,
@@ -156,8 +155,8 @@ typedef struct  itemFlagsDef_s {
 }	itemFlagsDef_t;
 
 itemFlagsDef_t itemFlags [] = {
-"WINDOW_INACTIVE",		WINDOW_INACTIVE,
-NULL,					(int) NULL
+{ "WINDOW_INACTIVE",		WINDOW_INACTIVE },
+{ NULL,					(int) NULL }
 };
 
 char *styles [] = {
@@ -494,7 +493,7 @@ bool PC_Screenspace_Parse(int handle, float *f, bool bXorWidth) {
 
 	if (!trap->PC_ReadToken(handle, &token))
 		return false;
-	if (token.string[strlen(token.string)-1] == '%%')
+	if (token.string[strlen(token.string)-1] == '%') // CHECKME was '%%' which isn't valid ofc
 		bUsePercentage = true;
 	if (token.string[0] == '-') {
 		if (!trap->PC_ReadToken(handle, &token))
@@ -3756,14 +3755,6 @@ qboolean Item_Multi_HandleKey(itemDef_t *item, int key)
 					{
 						DC->setCVar(item->cvar, va("%f", value ));
 					}
-#ifdef UI
-					if(!item->special && item->action && !Q_stricmp(item->window.name, "filtertab_btn"))
-					{	//Mega haxx in order to get the shop display to look right
-						char *arggg = va("-%i", (int)value);
-						JKG_Shop_Update(&arggg);
-						JKG_Shop_ClearFocus(&arggg);
-					}
-#endif
 				}
 				if (item->special)
 				{//its a feeder?
@@ -3906,24 +3897,6 @@ static const char *Text_PrintableText(const char *buff, itemDef_t *item) {
 			}
 			continue;
 		}
-		/*if (*t == '^') {
-			if (*(t+1) >= '0' && *(t+1) <= '9') {
-				*u = *t;
-				u++; t++;
-				*u = *t;
-				u++; t++;
-				continue;
-			}
-			if ( *(t + 1) == 'x' && Text_IsExtColorCode(t + 1) || *(t + 1) == 'X' && Text_IsExtColorCode(t + 1) )
-			{
-				int i;
-				for (i=0; i<5; i++) {
-					*u = *t;
-					u++; t++;
-				}
-				continue;
-			}
-		}*/
 		s[0] = *t;
 
 		w += (trap->R_Font_StrLenPixels(s, item->iMenuFont, 1) * item->textscale);
@@ -4147,19 +4120,9 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 			if (item->cursorPos < len) {
 				int colorLen = Q_parseColorString( &buff[item->cursorPos+1], nullptr );
 				if( colorLen )
-				{
 					item->cursorPos += (colorLen + 1);
-				}
 				else
 					item->cursorPos++;
-				/*if (buff[item->cursorPos+1] == '^' && (buff[item->cursorPos+2] >= '0' && buff[item->cursorPos+2] <= '9')) {
-					item->cursorPos += 3;
-				}
-				else if (buff[item->cursorPos + 1] == '^' && (buff[item->cursorPos + 2] == 'x' || buff[item->cursorPos + 2] == 'X') && Text_IsExtColorCode(&buff[item->cursorPos + 2])) {
-					item->cursorPos += 6;
-				} else {
-					item->cursorPos++;
-				}*/
 				Item_TextField_UpdateScroll(item);
 			} 
 			return qtrue;
@@ -4167,30 +4130,12 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 
 		if ( key == A_CURSOR_LEFT || key == A_KP_4 ) 
 		{
-			/*if ( item->cursorPos > 0 ) {
-				item->cursorPos--;
-			}
-			if (item->cursorPos < editPtr->paintOffset) {
-				editPtr->paintOffset--;
-			}*/
 			if ( item->cursorPos > 1 ) {
 				int colorLen = Q_parseColorString( &buff[item->cursorPos-2], nullptr );
 				if( colorLen )
-				{
 					item->cursorPos -= (colorLen + 1);
-				}
 				else
 					item->cursorPos++;
-				/*if (buff[item->cursorPos-2] == '^' && (buff[item->cursorPos-1] >= '0' && buff[item->cursorPos-1] <= '9')) {
-					// Jump over the color code
-					item->cursorPos -= 3;
-				}
-				else if (item->cursorPos > 4 && buff[item->cursorPos - 5] == '^' && (buff[item->cursorPos - 4] == 'x' || buff[item->cursorPos - 4] == 'X') && Text_IsExtColorCode(&buff[item->cursorPos - 4])) {
-					// Jump over extended color code
-					item->cursorPos -= 6;
-				} else {
-					item->cursorPos--;
-				}*/
 			} else if (item->cursorPos > 0) {
 				item->cursorPos--;
 			}
@@ -5149,39 +5094,6 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 			}
 			break;
 	}
-#ifdef UI
-	if(menu->window.name && !Q_stricmp(menu->window.name, "jkg_shop"))
-	{
-		if(key == A_MWHEELDOWN)
-		{
-			JKG_Shop_ArrowNextClean();
-		}
-		else if(key == A_MWHEELUP)
-		{
-			JKG_Shop_ArrowPrevClean();
-		}
-		return;
-	}
-	else if(menu->window.name && !Q_stricmp(menu->window.name, "jkg_inventory"))
-	{
-		switch(key)
-		{
-			case A_0:
-			case A_1:
-			case A_2:
-			case A_3:
-			case A_4:
-			case A_5:
-			case A_6:
-			case A_7:
-			case A_8:
-			case A_9:
-				JKG_Inventory_CheckACIKeyStroke(key);
-				return;
-				break;
-		}
-	}
-#endif
 	inHandler = qfalse;
 }
 
@@ -5214,9 +5126,14 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 
 	// keeps us from computing the widths and heights more than once
 	if (*width == 0 || (item->type == ITEM_TYPE_OWNERDRAW && item->textalignment == ITEM_ALIGN_CENTER)
+		|| item->window.ownerDraw == UI_JKG_ITEM_NAME
+		|| item->window.ownerDraw == UI_JKG_SHOP_LEFTNAME
+		|| item->window.ownerDraw == UI_JKG_SHOP_RIGHTNAME
+		|| item->window.ownerDraw == UI_JKG_SHOP_LEFTPRICE
+		|| item->window.ownerDraw == UI_JKG_SHOP_RIGHTPRICE
 		|| (item->type == ITEM_TYPE_TEXT && item->typeData.text && item->typeData.text->customText && item->textalignment != ITEM_ALIGN_LEFT)
 #ifndef _CGAME
-		|| (item->text && item->text[0]=='@' && item->asset != se_language.modificationCount )	//string package language changed
+		|| (item->text[0]=='@' && item->asset != se_language.modificationCount )	//string package language changed
 #endif
 		)
 	{
@@ -5224,7 +5141,7 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 
 		if (item->type == ITEM_TYPE_OWNERDRAW && (item->textalignment == ITEM_ALIGN_CENTER || item->textalignment == ITEM_ALIGN_RIGHT)) 
 		{
-			originalWidth += DC->ownerDrawWidth(item->window.ownerDraw, item->textscale);
+			originalWidth += DC->ownerDrawWidth(item->window.ownerDraw, item->window.ownerDrawID, item->textscale);
 		} 
 		else if (item->type == ITEM_TYPE_EDITFIELD && item->textalignment == ITEM_ALIGN_CENTER && item->cvar) 
 		{
@@ -5248,7 +5165,7 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 
 		ToWindowCoords(&item->textRect.x, &item->textRect.y, &item->window);
 #ifndef _CGAME
-		if (item->text && item->text[0]=='@' )//string package
+		if (item->text[0]=='@' )//string package
 		{//mark language
 			item->asset = se_language.modificationCount;
 		}
@@ -5473,7 +5390,7 @@ void Item_Text_Paint(itemDef_t *item) {
 
 	DC->drawText(item->textRect.x, item->textRect.y, item->textscale, color, textPtr, 0, 0, item->textStyle, item->iMenuFont);
 
-	if (item->text2)	// Is there a second line of text?
+	if (item->text2[0])	// Is there a second line of text?
 	{
 		int fontHandle = (item->iMenuFont2) ? item->iMenuFont2 : item->iMenuFont;
 		float textscale = (item->textscale2) ? item->textscale2 : item->textscale;
@@ -7980,7 +7897,7 @@ void Menu_HandleMouseMove(menuDef_t *menu, float x, float y) {
 gohere:
 				if (pass == 1) {
 					overItem = menu->items[i];
-					if (overItem->type == ITEM_TYPE_TEXT && overItem->text) {
+					if (overItem->type == ITEM_TYPE_TEXT && overItem->text[0]) {
 						if (!Rect_ContainsPoint(&overItem->window.rect, x, y)) {
 							continue;
 						}

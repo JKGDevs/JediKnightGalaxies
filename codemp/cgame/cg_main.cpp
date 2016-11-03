@@ -1683,7 +1683,7 @@ const char *CG_GetStringEdString(char *refSection, char *refName)
 
 const char *CG_GetStringEdString2(char *refName)
 {
-	static char text[2][1024]={0};	//just incase it's nested
+	static char text[2][1024]={};	//just incase it's nested
 	static int		index = 0;
 
 	index ^= 1;
@@ -2263,7 +2263,7 @@ void CG_Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const 
 	CG_Text_Paint(x, y, scale, color, text, 0, limit, style, iMenuFont);
 }
 
-static int CG_OwnerDrawWidth(int ownerDraw, float scale) {
+static int CG_OwnerDrawWidth(int ownerDraw, int ownerDrawWidth, float scale) {
 	switch (ownerDraw) {
 	  case CG_GAME_TYPE:
 			return CG_Text_Width(BG_GetGametypeString( cgs.gametype ), scale, FONT_MEDIUM);
@@ -2555,12 +2555,11 @@ void ChatBox_InitSystem();
 void MiniMap_Init();
 void JKG_WeaponIndicators_Init();
 
-#include "jkg_cg_auxlib.h"
 #include "jkg_chatcmds.h"
 
-static void CG_OpenPartyManagement( void ) {
+/*static void CG_OpenPartyManagement( void ) {
 	uiImports->PartyMngtNotify( 10 );
-}
+}*/
 
 static void CG_OpenInventory ( void )
 {
@@ -2580,7 +2579,6 @@ extern void JKG_CG_InitArmor( void );
 extern void CG_InitializeCrossoverAPI( void );
 void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum )
 {
-	static gitem_t *item;
 	char buf[64];
 	const char	*s;
 	int i = 0;
@@ -2703,24 +2701,6 @@ Ghoul2 Insert End
 	cgs.media.weaponIconBackground		= trap->R_RegisterShaderNoMip( "gfx/hud/background");
 	cgs.media.forceIconBackground		= trap->R_RegisterShaderNoMip( "gfx/hud/background_f");
 	cgs.media.inventoryIconBackground	= trap->R_RegisterShaderNoMip( "gfx/hud/background_i");
-
-	//rww - precache holdable item icons here
-	while (i < bg_numItems)
-	{
-		if (bg_itemlist[i].giType == IT_HOLDABLE)
-		{
-			if (bg_itemlist[i].icon)
-			{
-				cgs.media.invenIcons[bg_itemlist[i].giTag] = trap->R_RegisterShaderNoMip(bg_itemlist[i].icon);
-			}
-			else
-			{
-				cgs.media.invenIcons[bg_itemlist[i].giTag] = 0;
-			}
-		}
-
-		i++;
-	}
 
 	//rww - precache force power icons here
 	i = 0;
@@ -2972,8 +2952,6 @@ CG_NextForcePower_f
 */
 void CG_NextForcePower_f( void )
 {
-	int current;
-	usercmd_t cmd;
 	if ( !cg.snap )
 	{
 		return;
@@ -2981,14 +2959,6 @@ void CG_NextForcePower_f( void )
 
 	if (cg.predictedPlayerState.pm_type == PM_SPECTATOR)
 	{
-		return;
-	}
-
-	current = trap->GetCurrentCmdNumber();
-	trap->GetUserCmd(current, &cmd);
-	if ((cmd.buttons & BUTTON_USE) || CG_NoUseableForce())
-	{
-		CG_NextInventory_f();
 		return;
 	}
 
@@ -3019,8 +2989,6 @@ CG_PrevForcePower_f
 */
 void CG_PrevForcePower_f( void )
 {
-	int current;
-	usercmd_t cmd;
 	if ( !cg.snap )
 	{
 		return;
@@ -3028,14 +2996,6 @@ void CG_PrevForcePower_f( void )
 
 	if (cg.predictedPlayerState.pm_type == PM_SPECTATOR)
 	{
-		return;
-	}
-
-	current = trap->GetCurrentCmdNumber();
-	trap->GetUserCmd(current, &cmd);
-	if ((cmd.buttons & BUTTON_USE) || CG_NoUseableForce())
-	{
-		CG_PrevInventory_f();
 		return;
 	}
 
@@ -3059,78 +3019,10 @@ void CG_PrevForcePower_f( void )
 	}
 }
 
-void CG_NextInventory_f(void)
-{
-	if ( !cg.snap )
-	{
-		return;
-	}
-
-	if (cg.snap->ps.pm_flags & PMF_FOLLOW)
-	{
-		return;
-	}
-
-	if (cg.predictedPlayerState.pm_type == PM_SPECTATOR)
-	{
-		return;
-	}
-
-	if (cg.itemSelect != -1)
-	{
-		cg.snap->ps.stats[STAT_HOLDABLE_ITEM] = BG_GetItemIndexByTag(cg.itemSelect, IT_HOLDABLE);
-	}
-	BG_CycleInven(&cg.snap->ps, 1);
-
-	if (cg.snap->ps.stats[STAT_HOLDABLE_ITEM])
-	{
-		cg.itemSelect = bg_itemlist[cg.snap->ps.stats[STAT_HOLDABLE_ITEM]].giTag;
-		cg.invenSelectTime = cg.time;
-	}
-}
-
-void CG_PrevInventory_f(void)
-{
-	if ( !cg.snap )
-	{
-		return;
-	}
-
-	if (cg.snap->ps.pm_flags & PMF_FOLLOW)
-	{
-		return;
-	}
-
-	if (cg.predictedPlayerState.pm_type == PM_SPECTATOR)
-	{
-		return;
-	}
-
-	if (cg.itemSelect != -1)
-	{
-		cg.snap->ps.stats[STAT_HOLDABLE_ITEM] = BG_GetItemIndexByTag(cg.itemSelect, IT_HOLDABLE);
-	}
-	BG_CycleInven(&cg.snap->ps, -1);
-
-	if (cg.snap->ps.stats[STAT_HOLDABLE_ITEM])
-	{
-		cg.itemSelect = bg_itemlist[cg.snap->ps.stats[STAT_HOLDABLE_ITEM]].giTag;
-		cg.invenSelectTime = cg.time;
-	}
-}
-
 static void _CG_MouseEvent( int x, int y ) {
 	cgDC.cursorx = cgs.cursorX;
 	cgDC.cursory = cgs.cursorY;
 	CG_MouseEvent( x, y );
-}
-
-static qboolean CG_IncomingConsoleCommand( void ) {
-	//rww - let mod authors filter client console messages so they can cut them off if they want.
-	//return qtrue if the command is ok. Otherwise, you can set char 0 on the command str to 0 and return
-	//qfalse to not execute anything, or you can fill conCommand in with something valid and return 0
-	//in order to have that string executed in place. Some example code:
-	return qtrue;
 }
 
 static void CG_GetOrigin( int entID, vec3_t out ) {

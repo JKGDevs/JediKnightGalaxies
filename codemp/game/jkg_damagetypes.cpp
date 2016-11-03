@@ -65,8 +65,6 @@ static struct
 
 void JKG_RemoveDamageType(gentity_t *ent, damageType_t type);
 
-static const float damageAreaHeight = 4.0f;
-
 void JKG_InitDamageSystem ( void )
 {
     memset (damageAreas, 0, sizeof (damageAreas));
@@ -328,7 +326,7 @@ qhandle_t JKG_RegisterDamageSettings ( const damageSettings_t *settings )
 
 void JKG_RemoveDamageType ( gentity_t *ent, damageType_t type )
 {
-	if( type >= MAX_DAMAGE_SETTINGS )
+	if( type >= (damageType_t)MAX_DAMAGE_SETTINGS )
 		return;
 
     switch ( type )

@@ -135,7 +135,11 @@ XCVAR_DEF( ui_team_friendly,				"1",					NULL,							CVAR_ARCHIVE|CVAR_INTERNAL 
 XCVAR_DEF( ui_team_timelimit,				"20",					NULL,							CVAR_ARCHIVE|CVAR_INTERNAL )
 
 XCVAR_DEF( ui_hidehud,						"0",					NULL,							CVAR_INTERNAL )
-XCVAR_DEF( ui_inventoryFilter,				"0",					JKG_UI_InventoryFilterChanged,	CVAR_ARCHIVE )
-XCVAR_DEF( connmsg,							"",						NULL,							CVAR_ROM )
+XCVAR_DEF( ui_inventoryFilter,				"0",					JKG_UI_InventoryFilterChanged,	CVAR_ARCHIVE|CVAR_INTERNAL )
+XCVAR_DEF( ui_inventorySortMode,			"-1",					JKG_ShopInventorySortChanged,	CVAR_INTERNAL )
+XCVAR_DEF( ui_inventorySortType,			"0",					JKG_ShopInventorySortChanged,	CVAR_INTERNAL )
+XCVAR_DEF( ui_shopSortMode,					"-1",					JKG_ShopInventorySortChanged,	CVAR_INTERNAL )
+XCVAR_DEF( ui_shopSortType,					"0",					JKG_ShopInventorySortChanged,	CVAR_INTERNAL )
+XCVAR_DEF( connmsg,							"",						NULL,							CVAR_ROM|CVAR_INTERNAL )
 
 #undef XCVAR_DEF

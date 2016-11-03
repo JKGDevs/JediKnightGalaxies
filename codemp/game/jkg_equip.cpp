@@ -14,7 +14,7 @@ void JKG_EquipItem(gentity_t *ent, int iNum)
 {
 	if(!ent->client)
 		return;
-		
+
 	if ( iNum < 0 || iNum >= ent->inventory->size() )
 	{
 		trap->SendServerCommand(ent->client->ps.clientNum, "print \"Invalid inventory slot.\n\"");
@@ -30,9 +30,8 @@ void JKG_EquipItem(gentity_t *ent, int iNum)
 	auto item = (*ent->inventory)[iNum];
 	if (item.id->itemType == ITEM_WEAPON)
 	{
-	    int i = 0;
 	    int prevEquipped = -1;
-	    
+
 		for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
 			if (!it->id) {
 				continue;
@@ -43,14 +42,13 @@ void JKG_EquipItem(gentity_t *ent, int iNum)
 				break;
 			}
 		}
-	    
+
 		(*ent->inventory)[iNum].equipped = true;
 	    trap->SendServerCommand (ent->s.number, va ("ieq %d %d", iNum, prevEquipped));
 		trap->SendServerCommand (ent->s.number, va ("chw %d", item.id->weaponData.varID));
 	}
 	else if (item.id->itemType == ITEM_ARMOR){
 	    // Unequip the armor which is currently equipped at the slot the new armor will use.
-	    int i = 0;
 	    int prevEquipped = -1;
 
 		for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
@@ -64,8 +62,7 @@ void JKG_EquipItem(gentity_t *ent, int iNum)
 				break;
 			}
 		}
-		
-	    
+
 		(*ent->inventory)[iNum].equipped = true;
 		ent->client->armorItems[item.id->armorData.armorSlot] = iNum;
 
@@ -82,13 +79,13 @@ void JKG_UnequipItem(gentity_t *ent, int iNum)
 {
 	if(!ent->client)
 		return;
-		
+
 	if ( iNum < 0 || iNum >= ent->inventory->size() )
 	{
 		trap->SendServerCommand(ent->client->ps.clientNum, "print \"Invalid inventory slot.\n\"");
 	    return;
 	}
-	
+
 	if(!(*ent->inventory)[iNum].equipped)
 	{
 		//trap->SendServerCommand(ent->client->ps.clientNum, "print \"That item is not equipped.\n\"");
@@ -113,4 +110,3 @@ void JKG_UnequipItem(gentity_t *ent, int iNum)
 		//trap->SendServerCommand(ent->client->ps.clientNum, "print \"You cannot unequip that item.\n\"");
 	}
 }
-

@@ -31,7 +31,6 @@ Alternatively you can install the assets and binaries inside a directory such as
 
 ## Dependencies ##
 
-* Boost library (only for some branches)
 * SDL2 (2.0.3+) (included on Windows)
 * OpenGL
 * OpenAL (included on Windows)

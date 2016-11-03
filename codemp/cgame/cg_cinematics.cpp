@@ -487,8 +487,6 @@ static float Cin_GetSCamPos(CamData_Spline_t *camdata, int offset, int axis) {
 	int i;
 	int pt;
 	float val;
-	static fileHandle_t f;
-	static const char *logmsg;
 	if (axis < 0 || axis > 5) return 0;
 	switch (camdata->Algorithms[axis]) {
 		case SPL_CUBIC:

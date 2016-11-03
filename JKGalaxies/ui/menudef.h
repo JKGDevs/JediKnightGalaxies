@@ -349,7 +349,7 @@
 #define UI_JKG_INVSEL_STATS		1051
 
 // Inventory common
-#define UI_JKG_CREDITS			1052
+#define UI_JKG_CREDITS			1052			// Also used for the shop menu
 #define UI_JKG_WEIGHT			1053
 #define UI_JKG_ITEM_ICON		1054
 #define UI_JKG_ITEM_NAME		1055
@@ -360,6 +360,26 @@
 #define UI_JKG_ITEM_TTOP		1060
 #define UI_JKG_ITEM_TBOTTOM		1061
 #define UI_JKG_ITEM_INTERACT	1062
+
+// Padding in case the inventory needs more ownerdraw
+
+// Shop
+#define UI_JKG_SHOP_LEFTICON	1083	// param: which icon
+#define UI_JKG_SHOP_RIGHTICON	1084	// param: which icon
+//#define UI_JKG_SHOP_LEFTARROW	1085	// param: up (qtrue), down (qfalse)
+//#define UI_JKG_SHOP_RIGHTARROW	1086	// param: up (qtrue), down (qfalse)
+#define UI_JKG_SHOP_LEFTTAB		1087	// param: which side of the menu (left = qtrue/right = qfalse)
+#define UI_JKG_SHOP_RIGHTTAB	1088	// param: which side of the menu (left = qtrue/right = qfalse)
+#define UI_JKG_SHOP_BUTTON		1089	// param: which button
+#define UI_JKG_SHOP_NAMETAG		1090	// param: which side
+#define UI_JKG_SHOP_LEFTSELECT	1091	// param: which selection
+#define UI_JKG_SHOP_RIGHTSELECT	1092	// param: which selection
+#define UI_JKG_SHOP_LEFTNAME	1093	// param: which item
+#define UI_JKG_SHOP_RIGHTNAME	1094	// param: which item
+#define UI_JKG_SHOP_LEFTPRICE	1095	// param: which item
+#define UI_JKG_SHOP_RIGHTPRICE	1096	// param: which item
+
+// Padding in case the shop needs more ownerdraw
 
 //How handy it would be if this were an enum.
 #define UI_BLUETEAM6 280

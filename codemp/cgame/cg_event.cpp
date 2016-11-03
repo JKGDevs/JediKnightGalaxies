@@ -155,7 +155,7 @@ static void CG_Obituary( entityState_t *ent ) {
 	if ( !targetInfo ) {
 		return;
 	}
-	Q_strncpyz( targetName, Info_ValueForKey( targetInfo, "n" ), sizeof(targetName) - 2);			//--futuza note:  possible RBG color fix needed here on targetName
+	Q_strncpyz( targetName, Info_ValueForKey( targetInfo, "n" ), sizeof(targetName) - 2);
 	strcat( targetName, S_COLOR_WHITE );
 
 	// check for single client messages
@@ -307,7 +307,7 @@ clientkilled:
 	// check for double client messages
 	if ( !attackerInfo ) {
 		attacker = ENTITYNUM_WORLD;
-		strcpy( attackerName, "noname" );																	//--futuza: needs RGB fix testing (should work, but not tested)
+		strcpy( attackerName, "noname" );
 	} else {
 		Q_strncpyz( attackerName, Info_ValueForKey( attackerInfo, "n" ), sizeof(attackerName) - 2);
 		strcat( attackerName, S_COLOR_WHITE );
@@ -416,7 +416,7 @@ clientkilled:
 
 		if (message) {
 			message = (char *)CG_GetStringEdString("MP_INGAME", message);
-			trap->Print("%s %s %s\n", targetName, message, attackerName); 	//--futuza: ^xRGB fix needed (so that server handles it too)
+			trap->Print("%s %s %s\n", targetName, message, attackerName);
 			return;
 		}
 	}
@@ -480,77 +480,6 @@ void CG_LocalTimingBar(int startTime, int duration)
 	cg_genericTimerColor[1] = 1.0f;
 	cg_genericTimerColor[2] = 0.0f;
 	cg_genericTimerColor[3] = 1.0f;
-}
-
-/*
-===============
-CG_UseItem
-===============
-*/
-static void CG_UseItem( centity_t *cent ) {
-	clientInfo_t *ci;
-	int			itemNum, clientNum;
-	gitem_t		*item;
-	entityState_t *es;
-
-	es = &cent->currentState;
-	
-	itemNum = (es->event & ~EV_EVENT_BITS) - EV_USE_ITEM0;
-	if ( itemNum < 0 || itemNum > HI_NUM_HOLDABLE ) {
-		itemNum = 0;
-	}
-
-	// print a message if the local player
-	if ( es->number == cg.snap->ps.clientNum ) {
-		if ( !itemNum ) {
-			//CG_CenterPrint( "No item to use", SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
-		} else {
-			item = BG_FindItemForHoldable( (holdable_t)itemNum );
-		}
-	}
-
-	switch ( itemNum ) {
-	default:
-	case HI_NONE:
-		//trap->S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.useNothingSound );
-		break;
-
-	case HI_BINOCULARS:
-		CG_ToggleBinoculars(cent, es->eventParm);
-		break;
-
-	case HI_SEEKER:
-		trap->S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.deploySeeker );
-		break;
-
-	case HI_SHIELD:
-	case HI_SENTRY_GUN:
-		break;
-
-//	case HI_MEDKIT:
-	case HI_MEDPAC:
-	case HI_MEDPAC_BIG:
-		clientNum = cent->currentState.clientNum;
-		if ( clientNum >= 0 && clientNum < MAX_CLIENTS ) {
-			ci = &cgs.clientinfo[ clientNum ];
-			ci->medkitUsageTime = cg.time;
-		}
-		//Different sound for big bacta?
-		trap->S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.medkitSound );
-		break;
-	case HI_JETPACK:
-		break; //Do something?
-	case HI_HEALTHDISP:
-		//CG_LocalTimingBar(cg.time, TOSS_DEBOUNCE_TIME);
-		break;
-	case HI_AMMODISP:
-		//CG_LocalTimingBar(cg.time, TOSS_DEBOUNCE_TIME);
-		break;
-	case HI_EWEB:
-		break;
-	case HI_CLOAK:
-		break; //Do something?
-	}
 }
 
 
@@ -1930,7 +1859,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 			assert(weaponInfo);
 
-			if(weaponData->visuals.selectSound && weaponData->visuals.selectSound[0])
+			if(weaponData->visuals.selectSound[0])
 			{
 				trap->S_StartSound( NULL, es->number, CHAN_AUTO, trap->S_RegisterSound(weaponData->visuals.selectSound) );
 			}
@@ -2516,59 +2445,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		}
 		break;
 
-// cleaned the below up. this was a huge mess before --eez
-	case EV_USE_ITEM0:
-	case EV_USE_ITEM1:
-	case EV_USE_ITEM2:
-	case EV_USE_ITEM3:
-	case EV_USE_ITEM4:
-	case EV_USE_ITEM5:
-	case EV_USE_ITEM6:
-	case EV_USE_ITEM7:
-	case EV_USE_ITEM8:
-	case EV_USE_ITEM9:
-	case EV_USE_ITEM10:
-	case EV_USE_ITEM11:
-	case EV_USE_ITEM12:
-	case EV_USE_ITEM13:
-	case EV_USE_ITEM14:
-		DEBUGNAME2("EV_USE_ITEM%i", event-EV_USE_ITEM0);
-		CG_UseItem( cent );
-		break;
-
-	case EV_ITEMUSEFAIL:
-		DEBUGNAME("EV_ITEMUSEFAIL");
-		if (cg.snap->ps.clientNum == es->number)
-		{
-			char *psStringEDRef = NULL;
-
-			switch(es->eventParm)
-			{
-			case SENTRY_NOROOM:
-				psStringEDRef = (char *)CG_GetStringEdString("MP_INGAME", "SENTRY_NOROOM");
-				break;
-			case SENTRY_ALREADYPLACED:
-				psStringEDRef = (char *)CG_GetStringEdString("MP_INGAME", "SENTRY_ALREADYPLACED");
-				break;
-			case SHIELD_NOROOM:
-				psStringEDRef = (char *)CG_GetStringEdString("MP_INGAME", "SHIELD_NOROOM");
-				break;
-			case SEEKER_ALREADYDEPLOYED:
-				psStringEDRef = (char *)CG_GetStringEdString("MP_INGAME", "SEEKER_ALREADYDEPLOYED");
-				break;
-			default:
-				break;
-			}
-
-			if (!psStringEDRef)
-			{
-				break;
-			}
-
-			Com_Printf("%s\n", psStringEDRef);
-		}
-		break;
-
 	//=================================================================
 
 	//
@@ -2577,57 +2453,11 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	//Player teleporting
 	case EV_PLAYER_TELEPORT_IN:
 		DEBUGNAME("EV_PLAYER_TELEPORT_IN");
-		/*{
-			trace_t tr;
-			vec3_t playerMins = {-15, -15, DEFAULT_MINS_2+8};
-			vec3_t playerMaxs = {15, 15, DEFAULT_MAXS_2};
-			vec3_t ang, pos, dpos;
-
-			VectorClear(ang);
-			ang[ROLL] = 1;
-
-			VectorCopy(position, dpos);
-			dpos[2] -= 4096;
-
-			CG_Trace(&tr, position, playerMins, playerMaxs, dpos, es->number, MASK_SOLID);
-			VectorCopy(tr.endpos, pos);
-			
-			trap->S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.teleInSound );
-
-			if (tr.fraction == 1)
-			{
-				break;
-			}
-			trap->FX_PlayEffectID(cgs.effects.mSpawn, pos, ang, -1, -1);
-		}*/ 
 		// Pande: is annoying, doesn't fit aesthetically, and the effect relies on gfx from Mace's stargate stuff.
 		break;
 
 	case EV_PLAYER_TELEPORT_OUT:
 		DEBUGNAME("EV_PLAYER_TELEPORT_OUT");
-		/*{
-			trace_t tr;
-			vec3_t playerMins = {-15, -15, DEFAULT_MINS_2+8};
-			vec3_t playerMaxs = {15, 15, DEFAULT_MAXS_2};
-			vec3_t ang, pos, dpos;
-
-			VectorClear(ang);
-			ang[ROLL] = 1;
-
-			VectorCopy(position, dpos);
-			dpos[2] -= 4096;
-
-			CG_Trace(&tr, position, playerMins, playerMaxs, dpos, es->number, MASK_SOLID);
-			VectorCopy(tr.endpos, pos);
-
-			trap->S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.teleOutSound );
-
-			if (tr.fraction == 1)
-			{
-				break;
-			}
-			trap->FX_PlayEffectID(cgs.effects.mSpawn, pos, ang, -1, -1);
-		} */ 
 		// Pande: is annoying, doesn't fit aesthetically, and the effect relies on gfx from Mace's stargate stuff.
 		break;
 
@@ -3017,7 +2847,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 				{ //add to the chat box
 					//hear it in the world spot.
 					char vchatstr[1024];
-					Q_strncpyz(vchatstr, va("<%s: %s>\n", ci->name, descr), sizeof(vchatstr));	//futuza: fixed xRGB color codes
+					Q_strncpyz(vchatstr, va("<%s: %s>\n", ci->name, descr), sizeof(vchatstr));
 					trap->Print("*%s", vchatstr);
 					CG_ChatBox_AddString(vchatstr, 100);
 				}

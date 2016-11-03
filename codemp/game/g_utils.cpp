@@ -1616,81 +1616,6 @@ qboolean ValidUseTarget( gentity_t *ent )
 	return qtrue;
 }
 
-//use an ammo/health dispenser on another client
-void G_UseDispenserOn(gentity_t *ent, int dispType, gentity_t *target)
-{
-	if (dispType == HI_HEALTHDISP)
-	{
-		target->client->ps.stats[STAT_HEALTH] += 4;
-
-		if (target->client->ps.stats[STAT_HEALTH] > target->client->ps.stats[STAT_MAX_HEALTH])
-		{
-			target->client->ps.stats[STAT_HEALTH] = target->client->ps.stats[STAT_MAX_HEALTH];
-		}
-
-		target->client->isMedHealed = level.time + 500;
-		target->health = target->client->ps.stats[STAT_HEALTH];
-	}
-	else if (dispType == HI_AMMODISP)
-	{
-		if (ent->client->medSupplyDebounce < level.time)
-		{ //do the next increment
-			//increment based on the amount of ammo used per normal shot.
-			int ammoMax = GetWeaponAmmoMax( target->client->ps.weapon, target->client->ps.weaponVariation );
-
-			target->client->ps.ammo += GetWeaponData( target->client->ps.weapon, target->client->ps.weaponVariation )->firemodes[0].cost;
-
-			if ( target->client->ps.ammo > ammoMax )
-			{
-				target->client->ps.ammo = ammoMax;
-			}
-
-			//base the next supply time on how long the weapon takes to fire. Seems fair enough.
-			ent->client->medSupplyDebounce = level.time + GetWeaponData( target->client->ps.weapon, target->client->ps.weaponVariation )->firemodes[0].delay;
-		}
-		target->client->isMedSupplied = level.time + 500;
-	}
-}
-
-//see if this guy needs servicing from a specific type of dispenser
-int G_CanUseDispOn(gentity_t *ent, int dispType)
-{
-	if (!ent->client || !ent->inuse || ent->health < 1 ||
-		ent->client->ps.stats[STAT_HEALTH] < 1)
-	{ //dead or invalid
-		return 0;
-	}
-
-	if (dispType == HI_HEALTHDISP)
-	{
-        if (ent->client->ps.stats[STAT_HEALTH] < ent->client->ps.stats[STAT_MAX_HEALTH])
-		{ //he's hurt
-			return 1;
-		}
-
-		//otherwise no
-		return 0;
-	}
-	else if (dispType == HI_AMMODISP)
-	{
-		if (ent->client->ps.weapon <= WP_NONE || ent->client->ps.weapon > LAST_USEABLE_WEAPON)
-		{ //not a player-useable weapon
-			return 0;
-		}
-
-		if (ent->client->ps.ammo < GetWeaponAmmoMax( ent->client->ps.weapon, ent->client->ps.weaponVariation ))
-		{ //needs more ammo for current weapon
-			return 1;
-		}
-
-		//needs none
-		return 0;
-	}
-
-	//invalid type?
-	return 0;
-}
-
 /*
 ==============
 TryUse
@@ -1884,61 +1809,6 @@ void TryUse( gentity_t *ent )
 		}
 	}
 
-#if 0 //ye olde method
-	if (ent->client->ps.stats[STAT_HOLDABLE_ITEM] > 0 &&
-		bg_itemlist[ent->client->ps.stats[STAT_HOLDABLE_ITEM]].giType == IT_HOLDABLE)
-	{
-		if (bg_itemlist[ent->client->ps.stats[STAT_HOLDABLE_ITEM]].giTag == HI_HEALTHDISP ||
-			bg_itemlist[ent->client->ps.stats[STAT_HOLDABLE_ITEM]].giTag == HI_AMMODISP)
-		{ //has a dispenser item selected
-            if (target && target->client && target->health > 0 && OnSameTeam(ent, target) &&
-				G_CanUseDispOn(target, bg_itemlist[ent->client->ps.stats[STAT_HOLDABLE_ITEM]].giTag))
-			{ //a live target that's on my team, we can use him
-				G_UseDispenserOn(ent, bg_itemlist[ent->client->ps.stats[STAT_HOLDABLE_ITEM]].giTag, target);
-
-				//for now, we will use the standard use anim
-				if (ent->client->ps.torsoAnim == BOTH_BUTTON_HOLD)
-				{ //extend the time
-					ent->client->ps.torsoTimer = 500;
-				}
-				else
-				{
-					G_SetAnim( ent, NULL, SETANIM_TORSO, BOTH_BUTTON_HOLD, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-				}
-				ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
-				return;
-			}
-		}
-	}
-#else
-    if ( ((ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_HEALTHDISP)) || (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_AMMODISP))) &&
-		target && target->inuse && target->client && target->health > 0 && OnSameTeam(ent, target) &&
-		(G_CanUseDispOn(target, HI_HEALTHDISP) || G_CanUseDispOn(target, HI_AMMODISP)) )
-	{ //a live target that's on my team, we can use him
-		if (G_CanUseDispOn(target, HI_HEALTHDISP))
-		{
-			G_UseDispenserOn(ent, HI_HEALTHDISP, target);
-		}
-		if (G_CanUseDispOn(target, HI_AMMODISP))
-		{
-			G_UseDispenserOn(ent, HI_AMMODISP, target);
-		}
-
-		//for now, we will use the standard use anim
-		if (ent->client->ps.torsoAnim == BOTH_BUTTON_HOLD)
-		{ //extend the time
-			ent->client->ps.torsoTimer = 500;
-		}
-		else
-		{
-			G_SetAnim( ent, NULL, SETANIM_TORSO, BOTH_BUTTON_HOLD, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-		}
-		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
-		return;
-	}
-
-#endif
-
 	//Check for a use command
 	if ( ValidUseTarget( target ) )
 	{
@@ -1953,13 +1823,7 @@ void TryUse( gentity_t *ent )
 		}
 
 		ent->client->ps.weaponTime = ent->client->ps.torsoTimer;
-		/*
-		NPC_SetAnim( ent, SETANIM_TORSO, BOTH_FORCEPUSH, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-		if ( !VectorLengthSquared( ent->client->ps.velocity ) )
-		{
-			NPC_SetAnim( ent, SETANIM_LEGS, BOTH_FORCEPUSH, SETANIM_FLAG_NORMAL|SETANIM_FLAG_HOLD );
-		}
-		*/
+
 		if ( target->touch == Touch_Button )
 		{//pretend we touched it
 			target->touch(target, ent, NULL);
@@ -1973,7 +1837,7 @@ void TryUse( gentity_t *ent )
 
 tryJetPack:
 	//if we got here, we didn't actually use anything else, so try to toggle jetpack if we are in the air, or if it is already on
-	if (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK))
+	if (0)	// FIXME: implement jetpack
 	{
 		if (ent->client->jetPackOn || ent->client->ps.groundEntityNum == ENTITYNUM_NONE)
 		{
