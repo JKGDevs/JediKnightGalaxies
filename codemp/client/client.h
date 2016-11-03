@@ -350,36 +350,6 @@ typedef struct console_s {
 	int		times[NUM_CON_TIMES];	// cls.realtime time the line was generated
 								// for transparent notify lines
 	vec4_t	color;
-<<<<<<< HEAD
-
-	// oox - cleaned this struct up a bit, i left futzas code behind 
-	// incase he needs it, feel free to remove all comments 
-	// but we can now compile on vs2013 and linux 
-	struct TextColors
-	{
-		vec4_t color[CON_TEXTSIZE];
-		bool isRGB[CON_TEXTSIZE];
-	}textColorStart;
-	/*
-	//jkg RGB color console fix --futuza
-	//note, not yet implemented - ignored for now
-	struct TextColors 
-	{
-		vec4_t color[CON_TEXTSIZE] =
-		{
-			//{1.0f, 1.0f, 1.0f, 1.0f}
-		};
-		
-		//const vec4_t whitecolor{ 1.0, 1.0, 1.0, 1.0 };	//setting for default white color
-		bool isRGB[CON_TEXTSIZE];
-		//int markers[CON_TEXTSIZE] = { 0 };
-		//int total = 0;
-
-	}textColorStart;
-	*/
-
-=======
->>>>>>> refs/remotes/JKGDevs/master
 } console_t;
 
 extern	clientStatic_t		cls;
