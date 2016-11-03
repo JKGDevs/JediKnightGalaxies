@@ -162,3 +162,19 @@ set_property(TARGET ${MPVanillaRenderer} APPEND PROPERTY COMPILE_OPTIONS ${OPENJ
 set_target_properties(${MPVanillaRenderer} PROPERTIES INCLUDE_DIRECTORIES "${MPVanillaRendererIncludeDirectories}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES PROJECT_LABEL "MP Vanilla Renderer (rd-galaxies_x86.dll)")
 target_link_libraries(${MPVanillaRenderer} ${MPVanillaRendererLibraries})
+
+if(WIN32)
+	set_target_properties(${MPVanillaRenderer} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CoreModDirDebug}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CoreModDirRelease}"
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CoreModDirRelWithDebInfo}"
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CoreModDirMinSizeRel}"
+)
+else(WIN32)
+	set_target_properties(${MPVanillaRenderer} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CoreModDirDebug}"
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CoreModDirRelease}"
+    LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CoreModDirRelWithDebInfo}"
+    LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL "${CoreModDirMinSizeRel}"
+)
+endif(WIN32)

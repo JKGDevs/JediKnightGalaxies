@@ -32,7 +32,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 # Customizable options
 option(BuildPortableVersion "Build portable version (does not read or write files from your user/home directory" OFF)
 option(BuildSkipCryptography "Remove unused Cryptography." ON)
-option(BuildBinaryPK3 "Whether to create a PK3 for Binary files (currently only works on windows)" ON)
+option(BuildBinaryPK3 "Whether to create a PK3 for Binary files (currently only works on windows)" OFF)
 
 option(BuildMPEngine "Whether to create projects for the MP client (jkgalaxies.exe)" ON)
 option(BuildMPDed "Whether to create projects for the MP dedicated server (jkgalaxiesded.exe)" ON)
@@ -141,6 +141,16 @@ set(SharedLib "shared")
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 set(OpenJKLibDir "${MPDir}/libraries")
 set(SharedDir ${CMAKE_SOURCE_DIR}/shared)
+
+set(CoreModDirDebug "${CMAKE_BINARY_DIR}/GameData")
+set(CoreModDirRelease "${CMAKE_BINARY_DIR}/GameData")
+set(CoreModDirRelWithDebInfo "${CMAKE_BINARY_DIR}/GameData")
+set(CoreModDirMinSizeRel "${CMAKE_BINARY_DIR}/GameData")
+
+set(ModDirDebug "${CMAKE_BINARY_DIR}/GameData/JKG")
+set(ModDirRelease "${CMAKE_BINARY_DIR}/GameData/JKG")
+set(ModDirRelWithDebInfo "${CMAKE_BINARY_DIR}/GameData/JKG")
+set(ModDirMinSizeRel "${CMAKE_BINARY_DIR}/GameData/JKG")
 
 include(InstallConfig)
 

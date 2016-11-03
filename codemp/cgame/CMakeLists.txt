@@ -217,3 +217,19 @@ set_target_properties(${MPCGame} PROPERTIES PROJECT_LABEL "Client Side Module (c
 if(MPCGameLibraries)
 	target_link_libraries(${MPCGame} ${MPCGameLibraries})
 endif(MPCGameLibraries)
+
+if(WIN32)
+set_target_properties(${MPCGame} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${ModDirDebug}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${ModDirRelease}"
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${ModDirRelWithDebInfo}"
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${ModDirMinSizeRel}"
+)
+else(WIN32)
+set_target_properties(${MPCGame} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${ModDirDebug}"
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${ModDirRelease}"
+    LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${ModDirRelWithDebInfo}"
+    LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL "${ModDirMinSizeRel}"
+)
+endif(WIN32)

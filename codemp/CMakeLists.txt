@@ -596,6 +596,13 @@ if(BuildMPEngine)
 	set_target_properties(${MPEngine} PROPERTIES INCLUDE_DIRECTORIES "${MPEngineIncludeDirectories}")
 	set_target_properties(${MPEngine} PROPERTIES PROJECT_LABEL "MP Client (jkgalaxies.x86.exe)")
 	target_link_libraries(${MPEngine} ${MPEngineLibraries})
+	
+	set_target_properties(${MPEngine} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CoreModDirDebug}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CoreModDirRelease}"
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CoreModDirRelWithDebInfo}"
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CoreModDirMinSizeRel}")
+	
 endif(BuildMPEngine)
 
 #        Dedicated Server (Engine) (jampded.exe)
@@ -689,6 +696,13 @@ if(BuildMPDed)
 	set_target_properties(${MPDed} PROPERTIES INCLUDE_DIRECTORIES "${MPDedIncludeDirectories}")
 	set_target_properties(${MPDed} PROPERTIES PROJECT_LABEL "MP Dedicated Server (jkgalaxiesded.x86.exe)")
 	target_link_libraries(${MPDed} ${MPDedLibraries})
+	
+	set_target_properties(${MPDed} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CoreModDirDebug}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CoreModDirRelease}"
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CoreModDirRelWithDebInfo}"
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CoreModDirMinSizeRel}")
+	
 endif(BuildMPDed)
 
 set(GameLibsBuilt)
