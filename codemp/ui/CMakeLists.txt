@@ -211,3 +211,19 @@ set_target_properties(${MPUI} PROPERTIES PROJECT_LABEL "UI Library (uix86.dll)")
 if(MPUILibraries)
 	target_link_libraries(${MPUI} ${MPUILibraries})
 endif(MPUILibraries)
+
+if(WIN32)
+set_target_properties(${MPUI} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${ModDirDebug}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${ModDirRelease}"
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${ModDirRelWithDebInfo}"
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${ModDirMinSizeRel}"
+)
+else(WIN32)
+set_target_properties(${MPUI} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${ModDirDebug}"
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${ModDirRelease}"
+    LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${ModDirRelWithDebInfo}"
+    LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL "${ModDirMinSizeRel}"
+)
+endif(WIN32)
