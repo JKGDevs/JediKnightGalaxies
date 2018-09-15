@@ -433,8 +433,6 @@ void S_SoundInfo_f(void) {
 	Com_Printf("----------------------\n" );
 }
 
-
-
 /*
 ================
 S_Init

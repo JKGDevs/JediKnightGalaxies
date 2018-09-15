@@ -137,8 +137,9 @@ static int SNDDMA_ExpandSampleFrequencyKHzToHz(int khz)
 {
 	switch (khz)
 	{
-		case 48: return 48000;
+		
 		default:
+		case 48: return 48000;
 		case 44: return 44100;
 		case 22: return 22050;
 		case 11: return 11025;
