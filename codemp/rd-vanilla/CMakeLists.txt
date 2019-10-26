@@ -111,7 +111,12 @@ list(APPEND MPVanillaRendererLibraries          ${JPEG_LIBRARIES})
 
 # Transparently use either bundled or system libpng.  Order is important --
 # libpng used zlib, so it must come before it on the linker command line.
-list(APPEND MPVanillaRendererIncludeDirectories ${PNG_INCLUDE_DIRS})
+#
+# Adding PNG_INCLUDE_DIRS and PNG_INCLUDE_DIR because the former can be empty
+# even when the latter contains a path. With PNG_INCLUDE_DIR marked as
+# deprecated, it's safer to have both in case PNG_INCLUDE_DIR stops working
+# and PNG_INCLUDE_DIRS starts working.
+list(APPEND MPVanillaRendererIncludeDirectories ${PNG_INCLUDE_DIRS} ${PNG_INCLUDE_DIR})
 list(APPEND MPVanillaRendererLibraries          ${PNG_LIBRARIES})
 
 # Transparently use either bundled or system zlib.
@@ -121,11 +126,6 @@ list(APPEND MPVanillaRendererLibraries          ${ZLIB_LIBRARIES})
 # Transparently use our bundled minizip.
 list(APPEND MPVanillaRendererIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
 list(APPEND MPVanillaRendererLibraries          ${MINIZIP_LIBRARIES})
-
-message(STATUS "PNG_INCLUDE_DIRS: ${PNG_INCLUDE_DIRS}")
-message(STATUS "PNG_INCLUDE_DIR: ${PNG_INCLUDE_DIR}")
-message(STATUS "PNG_LIBRARIES: ${PNG_LIBRARIES}")
-
 
 find_package(OpenGL REQUIRED)
 set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})
