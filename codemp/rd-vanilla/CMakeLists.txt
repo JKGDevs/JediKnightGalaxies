@@ -122,8 +122,9 @@ list(APPEND MPVanillaRendererLibraries          ${ZLIB_LIBRARIES})
 list(APPEND MPVanillaRendererIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
 list(APPEND MPVanillaRendererLibraries          ${MINIZIP_LIBRARIES})
 
-message(STATUS "PNG Include Dirs: ${PNG_INCLUDE_DIRS}")
-message(STATUS "PNG Libraries: ${PNG_LIBRARIES}")
+message(STATUS "PNG_INCLUDE_DIRS: ${PNG_INCLUDE_DIRS}")
+message(STATUS "PNG_INCLUDE_DIR: ${PNG_INCLUDE_DIR}")
+message(STATUS "PNG_LIBRARIES: ${PNG_LIBRARIES}")
 
 
 find_package(OpenGL REQUIRED)
