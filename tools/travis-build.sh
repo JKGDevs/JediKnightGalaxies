@@ -40,6 +40,6 @@ set -- -D CMAKE_BUILD_TYPE="$flavour" "$@"
 ( cd build && cmake \
 	-D CMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
 	"$@" .. )
-make -C build
+make -C build VERBOSE=1
 make -C build install
 ( cd $(pwd)/build/${INSTALL_DIR} && find . -ls )
