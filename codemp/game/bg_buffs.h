@@ -89,6 +89,7 @@ struct jkgBuff_t
 	jkgBuffDamage_t		damage;
 	jkgBuffVisuals_t	visuals;
 	jkgBuffPassive_t	passive;
+	qboolean			remove_f{ false };	//if true the buff has been marked for removal
 };
 
 extern jkgBuff_t buffTable[MAX_BUFFS];
@@ -101,7 +102,6 @@ qboolean JKG_HasResistanceBuff(playerState_t* ps);
 void JKG_RemoveBuffCategory(const char* buffCategory, playerState_t* ps);
 void JKG_CheckWaterRemoval(playerState_t* ps);
 void JKG_CheckRollRemoval(playerState_t* ps);
-bool JKG_CheckShieldRemoval(playerState_t* ps);
 void JKG_CheckFilterRemoval(playerState_t* ps);
-int JKG_ResolveBuffName(const char* szBuffName);
+int  JKG_ResolveBuffName(const char* szBuffName);
 void JKG_GetBuffNames(std::vector<std::string>& outBuffNames);

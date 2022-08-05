@@ -2154,22 +2154,11 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	}
 
-	// remove fire and other debuffs that shields protect from
-	if(ent->client->shieldEquipped && ent->client->ps.stats[STAT_SHIELD] > 0 && JKG_ClientAlive(ent))
-	{
-		//remove debuff, as shield protects us, if true returned then we need to also remove the stunlock (false still removes debuff)
-		if (JKG_CheckShieldRemoval(&ent->client->ps))
-		{
-			//remove stunlock
-			ent->client->pmfreeze = qfalse;
-			ent->client->pmlock = qfalse;
-		}
-	}
-
+// remove debuffs that shields protect from: now done in jkg_damageareas.cpp!
 	// remove toxins and other debuffs that filters protects
 	if (ent->inventory->size() > 0 && JKG_ClientAlive(ent))
 	{
-		// Play the sound effect for the shield recharging, if one exists
+		// check inventory for filter items
 		for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
 		{
 			if (it->equipped && ( it->id->itemType == ITEM_ARMOR || it->id->itemType == ITEM_CLOTHING) )
