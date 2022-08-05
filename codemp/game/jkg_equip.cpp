@@ -406,7 +406,7 @@ void Jetpack_On(gentity_t *ent)
 				if (pBuff->passive.empstaggered)
 				{
 					G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/energy_crackle.wav"));
-					G_PlayEffectID( G_EffectIndex( "effects/force/lightning.efx"), ent->client->ps.origin, ent->client->ps.viewangles );
+					G_PlayEffectID(G_EffectIndex( "effects/env/electricity.efx"), ent->client->ps.origin, ent->client->ps.viewangles);
 					return;
 				}
 			}
@@ -469,7 +469,7 @@ void ItemUse_Jetpack(gentity_t *ent)
 				if (pBuff->passive.empstaggered)
 				{
 					G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/energy_crackle.wav"));
-					G_PlayEffectID( G_EffectIndex( "effects/force/lightning.efx"), ent->client->ps.origin, ent->client->ps.viewangles );
+					G_PlayEffectID(G_EffectIndex("effects/env/electricity.efx"), ent->client->ps.origin, ent->client->ps.viewangles);
 					return;
 				}
 			}
