@@ -135,11 +135,16 @@ void G_RemoveBuff(gentity_t* ent, int index)
 	ent->client->ps.buffsActive &= ~(1 << index);
 	if (pBuff->passive.overridePmoveType.first)
 	{
-		if (pBuff->passive.overridePmoveType.second == PM_FREEZE || pBuff->passive.overridePmoveType.second == PM_LOCK)
+		if (pBuff->passive.overridePmoveType.second == PM_FREEZE)
 		{
-			ent->client->pmfreeze = qfalse;
+			ent->client->pmlock = ent->client->pmfreeze = qfalse;
+		}
+
+		if (pBuff->passive.overridePmoveType.second == PM_LOCK)
+		{
 			ent->client->pmlock = qfalse;
 		}
+
 		if (pBuff->passive.overridePmoveType.second == PM_NOMOVE)
 		{
 			ent->client->pmnomove = qfalse;
@@ -147,6 +152,7 @@ void G_RemoveBuff(gentity_t* ent, int index)
 	}
 	pBuff->passive.stacks = 0;
 	pBuff->passive.movemodifier_cur = 1.0;
+	pBuff->remove_f = false; //reset flag
 }
 
 /*
@@ -173,7 +179,7 @@ void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity
 	// Try and cancel out any existing buffs first, this will clear out room for the new buff ideally
 	for (i = 0; i < PLAYERBUFF_BITS; i++)
 	{
-		
+
 		if (ent->client->ps.buffsActive & (1 << i))
 		{
 			jkgBuff_t* pOtherBuff = &buffTable[ent->client->ps.buffs[i].buffID];
@@ -235,14 +241,30 @@ void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity
 			ent->buffData[i].endTime = level.time + duration;
 			ent->buffData[i].lastDamageTime = level.time;
 
+			//check if having a shield blocks the buff
+			if (pBuff->cancel.shieldRemoval && ent->client->ps.stats[STAT_SHIELD] > 0)
+			{
+				// Play the shield hit effect
+				gentity_t* evEnt;
+				evEnt = G_TempEntity(ent->client->ps.origin, EV_SHIELD_HIT);
+				evEnt->s.otherEntityNum = ent->s.number;
+				evEnt->s.eventParm = DirToByte(ent->client->ps.viewangles);
+				evEnt->s.time2 = 10; //strength
+				G_RemoveBuff(ent, i);  //--futuza: remove it?  could also just not apply the effects, but leave the debuff on the player...
+				return;
+			}
 
-
-			//don't forget to undo anything you add here in the G_RemoveBuff() function
-
+			//****
+			//
+			//	Don't forget to undo anything you add below in the G_RemoveBuff() function.
+			//
+			//****
+			pBuff->remove_f = false; //should already be set, but just in case
+			
 			//override movement type
 			if (pBuff->passive.overridePmoveType.first)
 			{
-				if (pBuff->passive.overridePmoveType.second == PM_FREEZE) //freeze in place no movement
+				if (pBuff->passive.overridePmoveType.second == PM_FREEZE) //freeze in place no movement - note this includes a pmlock as well
 				{
 					// clear out the velocity vector only if we are not in midair
 					if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
@@ -262,6 +284,11 @@ void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity
 					}
 					ent->client->ps.freezeLegsAnim = ent->client->ps.legsAnim;
 					ent->client->pmnomove = qtrue;
+				}
+				else if (pBuff->passive.overridePmoveType.second == PM_LOCK) 
+				{
+					//need more animation freeze here too?
+					ent->client->pmlock = qtrue;
 				}
 			}
 
@@ -426,6 +453,13 @@ void G_TickBuffs(gentity_t* ent)
 			jkgBuff_t* pBuff = &buffTable[ent->client->ps.buffs[i].buffID];
 			// check for removal
 			if (ent->buffData[i].endTime < level.time)
+			{
+				G_RemoveBuff(ent, i);
+				continue;
+			}
+
+			// check for removal
+			if (pBuff->remove_f)
 			{
 				G_RemoveBuff(ent, i);
 				continue;

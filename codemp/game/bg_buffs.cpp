@@ -19,6 +19,9 @@ static int	nLastUsedBuff = 0;
 // Determines if this entityState has a freezing buff associated with it
 qboolean JKG_HasFreezingBuff(entityState_t* es)
 {
+	if (!es->buffsActive)
+		return qfalse;
+
 	for (int i = 0; i < PLAYERBUFF_BITS; i++)
 	{
 		if (es->buffsActive & (1 << i))
@@ -34,12 +37,14 @@ qboolean JKG_HasFreezingBuff(entityState_t* es)
 			}
 		}
 	}
-
 	return qfalse;
 }
 
 qboolean JKG_HasFreezingBuff(playerState_t* ps) //ps version
 {
+	if (!ps->buffsActive)
+		return qfalse;
+
 	for (int i = 0; i < PLAYERBUFF_BITS; i++)
 	{
 		if (ps->buffsActive & (1 << i))
@@ -60,6 +65,9 @@ qboolean JKG_HasFreezingBuff(playerState_t* ps) //ps version
 
 qboolean JKG_HasFreezingBuff(playerState_t &ps) //ps ref version
 {
+	if (!ps.buffsActive)
+		return qfalse;
+
 	for (int i = 0; i < PLAYERBUFF_BITS; i++)
 	{
 		if (ps.buffsActive & (1 << i))
@@ -80,6 +88,9 @@ qboolean JKG_HasFreezingBuff(playerState_t &ps) //ps ref version
 
 qboolean JKG_HasResistanceBuff(playerState_t* ps)
 {
+	if (!ps->buffsActive)
+		return qfalse;
+
 	for (int i = 0; i < PLAYERBUFF_BITS; i++)
 	{
 		if (ps->buffsActive & (1 << i))
@@ -97,14 +108,17 @@ qboolean JKG_HasResistanceBuff(playerState_t* ps)
 // Removes all buffs of a certain category on a playerstate
 void JKG_RemoveBuffCategory(const char* buffCategory, playerState_t* ps)
 {
-	for (int i = 0; i < PLAYERBUFF_BITS; i++)
+	if (ps->buffsActive)
 	{
-		if (ps->buffsActive & (1 << i))
+		for (int i = 0; i < PLAYERBUFF_BITS; i++)
 		{
-			jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
-			if (!Q_stricmp(pBuff->category, buffCategory))
+			if (ps->buffsActive & (1 << i))
 			{
-				ps->buffsActive &= ~(1 << i); // remove this buff
+				jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
+				if (!Q_stricmp(pBuff->category, buffCategory))
+				{
+					pBuff->remove_f = true;
+				}
 			}
 		}
 	}
@@ -113,14 +127,17 @@ void JKG_RemoveBuffCategory(const char* buffCategory, playerState_t* ps)
 // Removes all buffs that have the waterRemoval flag set
 void JKG_CheckWaterRemoval(playerState_t* ps)
 {
-	for (int i = 0; i < PLAYERBUFF_BITS; i++)
+	if (ps->buffsActive)
 	{
-		if (ps->buffsActive & (1 << i))
+		for (int i = 0; i < PLAYERBUFF_BITS; i++)
 		{
-			jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
-			if (pBuff->cancel.waterRemoval)
+			if (ps->buffsActive & (1 << i))
 			{
-				ps->buffsActive &= ~(1 << i); // remove this buff
+				jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
+				if (pBuff->cancel.waterRemoval)
+				{
+					pBuff->remove_f = true;
+				}
 			}
 		}
 	}
@@ -129,48 +146,28 @@ void JKG_CheckWaterRemoval(playerState_t* ps)
 // Removes all buffs that have the rollRemoval flag set
 void JKG_CheckRollRemoval(playerState_t* ps)
 {
-	for (int i = 0; i < PLAYERBUFF_BITS; i++)
+	if (ps->buffsActive)
 	{
-		if (ps->buffsActive & (1 << i))
+		for (int i = 0; i < PLAYERBUFF_BITS; i++)
 		{
-			jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
-			if (pBuff->cancel.rollRemoval)
+			if (ps->buffsActive & (1 << i))
 			{
-				ps->buffsActive &= ~(1 << i); // remove this buff
-			}
-		}
-	}
-}
-
-//Removes all buffs that have the shieldRemoval flag set, returns true if has stunlock, false if normal
-bool JKG_CheckShieldRemoval(playerState_t* ps)
-{
-	qboolean stunlocked = false;
-	for (int i = 0; i < PLAYERBUFF_BITS; i++)
-	{
-		if (ps->buffsActive & (1 << i))
-		{
-			jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
-			if (pBuff->cancel.shieldRemoval)
-			{
-				if (pBuff->passive.overridePmoveType.first)
+				jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
+				if (pBuff->cancel.rollRemoval)
 				{
-					if (pBuff->passive.overridePmoveType.second == PM_FREEZE ||
-						pBuff->passive.overridePmoveType.second == PM_LOCK)
-					{
-						stunlocked = true;
-					}
+					pBuff->remove_f = true;
 				}
-				ps->buffsActive &= ~(1 << i); // remove this buff
 			}
 		}
 	}
-	return stunlocked;
 }
 
 //Removes all buffs that have the filterRemoval flag set
 void JKG_CheckFilterRemoval(playerState_t* ps)
 {
+	if (!ps->buffsActive)
+		return;
+
 	for (int i = 0; i < PLAYERBUFF_BITS; i++)
 	{
 		if (ps->buffsActive & (1 << i))
@@ -178,7 +175,10 @@ void JKG_CheckFilterRemoval(playerState_t* ps)
 			jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
 			if (pBuff->cancel.filterRemoval)
 			{
-				ps->buffsActive &= ~(1 << i); // remove this buff
+				pBuff->remove_f = true;
+				//ps->buffsActive &= ~(1 << i); //--futuza: Old unsafe way of removing buff, it could have unintended consequences.
+												//Instead set remove_f to true to flag it for safe removal.
+				return;
 			}
 		}
 	}
@@ -450,6 +450,7 @@ static qboolean JKG_ParseBuff(const char* buffName, cJSON* json)
 	}
 #endif
 
+	pBuff->remove_f = false;	//set flag
 	return qtrue;
 }
 
