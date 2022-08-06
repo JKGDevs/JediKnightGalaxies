@@ -155,7 +155,7 @@ typedef struct weaponEventsHandler_s
     const char *handlerName;
 
     void (*WeaponRenderWorld) ( centity_t *cent, const weaponDrawData_t *weaponData, const ammo_t* ammo, unsigned char firingMode, const vec3_t angles );
-    void (*WeaponRenderView) ( const weaponDrawData_t *weaponData );
+    void (*WeaponRenderView) ( const weaponDrawData_t *weaponData, const ammo_t* ammo);
     void (*WeaponFire) ( centity_t *cent, const weaponDrawData_t *weaponData, unsigned char firingMode );
     void (*WeaponCharge) ( const centity_t *cent, const weaponDrawData_t *weaponData );
     
