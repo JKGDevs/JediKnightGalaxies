@@ -2909,7 +2909,7 @@ qboolean JKG_ShouldRenderWeaponViewModel ( const centity_t *cent, const playerSt
 	return qtrue;
 }
 
-static void JKG_RenderGenericWeaponView ( const weaponDrawData_t *weaponData )
+static void JKG_RenderGenericWeaponView ( const weaponDrawData_t *weaponData, const ammo_t* ammoData )
 {
 	static const char *barrelTags[] = {
 		"tag_barrel",
@@ -2917,7 +2917,6 @@ static void JKG_RenderGenericWeaponView ( const weaponDrawData_t *weaponData )
 		"tag_barrel3",
 		"tag_barrel4"
 	};
-
 	const playerState_t *ps = &cg.predictedPlayerState;
 	centity_t *cent = &cg_entities[ps->clientNum];
 	const entityState_t *s = &cent->currentState;
@@ -2932,7 +2931,6 @@ static void JKG_RenderGenericWeaponView ( const weaponDrawData_t *weaponData )
 	refEntity_t hand;
 	refEntity_t gun;
 	refEntity_t muzzle;
-
 	int i;
 	refEntity_t barrel;
 
@@ -3062,7 +3060,14 @@ static void JKG_RenderGenericWeaponView ( const weaponDrawData_t *weaponData )
 
 	VectorCopy (muzzle.origin, cg.lastFPFlashPoint);
 
-	if ( s->modelindex2 == WEAPON_CHARGING && weaponData->weaponRender.generic.chargingEffect )
+	fxHandle_t chargeEffect = weaponData->weaponRender.generic.chargingEffect;
+	//apply muzzle effects from ammo if present
+	if (JKG_SimpleAmmoOverridePresent(ammoData->visualOverrides.chargingEffect))
+	{
+		chargeEffect = trap->FX_RegisterEffect(ammoData->visualOverrides.chargingEffect.second.c_str());
+	}
+
+	if ( s->modelindex2 == WEAPON_CHARGING && chargeEffect)
 	{
 		JKG_RenderChargingEffect (
 			cent,
@@ -3104,24 +3109,46 @@ static void JKG_RenderGenericWeaponView ( const weaponDrawData_t *weaponData )
 	cent->muzzleFlashCount = cent->shotCount;
 	cent->shotCountOverflowed = qfalse;
 
-	if ( weaponData->weaponRender.generic.muzzleEffect )
+	fxHandle_t muzzleEffect = weaponData->weaponRender.generic.muzzleEffect;
+	double muzzleLightIntensity = weaponData->weaponRender.generic.muzzleLightIntensity;
+
+	if (JKG_SimpleAmmoOverridePresent(ammoData->visualOverrides.muzzleEffect))
+	{
+		muzzleEffect = trap->FX_RegisterEffect(ammoData->visualOverrides.muzzleEffect.second.c_str());
+	}
+	JKG_ApplyAmmoOverride(muzzleLightIntensity, ammoData->visualOverrides.muzzleLightIntensity);
+
+	if (muzzleEffect)
 	{
 		trap->FX_PlayEntityEffectID (
-			weaponData->weaponRender.generic.muzzleEffect,
+			muzzleEffect,
 			muzzle.origin, muzzle.axis,
 			-1, -1, -1, -1
 		);
 	}
 
-	if ( weaponData->weaponRender.generic.muzzleLightIntensity > 0.0f )
+	if (muzzleLightIntensity > 0.0f )
 	{
-		trap->R_AddLightToScene (
-			muzzle.origin,
-			weaponData->weaponRender.generic.muzzleLightIntensity + (rand() & 31),
-			weaponData->weaponRender.generic.muzzleLightColor[0],
-			weaponData->weaponRender.generic.muzzleLightColor[1],
-			weaponData->weaponRender.generic.muzzleLightColor[2]
-		);
+		if (JKG_SimpleAmmoOverridePresent(ammoData->visualOverrides.muzzleLightColor))
+		{
+			trap->R_AddLightToScene(
+				muzzle.origin,
+				muzzleLightIntensity + (rand() & 31),
+				ammoData->visualOverrides.muzzleLightColor.second[0],
+				ammoData->visualOverrides.muzzleLightColor.second[1],
+				ammoData->visualOverrides.muzzleLightColor.second[2]
+			);
+		}
+		else
+		{
+			trap->R_AddLightToScene(
+				muzzle.origin,
+				muzzleLightIntensity + (rand() & 31),
+				weaponData->weaponRender.generic.muzzleLightColor[0],
+				weaponData->weaponRender.generic.muzzleLightColor[1],
+				weaponData->weaponRender.generic.muzzleLightColor[2]
+			);
+		}
 	}
 }
 
@@ -3303,7 +3330,7 @@ void JKG_RenderWeaponViewModel ( void )
 
 	if ( weapon->eventsHandler[ps->firingMode] && weapon->eventsHandler[ps->firingMode]->WeaponRenderView )
 	{
-		weapon->eventsHandler[ps->firingMode]->WeaponRenderView(&weapon->drawData[ps->firingMode]);
+		weapon->eventsHandler[ps->firingMode]->WeaponRenderView(&weapon->drawData[ps->firingMode], &ammoTable[cent->currentState.ammoType]);
 	}
 }
 
