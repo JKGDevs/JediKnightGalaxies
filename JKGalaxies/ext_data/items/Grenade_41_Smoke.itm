@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"20",
 	"maxStack":		20,
-	"itemIcon":		"models/weapons/Grenade_Smoke/icon_default"
+	"itemIcon":		"models/weapons/Grenade_Smoke/icon_default",
+	"itemDescription": "Manufactured by BlasTech Industries, the Nacht-4 smoke grenade is used to obscure vision, may also affect some droid sensor in addition to organics. May also be used as a low-tech signaling device. The smoke causes mild irritation for some species."
 }

@@ -1,0 +1,32 @@
+{
+	"ref":		"bhlegs",
+	"slot":		"legs",
+	"armor":		105,
+	"movemodifier":	0.95,
+
+	"visuals": {
+		"model":	"models/players/bounty_hunter/model.glm*default",
+		"modelGroup":	"bounty_hunter",
+
+		"armorOnSurfaces": [
+			"hips",
+			"legwrappers"
+		],
+
+		"bodyOffSurfaces": [
+			"hips",
+			"hips_lower",
+			"l_leg_knee",
+			"r_leg_knee",
+			"hips_holster",
+			"hips_augment",
+			"hips_l_packlarge",
+			"hips_l_packwide",
+			"hips_lowerarmor",
+			"hips_r_packsmall",
+			"hips_r_strap",
+			"hips_flaps",
+			"torso_lower"
+		]
+	}
+}

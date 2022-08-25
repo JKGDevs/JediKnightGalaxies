@@ -3624,12 +3624,7 @@ void S_SetLipSyncs()
 	int currentTime, timePlayed;
 	channel_t *ch;
 
-#ifdef _WIN32
-	currentTime = timeGetTime();
-#else
-	// FIXME: alternative to timeGetTime ?
-	currentTime = 0;
-#endif
+	currentTime = Sys_Milliseconds();
 
 	memset(s_entityWavVol, 0, sizeof(s_entityWavVol));
 

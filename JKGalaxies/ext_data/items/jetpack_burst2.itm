@@ -1,8 +1,9 @@
 {
-	"name":		"Merr-Sonn Adv Burst Jetpack",
+	"name":		"Merr-Sonn V-Burst Jetpack (adv)",
 	"internal":	"jetpack_burst2",
 	"itemtype":	"jetpack",
 	"cost":		775,
-	"itemIcon":	"gfx/hud/i_icon_jetpack.tga",
-	"jetpack":	"jetpack_burst2"
+	"itemIcon":	"gfx/item_icons/bounty_hunter_backpack.tga",
+	"jetpack":	"jetpack_burst2",
+	"itemDescription": "Merr-Sonn Munition's V-Burst Jetpack line fires short vertical 'bursts' to enable its user to take full advantage of terrain.  The advanced version has greater thrust and fuel capacity, but is more difficult to control."
 }

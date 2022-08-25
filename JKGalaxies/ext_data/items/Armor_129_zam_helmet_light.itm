@@ -1,0 +1,10 @@
+{
+	"name":         "Mabari Helmet",
+	"internal":     "helmet_zam_light",
+	"itemtype":     "armor",
+	"armor":		"zam_helmet",
+	"weight":		"2",
+	"cost":			"210",
+	"itemIcon":		"gfx/item_icons/zam_helmet.tga",
+	"itemDescription": "A helmet originally worn by Mabari warriors, it has been modified by a bounty hunter and could be comfortably worn by many humanoid species.  It provides simple head protection."
+}

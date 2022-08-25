@@ -61,16 +61,25 @@
     },
     
     "firemode0": {
-        "damage":       60,//100,
+        "damage":
+        {
+            "damage":       75,//100,
+            "buffs": [
+			{
+			    "buff": "standard-emp",
+			    "duration": 4000
+			}
+            ]
+        },
         "ballistic":    true,
         "collisionsize":1.0,
         "ammocost":     1,
-        "firedelay":    1700,
+        "firedelay":    2300,
         "firingtype":   "semi",
-        "range":        40000.0,
-        "recoil":       9.0,
+        "range":        45000.0,
+        "recoil":       10.0,
         "spread":       0.1,
-        "splashrange":  420,//210,
+        "splashrange":  600,//210,
         "projectilespeed":13000.0,
         "projectileclass":"conc_proj",
         "meansofdeath": "MOD_SONIC",
@@ -79,15 +88,15 @@
 	"ammodefault": "AMMO_CONCUSSION",
         "clipSize":              3,
             "accuracy": {
-        "accuracyRating": 40,
-        "accuracyRatingPerShot": 10,
-        "msToDrainAccuracy": 450,
+        "accuracyRating": 28,
+        "accuracyRatingPerShot": 8,
+        "msToDrainAccuracy": 350,
         "maxAccuracyAdd": 120,
-        "crouchModifier": 0.8,
-        "runModifier": 1.5,
-        "sightsModifier": 0.5,
-        "walkModifier": 1.2,
-        "inAirModifier": 1.8
+        "crouchModifier": 0.7,
+        "runModifier": 1.9,
+        "sightsModifier": 0.4,
+        "walkModifier": 1.5,
+        "inAirModifier": 2.8
         }
     },
 

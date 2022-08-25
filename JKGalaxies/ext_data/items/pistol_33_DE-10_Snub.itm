@@ -7,5 +7,6 @@
 	"weight":		"4",
 	"cost":		"625",
 	"xml":			"xml/items/DE-10_Snub.xml",
-	"itemIcon":		"models/weapons/DE-10_pistol/icon_Snub"
+	"itemIcon":		"models/weapons/DE-10_pistol/icon_Snub",
+	"itemDescription": "The DE-10 was based on stolen Antrech Arms blueprints, and produced by the terrorist organization known as Death Watch. The snub-nose variant packs quite a punch, though it's range is somewhat limited. Its small size is favored by smugglers."
 }

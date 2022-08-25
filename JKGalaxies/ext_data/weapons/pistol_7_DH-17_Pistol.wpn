@@ -18,7 +18,7 @@
             "firemode":     "models/weapons/DH-17_Pistol/firemode"
         },
         
-        "gunposition":      "10.0 -2.8 -5.6",
+        "gunposition":      "12.0 -5.0 -7.5",
         "ironsightsposition": "10.0 0.0 -4.6",
         "ironsightsfov": "20",
 		"barrelCount": "3",
@@ -81,9 +81,10 @@
         "projectilespeed": 4000.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
-	"ammobase": "AMMO_POWERPACK_M",
-	"ammodefault": "AMMO_POWERPACK_S",
-        "clipSize":              20
+	    "ammobase": "AMMO_POWERPACK_S",
+	    "ammodefault": "AMMO_POWERPACK_S",
+        "clipSize":              20,
+        "heatGenerated": 4
     },
     
     "firemode1": {
@@ -99,9 +100,10 @@
         "projectilespeed": 4000.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
-	"ammobase": "AMMO_POWERPACK_M",
-	"ammodefault": "AMMO_POWERPACK_S",
-        "clipSize":              20
+	    "ammobase": "AMMO_POWERPACK_S",
+	    "ammodefault": "AMMO_POWERPACK_S",
+        "clipSize":              20,
+        "heatGenerated": 5
     },
     
     "playeranims": {

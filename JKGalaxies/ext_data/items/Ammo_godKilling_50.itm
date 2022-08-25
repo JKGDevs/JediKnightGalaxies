@@ -6,5 +6,6 @@
 	"cost":		"1000",
 	"ammoclass":	"AMMO_SLUGS_GODKILLER",
 	"ammoquantity":	"50",
-	"itemIcon": "gfx/item_icons/default.tga"	//needs icon!
+	"itemIcon": "gfx/item_icons/ammo_metallic_bolts.tga",	//needs icon!
+	"itemDescription": "This dust covered box of strangely glowing munitions seem to be roughly slugthrower sized, but emit several odd types of visual electromagnetic radiation and give you an uneasy feeling. You can hear a strange humming if held up to your ear."
 }

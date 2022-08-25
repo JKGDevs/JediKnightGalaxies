@@ -5,6 +5,7 @@
 	"weapon":		"WP_SABER",
 	"variation":		"5",
 	"weight":		"10",
+	"tier":			3,
 	"cost":		"1250",
 	"xml":			"",
 	"itemIcon":		"models/weapons/lightsabers/icons/training.tga"

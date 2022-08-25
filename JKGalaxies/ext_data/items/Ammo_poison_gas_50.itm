@@ -6,5 +6,6 @@
 	"cost":		"250",
 	"ammoclass":	"AMMO_GAS_POISON",
 	"ammoquantity":	"50",
-	"itemIcon": "gfx/item_icons/default.tga"	//needs icon!
+	"itemIcon": "gfx/item_icons/ammo_battery.tga",	//needs icon!
+	"itemDescription": "This illegally modified gas canister appears to contain a flammable deadly neurotoxin and is highly acidic if exposed to atmosphere. Its use is likely to be considered a warcrime by most jurisdictions including the Empire's."
 }

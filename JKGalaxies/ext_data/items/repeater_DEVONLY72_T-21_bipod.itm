@@ -7,5 +7,6 @@
 	"weight":		"22",
 	"cost":		"3000",
 	"xml":			"",
-	"itemIcon":		"models/weapons/t-21_repeater/icon_default"
+	"itemIcon":		"models/weapons/t-21_repeater/icon_default",
+	"itemDescription": "The T-21 was one of the heaviest and most powerful blaster weapons that could be carried by infantry. A direct hit from the weapon is devastating. This variant comes with a bipod support and a power generator allowing it to be fired continuously."
 }

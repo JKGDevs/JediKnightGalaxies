@@ -5,5 +5,6 @@
 	"armor":		"rpgloves",
 	"weight":		"2",
 	"cost":			"50",
-	"itemIcon":		"gfx/item_icons/default.tga"
+	"itemIcon":		"gfx/item_icons/pilot_gloves.tga",
+	"itemDescription": "These gloves protect pilots from vehicle controls during overload if damaged, while also providing flexibility and dexterity for maneuvering sensitive vessels that are nearly as adapt as organic fingers."
 }

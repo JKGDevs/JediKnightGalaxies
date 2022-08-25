@@ -16,7 +16,7 @@
             "ammo":         [ "models/weapons/stouker_concussionrifle/indicator", "models/weapons/stouker_concussionrifle/indicator0" ]
         },
         
-        "gunposition":      "4.0 -4.0 -6.4",
+        "gunposition":      "5.0 -4.0 -6.4",
         "ironsightsposition": "3.0 0.0 -5.0",
         "ironsightsfov": "70",
 		"barrelCount": "2",
@@ -63,23 +63,32 @@
     },
     
     "firemode0": {
-        "damage": 40,//100,
+        "damage":
+        {
+            "damage":       55,//50,
+            "buffs": [
+			{
+			    "buff": "standard-emp",
+			    "duration": 4000
+			}
+            ]
+        },
         "ballistic":    true,
         "collisionsize":1.0,
         "ammocost":     2,
-        "firedelay":    1900,
+        "firedelay":    1200,
         "firingtype":   "semi",
-        "range":        40000.0,
+        "range":        1000.0,
         "recoil":       11.0,
         "spread":       0.4,
-        "splashrange":  700,//250,
+        "splashrange":  450,//250,
         "projectilespeed":5000.0,
         "projectileclass":"rocket_proj",
         "meansofdeath": "MOD_SONIC",
         "splashmeansofdeath": "MOD_SONIC",
 	"ammobase": "AMMO_STOUKER",
 	"ammodefault": "AMMO_STOUKER",
-        "clipSize":              6,
+        "clipSize":              8,
             "accuracy": {
         "accuracyRating": 20,
         "accuracyRatingPerShot": 16,
@@ -94,11 +103,20 @@
     },
     
     "firemode1": {
-        "damage":       55,//50,
+        "damage":
+        {
+            "damage":       75,//50,
+            "buffs": [
+			{
+			    "buff": "standard-emp",
+			    "duration": 4000
+			}
+            ]
+        },
         "ballistic":    true,
         "collisionsize": 8.0,
         "ammocost":     1,
-        "firedelay":    1900,
+        "firedelay":    1200,
         "firingtype":   "semi",
         "range":        1000.0,
         "recoil":       10.0,
@@ -110,7 +128,7 @@
         "splashmeansofdeath": "MOD_SONIC",
 	"ammobase": "AMMO_STOUKER",
 	"ammodefault": "AMMO_STOUKER",
-        "clipSize":              6,
+        "clipSize":              8,
             "accuracy": {
         "accuracyRating": 24,
         "accuracyRatingPerShot": 20,

@@ -12,8 +12,8 @@
         "hudnaicon":        "models/weapons/Packered_MortarGun/icon_default",
         "selectsound":      "sound/weapons/select_h_launcher.wav",
         
-        "gunposition":      "4.0 -4.0 -9.0",
-        "ironsightsposition": "5.0 -5.0 -6.0",
+        "gunposition":      "4.0 -6.0 -10.0",
+        "ironsightsposition": "5.0 -6.5 -6.0",
         "ironsightsfov": "70",
 		
 		"barrelCount": "3",

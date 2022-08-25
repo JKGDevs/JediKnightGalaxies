@@ -27,6 +27,8 @@ typedef struct {
 	int slot;				// Which armor slot this item equips to - this corresponds to the GHOUL2 model index
 	int armor;				// Effective hit points - 25 armor is the same as having 25% extra health on the limb
 	int hp;					// Health to add by equipping this piece of armor
+	int stamina;			// Stamina/fp to add by equipping this piece of armor
+	qboolean filter;		// If true, the armor has a filter that protects from toxins
 
 	float movemodifier;		// Affects how fast you can move with this piece of equipment
 	// More movement modifiers? (jump height? stamina usage?)

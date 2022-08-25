@@ -155,7 +155,7 @@ typedef struct weaponEventsHandler_s
     const char *handlerName;
 
     void (*WeaponRenderWorld) ( centity_t *cent, const weaponDrawData_t *weaponData, const ammo_t* ammo, unsigned char firingMode, const vec3_t angles );
-    void (*WeaponRenderView) ( const weaponDrawData_t *weaponData );
+    void (*WeaponRenderView) ( const weaponDrawData_t *weaponData, const ammo_t* ammo);
     void (*WeaponFire) ( centity_t *cent, const weaponDrawData_t *weaponData, unsigned char firingMode );
     void (*WeaponCharge) ( const centity_t *cent, const weaponDrawData_t *weaponData );
     
@@ -194,6 +194,7 @@ void JKG_RenderProjectile ( const centity_t *cent, unsigned char firingMode );
 void JKG_RenderProjectileMiss ( const centity_t *cent, const vec3_t origin, const vec3_t direction, qboolean altFire );
 void JKG_RenderProjectileDeath ( const centity_t *cent, const vec3_t origin, const vec3_t direction, unsigned char firingMode );
 void JKG_RenderProjectileHitPlayer ( const centity_t *cent, const vec3_t origin, const vec3_t direction, qboolean altFire );
+void JKG_RenderOverheatEffect(centity_t* cent, fxHandle_t steamEfx, const vec3_t muzzlePosition, vec3_t* axis, qboolean isLocalPlayer, qboolean isFirstPerson);
 
 void JKG_ToggleScope ( const centity_t *cent );
 void JKG_ZoomScope ( const centity_t *cent );

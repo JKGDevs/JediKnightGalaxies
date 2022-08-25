@@ -378,6 +378,7 @@ void TransferWPData(int from, int to)
 		trap->Print(S_COLOR_RED "FATAL ERROR: Could not allocated memory for waypoint\n");
 	}
 
+	*gWPArray[to] = {};
 	gWPArray[to]->flags = gWPArray[from]->flags;
 	gWPArray[to]->weight = gWPArray[from]->weight;
 	gWPArray[to]->associated_entity = gWPArray[from]->associated_entity;
@@ -431,6 +432,7 @@ void CreateNewWP_Automated(vec3_t origin, int flags)
 	if (TooCloseToOtherWaypoint(origin))
 		return;
 
+	*gWPArray[gWPNum] = {};
 	gWPArray[gWPNum]->flags = flags;
 	gWPArray[gWPNum]->weight = 0; //calculated elsewhere
 	gWPArray[gWPNum]->associated_entity = ENTITYNUM_NONE; //set elsewhere
@@ -458,7 +460,6 @@ void CreateNewWP(vec3_t origin, int flags)
 
 	if (!gWPArray[gWPNum])
 	{
-		//gWPArray[gWPNum] = (wpobject_t *)malloc(sizeof(wpobject_t));
 		gWPArray[gWPNum] = (wpobject_t *)malloc(sizeof(wpobject_t));
 	}
 
@@ -467,6 +468,7 @@ void CreateNewWP(vec3_t origin, int flags)
 		trap->Print(S_COLOR_RED "ERROR: Could not allocated memory for waypoint\n");
 	}
 
+	*gWPArray[gWPNum] = {};
 	gWPArray[gWPNum]->flags = flags;
 	gWPArray[gWPNum]->weight = 0; //calculated elsewhere
 	gWPArray[gWPNum]->associated_entity = ENTITYNUM_NONE; //set elsewhere
@@ -500,6 +502,7 @@ void CreateNewWP_FromObject(wpobject_t *wp)
 		}
 	}
 
+	*gWPArray[gWPNum] = {};
 	gWPArray[gWPNum]->flags = wp->flags;
 	gWPArray[gWPNum]->weight = wp->weight;
 	gWPArray[gWPNum]->associated_entity = wp->associated_entity;
@@ -698,6 +701,7 @@ int CreateNewWP_InTrail(vec3_t origin, int flags, int afterindex)
 				gWPArray[i] = (wpobject_t *)malloc(sizeof(wpobject_t));
 			}
 
+			*gWPArray[i] = {};
 			gWPArray[i]->flags = flags;
 			gWPArray[i]->weight = 0; //calculated elsewhere
 			gWPArray[i]->associated_entity = ENTITYNUM_NONE; //set elsewhere
@@ -778,6 +782,7 @@ int CreateNewWP_InsertUnder(vec3_t origin, int flags, int afterindex)
 				gWPArray[i] = (wpobject_t *)malloc(sizeof(wpobject_t));
 			}
 
+			*gWPArray[i] = {};
 			gWPArray[i]->flags = flags;
 			gWPArray[i]->weight = 0; //calculated elsewhere
 			gWPArray[i]->associated_entity = ENTITYNUM_NONE; //set elsewhere
@@ -2107,6 +2112,7 @@ void CreateNewWP_FromAWPNode(int index, vec3_t origin, int flags, int weight, in
 
 	//trap->Print("DEBUG: Adding waypoint (%i) %i at %f %f %f with %i links.\n", gWPNum, index, origin[0], origin[1], origin[2], num_links);
 
+	*gWPArray[gWPNum] = {};
 	gWPArray[gWPNum]->flags = flags;
 	gWPArray[gWPNum]->weight = weight;
 	gWPArray[gWPNum]->associated_entity = associated_entity;

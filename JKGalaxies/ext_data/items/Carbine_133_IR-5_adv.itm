@@ -1,0 +1,11 @@
+{
+	"name":             "@JKG_ITEMS_carbine_ir-5_adv",
+	"internal":         "carbine_ir-5_adv",
+	"itemtype":          "weapon",
+	"weapon":			"WP_BLASTER",
+	"variation":		"9",
+	"weight":			"4",
+	"cost":				"675",
+	"itemIcon":			"models/weapons/IR-5_Carbine/icon_default",
+	"itemDescription":  "The advanced model of the IR-5 'Intimidator' features several improvements over the original model, including a scope, a better cooling system, and larger clip capacity."
+}

@@ -1,0 +1,22 @@
+{
+	"ref":		"bh2shoulderpads",		// The reference that links this to the .itm file
+	"slot":		"shoulder",			// Which slot this goes in
+	"armor":		150,			// Effective hit points - "Armor" in the GUI
+	"movemodifier":	0.925,			// How much to modify the movement speed by
+
+	// Visuals - all done on the client
+	"visuals": {
+		"model":	"models/players/bounty_hunter2/model.glm*default",
+		"modelGroup":	"bounty_hunter2",
+
+		// armorOnSurfaces tells which surfaces we should -only- show on the armor.
+		"armorOnSurfaces": [
+			"torso_shoulder_pad"
+		],
+
+		// bodyOffSurfaces says which surfaces to turn off on the player.
+		"bodyOffSurfaces": [
+			"torso_shoulder_pad"
+		]
+	}
+}

@@ -8,7 +8,8 @@
 #endif
 #include <json/cJSON.h>
 
-itemData_t* itemLookupTable;
+itemData_t* itemLookupTable; //total list of items
+
 
 const stringID_table_s itemPacketNames[] = {
 	ENUM2STRING(IPT_ADD),
@@ -353,10 +354,9 @@ void BG_ReceivedItemPacket(itemPacketType_t packetType) {
 				{
 					if (i != invID && (*cg.playerInventory)[i].id->itemType == ITEM_ARMOR)
 					{
-						if ((*cg.playerInventory)[i].id->armorData.pArm->slot == (*cg.playerInventory)[invID].id->armorData.pArm->slot)
+						if ((*cg.playerInventory)[i].id->armorData.pArm->slot == (*cg.playerInventory)[invID].id->armorData.pArm->slot) //if its equipped and takes up the same slot type, we can only have one per slot
 						{
 							(*cg.playerInventory)[i].equipped = qfalse;
-							break;
 						}
 					}
 				}
@@ -510,7 +510,6 @@ void BG_ReceivedTradePacket(itemTradePacketType_t packet) {
 			break;
 		case IPT_TRADESINGLE:
 			{
-				int credits = atoi(CG_Argv(2));
 				int itemID = atoi(CG_Argv(3));
 				int quantity = atoi(CG_Argv(4));
 				itemInstance_t item = BG_ItemInstance(itemID, quantity);
@@ -666,8 +665,7 @@ void BG_GiveItemNonNetworked(gentity_t* ent, itemInstance_t item) {
 
 	// Add the new item stack to the inventory
 	ent->inventory->push_back(item);
-
-	//do special checks for shields and jetpacks
+	//do special checks for shields and jetpacks (autoequipping)
 	if ((item.id->itemType == ITEM_SHIELD || item.id->itemType == ITEM_JETPACK) && ent->s.eType == ET_PLAYER) //for now don't give anyone except players autoequip shields/jetpacks
 	{
 		bool alreadyEquipped = false; int equipLoc = -1;
@@ -687,7 +685,7 @@ void BG_GiveItemNonNetworked(gentity_t* ent, itemInstance_t item) {
 		//we already have a shield/jetpack equipped, we need to remove the old one first
 		if (alreadyEquipped)
 		{
-			auto toRemove = ent->inventory->at(equipLoc);
+			const auto& toRemove = ent->inventory->at(equipLoc);
 			int itemSlot = ent->inventory->size() - 1;
 
 			//remove old shield/jetpack and equip new one
@@ -714,6 +712,7 @@ void BG_GiveItemNonNetworked(gentity_t* ent, itemInstance_t item) {
 		//if a shield/jetpack isn't already equipped, equip the new one
 		else
 		{
+
 			int itemSlot = ent->inventory->size()-1;
 			if (specialType == ITEM_SHIELD)
 			{
@@ -725,8 +724,12 @@ void BG_GiveItemNonNetworked(gentity_t* ent, itemInstance_t item) {
 			}
 		}
 	}
-	
 
+	//handle weapons - sometime?  Currently weapons only exist in ACI and don't have an 'equipped state'
+	/*if (ent->s.eType == ET_PLAYER && item.id->itemType == ITEM_WEAPON)
+	{
+		JKG_EquipItem(ent, ent->inventory->size() - 1);
+	}*/
 }
 #elif _CGAME
 void BG_GiveItemNonNetworked(itemInstance_t item)
@@ -801,6 +804,7 @@ void BG_GiveItemNonNetworked(itemInstance_t item)
 			{
 				//we found another special item equipped - remove it
 				cg.playerACI[i] = -1;
+				nFreeACISlot = i;
 				continue;
 			}
 			if(bInACIAlready && nFreeACISlot >= 0) 
@@ -809,12 +813,50 @@ void BG_GiveItemNonNetworked(itemInstance_t item)
 			}
 		}
 
-		if (!bInACIAlready && nFreeACISlot != -1) 
+		//not already in aci
+		if (!bInACIAlready) 
 		{
-			cg.playerACI[nFreeACISlot] = cg.playerInventory->size() - 1;
+			//all slots are taken - replace the 0th slot
+			if (nFreeACISlot == -1)
+			{
+				nFreeACISlot = 0;
+				auto slotZero = (*cg.playerInventory)[cg.playerACI[nFreeACISlot]].id->itemType; //remember what was at slot 0
+
+				if (slotZero == ITEM_SHIELD) //if we had a shield equipped
+				{
+					//if we're equipping anything other than a shield
+					if (item.id->itemType != ITEM_SHIELD)
+					{
+						if(slotZero == ITEM_SHIELD) //if the thing we're replacing was a shield, then unequip
+							trap->SendClientCommand("unequipShield");
+
+						if(slotZero == ITEM_JETPACK) //if the thing we're replacing was a jetpack, then unequip
+							trap->SendClientCommand("unequipJetpack");
+					}
+				}
+				if (slotZero == ITEM_JETPACK) //handle jetpacks like shields above
+				{
+					if (item.id->itemType != ITEM_JETPACK)
+					{
+						if (slotZero == ITEM_SHIELD) 
+							trap->SendClientCommand("unequipShield");
+
+						if (slotZero == ITEM_JETPACK) 
+							trap->SendClientCommand("unequipJetpack");
+					}
+				}
+			}
+
+			//otherwise we found a free slot (since nFreeACISLot != -1)
+			cg.playerACI[nFreeACISlot] = cg.playerInventory->size() - 1; //assign the aci slot to the inventory just added
+
+			if (item.id->itemType == ITEM_WEAPON)
+			{
+				(*cg.playerInventory)[cg.playerACI[nFreeACISlot]].id->weaponData.holsterState = false; //set default holsterstate
+			}
 		}
 	}
-	
+
 }
 #endif
 
@@ -997,30 +1039,49 @@ BG_ConsumeItem
 */
 #ifdef _GAME
 extern void GLua_ConsumeItem(gentity_t* consumer, itemInstance_t* item);
-qboolean BG_ConsumeItem(gentity_t* ent, int itemStackNum) {
+int BG_ConsumeItem(gentity_t* ent, int itemStackNum) {
 	itemInstance_t* item;
 	int consumeAmount;
 
 	if (itemStackNum < 0 || itemStackNum >= ent->inventory->size()) {
 		// Invalid inventory ID
-		return qfalse;
+		return 1;
 	}
 
 	item = &(*ent->inventory)[itemStackNum];
 	if (item->id->itemType != ITEM_CONSUMABLE) {
 		// Not a consumable item
-		return qfalse;
+		return 1;
 	}
 
 	consumeAmount = item->id->consumableData.consumeAmount;
 	if (consumeAmount > item->quantity) {
 		// Not enough quantity to consume this item
-		return qfalse;
+		return 2;
+	}
+
+	if (ent->client->ps.consumableTime > level.time)
+	{
+		//still on cooldown for consumables
+		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/interface/ammocon_done.mp3"));
+		return 3;
+	}
+	
+
+	if(item->id->consumableData.partHealthReq && ent->health >= ent->client->ps.stats[STAT_MAX_HEALTH] )
+	{
+		return 4;
+	}
+
+	if (item->id->consumableData.partStaminaReq && ent->playerState->forcePower >= ent->client->ps.stats[STAT_MAX_STAMINA] )
+	{
+		return 4;
 	}
 
 	GLua_ConsumeItem(ent, item);
 	BG_ChangeItemStackQuantity(ent, itemStackNum, item->quantity - consumeAmount);
-	return qtrue;
+	ent->client->ps.consumableTime = level.time + bgConstants.consumableTime;
+	return 0;
 }
 #endif
 
@@ -1173,6 +1234,8 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 		itemData->itemType = ITEM_ARMOR;
 	else if (Q_stricmp(str, "weapon") == 0)
 		itemData->itemType = ITEM_WEAPON;
+	else if (Q_stricmp(str, "tool") == 0)
+		itemData->itemType = ITEM_TOOL;
 	else if (Q_stricmp(str, "clothing") == 0)
 		itemData->itemType = ITEM_CLOTHING;
 	else if (Q_stricmp(str, "consumable") == 0)
@@ -1186,8 +1249,38 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 	else
 		itemData->itemType = ITEM_UNKNOWN;
 
+	jsonNode = cJSON_GetObjectItem(json, "tier");
+	item = cJSON_ToIntegerOpt(jsonNode, 1);
+	if (item >= NUM_ITEM_TIERS || item < TIER_SCRAP) //out of range
+	{
+		Com_Printf(S_COLOR_YELLOW "Invalid item tier (%i) detected in %s, defaulting to common.\n", item, itemFilePath);
+		item = 1;
+	}
+	itemData->itemTier = static_cast<itemTier_t>(item);
+
+	jsonNode = cJSON_GetObjectItem(json, "tradeable");
+	itemData->tradeable = cJSON_ToBooleanOpt(jsonNode, true);
+
+	jsonNode = cJSON_GetObjectItem(json, "segregated");
+	itemData->segregated = cJSON_ToBooleanOpt(jsonNode, false);
+
+	jsonNode = cJSON_GetObjectItem(json, "droppable");
+	itemData->droppable = cJSON_ToBooleanOpt(jsonNode, true);
+
+	//legendary items are special
+	if (itemData->itemTier == TIER_LEGENDARY)
+	{
+		itemData->tradeable = true;
+		itemData->droppable = true;
+	}
+
+	jsonNode = cJSON_GetObjectItem(json, "itemDescription");
+	str = cJSON_ToStringOpt(jsonNode, "No description available.");
+	Q_strncpyz(itemData->itemDescription, cJSON_ToStringOpt(jsonNode, "No description available."), MAX_ITEM_DESCRIPTION);
+
 	jsonNode = cJSON_GetObjectItem(json, "weight");
-	item = cJSON_ToNumber(jsonNode);
+	item = cJSON_ToNumberOpt(jsonNode, 1.0f);
+	if (item < 0) { item = 0.0f; } // no negative weight
 	itemData->weight = item;
 
 	jsonNode = cJSON_GetObjectItem(json, "cost");
@@ -1240,6 +1333,14 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 		// consumeAmount controls the amount of items in the stack that get consumed
 		jsonNode = cJSON_GetObjectItem(json, "consumeAmount");
 		itemData->consumableData.consumeAmount = cJSON_ToIntegerOpt(jsonNode, 1);
+
+		// partHealthReq only allows the item to be consumed if the entity has partial health
+		jsonNode = cJSON_GetObjectItem(json, "partHealthReq");
+		itemData->consumableData.partHealthReq = (qboolean)cJSON_ToBooleanOpt(jsonNode, false);
+
+		// partStaminaReq only allows the item to be consumed if the entity lacks stamina
+		jsonNode = cJSON_GetObjectItem(json, "partStaminaReq");
+		itemData->consumableData.partStaminaReq = (qboolean)cJSON_ToBooleanOpt(jsonNode, false);
 	}
 	else if (itemData->itemType == ITEM_SHIELD) {
 		memset(&itemData->shieldData, 0, sizeof(itemData->shieldData));
@@ -1304,7 +1405,7 @@ static bool BG_LoadItems(void)
 {
 	int i, j;
 	char itemFiles[8192];
-	int numFiles = trap->FS_GetFileList("ext_data/items/", ".itm", itemFiles, sizeof(itemFiles));
+	int numFiles = Q_FSGetFileListSorted("ext_data/items/", ".itm", itemFiles, sizeof(itemFiles));
 	const char *itemFile = itemFiles;
 	int successful = 0;
 	int failed = 0;
@@ -1312,6 +1413,12 @@ static bool BG_LoadItems(void)
 	lastUsedItemID = 1;
 
 	Com_Printf("------- Constructing Item Table -------\n");
+	if (numFiles > MAX_ITEM_TABLE_SIZE)
+	{
+		Com_Printf(S_COLOR_RED "ERROR: Not enough memory reserved for item table.\nIncrease MAX_ITEM_TABLE_SIZE.  Capacity: (%i / %i)\n", numFiles, MAX_ITEM_TABLE_SIZE);
+		return false;
+	}
+		
 
 	for (i = 0; i < numFiles; i++)
 	{
@@ -1367,6 +1474,10 @@ Starts the loading process
 ====================
 */
 void BG_InitItems() {
+
+	//--Futuza: For now, don't do this dynamically - just allocate a static block on the heap
+	//In the future consider refactoring itemLookupTable into a object or using vector etc
+	
 	itemLookupTable = (itemData_t*)malloc(sizeof(itemData_t) * MAX_ITEM_TABLE_SIZE);
 	if (itemLookupTable == nullptr)
 	{
@@ -1375,9 +1486,10 @@ void BG_InitItems() {
 	}
 
 	memset(itemLookupTable, 0, sizeof(itemData_t) * MAX_ITEM_TABLE_SIZE);
+	
 
 	if (BG_LoadItems() == false) {
-		Com_Error(ERR_DROP, "could not load items...");
+		Com_Error(ERR_DROP, "Unable to load items...");
 		return;
 	}
 }

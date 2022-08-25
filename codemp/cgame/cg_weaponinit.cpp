@@ -270,42 +270,52 @@ static void JKG_LoadFireModeAssets ( weaponDrawData_t *drawData, const weaponFir
     }
     
     // Projectile hit event
-    if ( fireModeVisuals->projectileHitPlayer.generic.impactEffect[0] )
+    if ( fireModeVisuals->projectileHitPlayer.generic.impactEffect[0] ) {
         drawData->projectileHitPlayer.generic.impactEffect = trap->FX_RegisterEffect (fireModeVisuals->projectileHitPlayer.generic.impactEffect);
+	}
 
-	if (fireModeVisuals->projectileHitPlayer.generic.impactShieldEffect[0])
+	if (fireModeVisuals->projectileHitPlayer.generic.impactShieldEffect[0]) {
 		drawData->projectileHitPlayer.generic.impactShieldEffect = trap->FX_RegisterEffect(fireModeVisuals->projectileHitPlayer.generic.impactShieldEffect);
+	}
         
-    if ( fireModeVisuals->projectileHitPlayer.grenade.shockwaveEffect[0] )
+    if ( fireModeVisuals->projectileHitPlayer.grenade.shockwaveEffect[0] ) {
         drawData->projectileHitPlayer.grenade.shockwaveEffect = trap->FX_RegisterEffect (fireModeVisuals->projectileHitPlayer.grenade.shockwaveEffect);
+	}
     
     // Projectile deflected event
-    if ( fireModeVisuals->projectileDeflected.generic.deflectEffect[0] )
+    if ( fireModeVisuals->projectileDeflected.generic.deflectEffect[0] ) {
         drawData->projectileDeflected.generic.deflectEffect = trap->FX_RegisterEffect (fireModeVisuals->projectileDeflected.generic.deflectEffect);
+	}
     
     // Grenade bounce event
-    if ( fireModeVisuals->grenadeBounce.grenade.bounceSound[0][0] )
+    if ( fireModeVisuals->grenadeBounce.grenade.bounceSound[0][0] ) {
         drawData->grenadeBounce.grenade.bounceSound[0] = trap->S_RegisterSound (fireModeVisuals->grenadeBounce.grenade.bounceSound[0]);
+	}
         
-    if ( fireModeVisuals->grenadeBounce.grenade.bounceSound[1][0] )
+    if ( fireModeVisuals->grenadeBounce.grenade.bounceSound[1][0] ) {
         drawData->grenadeBounce.grenade.bounceSound[1] = trap->S_RegisterSound (fireModeVisuals->grenadeBounce.grenade.bounceSound[1]);
+	}
     
     // Explosive render
-    if ( fireModeVisuals->explosiveRender.detpack.g2Model[0] )
+    if ( fireModeVisuals->explosiveRender.detpack.g2Model[0] ) {
         CG_LoadG2ModelWithSkin (fireModeVisuals->explosiveRender.detpack.g2Model, &drawData->explosiveRender.detpack.g2Model);
+	}
         
     drawData->explosiveRender.detpack.g2Radius = fireModeVisuals->explosiveRender.detpack.g2Radius;
     
-    if ( fireModeVisuals->explosiveRender.tripmine.lineEffect[0] )
+    if ( fireModeVisuals->explosiveRender.tripmine.lineEffect[0] ) {
         drawData->explosiveRender.tripmine.lineEffect = trap->FX_RegisterEffect (fireModeVisuals->explosiveRender.tripmine.lineEffect);
+	}
     
     // Explosive blow event
-    if ( fireModeVisuals->explosiveBlow.generic.explodeEffect[0] )
+    if ( fireModeVisuals->explosiveBlow.generic.explodeEffect[0] ) {
         drawData->explosiveBlow.generic.explodeEffect = trap->FX_RegisterEffect (fireModeVisuals->explosiveBlow.generic.explodeEffect);
+	}
     
     // Explosive armed event
-    if ( fireModeVisuals->explosiveArm.armSound[0] )
+    if ( fireModeVisuals->explosiveArm.armSound[0] ) {
         drawData->explosiveArm.armSound = trap->S_RegisterSound (fireModeVisuals->explosiveArm.armSound);
+	}
 }
 
 void JKG_LoadWeaponAssets ( weaponInfo_t *weaponInfo, const weaponData_t *weaponData )

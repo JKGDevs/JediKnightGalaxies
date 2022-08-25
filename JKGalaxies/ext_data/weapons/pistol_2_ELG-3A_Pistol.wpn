@@ -18,8 +18,8 @@
             "firemode":     "models/weapons/elg-3a_pistol/indicator_firemode"
         },
         
-        "gunposition":      "10.0 -3.0 -4.0",
-        "ironsightsposition": "10.0 0.0 -3.0",
+        "gunposition":      "14.0 -4.0 -6.0",
+        "ironsightsposition": "10.0 0.0 -2.9",
         "ironsightsfov": "75",
 		"barrelCount": "1",
     
@@ -76,8 +76,8 @@
         "projectilespeed": 4000.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BRYAR_PISTOL",
-		"ammobase": "AMMO_SS_POWERPACK",
-		"ammodefault": "AMMO_SS_POWERPACK",
+		"ammobase": "AMMO_SS_POWERPAK",
+		"ammodefault": "AMMO_SS_POWERPAK",
         "clipSize":              10
     },
     
@@ -106,8 +106,8 @@
         "projectilespeed": 3000.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_STUNNED",
-		"ammobase": "AMMO_SS_POWERPACK",
-		"ammodefault": "AMMO_SS_POWERPACK",
+		"ammobase": "AMMO_SS_POWERPAK",
+		"ammodefault": "AMMO_SS_POWERPAK",
         "clipSize":              10
     },
     

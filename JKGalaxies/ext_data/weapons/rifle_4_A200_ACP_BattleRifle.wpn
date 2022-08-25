@@ -17,7 +17,7 @@
             "firemode":     "models/weapons/A200_ACP_BattleRifle/firemode"
         },
         
-        "gunposition":      "7.0 -3.0 -6.0",
+        "gunposition":      "10.0 -4.0 -8.0",
         "ironsightsposition": "6.0 0.0 -5.5",
         "ironsightsfov": "70",
 		"barrelCount": "2",
@@ -74,11 +74,11 @@
 			]
         }, 
         "ammocost":     1,
-        "burstshotdelay": 100,
+        "burstshotdelay": 60,
         "firedelay":    900,
         "firingtype":   "burst",
         "range":        5000.0,
-        "recoil":       0.8,
+        "recoil":       0.6,
         "shotsperburst": 3,
         "spread":       0.2,
         "projectilespeed": 7000.0,
@@ -94,7 +94,7 @@
 			"maxAccuracyAdd": 85,
 			"crouchModifier": 0.89,
 			"runModifier": 1.2,
-			"sightsModifier": 0.8,
+			"sightsModifier": 0.5,
 			"walkModifier": 1.1,
 			"inAirModifier": 1.4
         }
@@ -130,7 +130,7 @@
         	"maxAccuracyAdd": 80,
         	"crouchModifier": 0.7,
         	"runModifier": 1.4,
-        	"sightsModifier": 0.5,
+        	"sightsModifier": 0.4,
         	"walkModifier": 1.2,
         	"inAirModifier": 1.6
         }

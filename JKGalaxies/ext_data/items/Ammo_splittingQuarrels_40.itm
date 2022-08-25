@@ -6,5 +6,6 @@
 	"cost":		"75",
 	"ammoclass":	"AMMO_QUARREL_SPLITTING",
 	"ammoquantity":	"40",
-	"itemIcon": "gfx/item_icons/default.tga"	//needs icon!
+	"itemIcon": "gfx/item_icons/ammo_metallic_bolts.tga",	//needs icon!
+	"itemDescription": "This specially modified bowcaster quarrel ammo splits into multiple fragments when fired. The resulting spread can be quite dangerous and useful for hitting quick moving targets or clearing hallways of enemies."
 }

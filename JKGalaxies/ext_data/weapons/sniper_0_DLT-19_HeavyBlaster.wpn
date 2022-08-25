@@ -17,8 +17,8 @@
             "firemode":     "models/weapons/DLT-19_HeavyBlaster/firemode"
         },
         
-        "gunposition":      "6.0 -3.0 -6.6",
-        "ironsightsposition": "6.0 0.0 -5.3",
+        "gunposition":      "6.0 -4.5 -7.5",
+        "ironsightsposition": "6.0 0.0 -6.35",
         "ironsightsfov": "70",
 		"barrelCount": "3",
     
@@ -77,8 +77,8 @@
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
         "splashmeansofdeath": "MOD_BLASTER",
-	"ammobase": "AMMO_POWERPACK_L",
-	"ammodefault": "AMMO_POWERPACK_M",
+	"ammobase": "AMMO_POWERPACK_M",
+	"ammodefault": "AMMO_POWERPACK_L",
         "clipSize":              40,
         "accuracy": {
         	"accuracyRating": 20,
@@ -104,8 +104,8 @@
         "projectilespeed": 5000.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
-	"ammobase": "AMMO_POWERPACK_L",
-	"ammodefault": "AMMO_POWERPACK_M",
+	"ammobase": "AMMO_POWERPACK_M",
+	"ammodefault": "AMMO_POWERPACK_L",
         "clipSize":              40,
         "accuracy": {
         	"accuracyRating": 40,

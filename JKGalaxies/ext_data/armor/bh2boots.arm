@@ -1,0 +1,21 @@
+{
+	"ref":		"bh2boots",
+	"slot":		"boots",
+	"armor":		90,
+	"movemodifier":	0.925,
+
+	"visuals": {
+		"model":	"models/players/bounty_hunter2/model.glm*default",
+		"modelGroup":	"bounty_hunter2",
+
+		"armorOnSurfaces": [
+			"r_leg",
+			"l_leg"
+		],
+
+		"bodyOffSurfaces": [
+			"r_leg",
+			"l_leg"
+		]
+	}
+}

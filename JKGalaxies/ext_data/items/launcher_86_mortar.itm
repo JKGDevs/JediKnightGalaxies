@@ -7,5 +7,6 @@
 	"weight":		"20",
 	"cost":		"2000",
 	"xml":			"xml/items/Packered_Mortar.xml",
-	"itemIcon":		"models/weapons/Packered_MortarGun/icon_default"
+	"itemIcon":		"models/weapons/Packered_MortarGun/icon_default",
+	"itemDescription": "This hand-held mortar gun is popular among heavy weapon specialists across the galaxy. Used to keep enemy infantry suppressed, or target entrenched enemies. It is capable of firing its high-explosive shells in rapid succession."
 }

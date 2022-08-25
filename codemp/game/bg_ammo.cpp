@@ -18,8 +18,6 @@
 ammo_t ammoTable[MAX_AMMO_TYPES];
 int numAmmoLoaded = 0;
 
-const vec3_t defaultvec3 = { 1.0, 1.0, 1.0 };
-
 /*
 ============================
 BG_GetAmmo
@@ -64,10 +62,21 @@ void BG_GiveAmmo(gentity_t* ent, ammo_t* ammo, qboolean max, int amount)
 	if (max) {
 		ent->client->ammoTable[ammo->ammoIndex] = ammo->ammoMax;
 	}
-	else {
-		ent->client->ammoTable[ammo->ammoIndex] += amount;
-		if (ent->client->ammoTable[ammo->ammoIndex] > ammo->ammoMax) {
-			ent->client->ammoTable[ammo->ammoIndex] = ammo->ammoMax;
+	else
+	{
+		if (ent->client->ammoTable[ammo->ammoIndex] + amount < 0)
+		{
+			ent->client->ammoTable[ammo->ammoIndex] = 0;
+		}
+
+		else
+		{
+			ent->client->ammoTable[ammo->ammoIndex] += amount;
+
+			if (ent->client->ammoTable[ammo->ammoIndex] > ammo->ammoMax)
+			{
+				ent->client->ammoTable[ammo->ammoIndex] = ammo->ammoMax;
+			}
 		}
 	}
 }
@@ -173,10 +182,20 @@ void BG_GetAllAmmoSubstitutions(int ammoIndex, std::vector<ammo_t*>& outSubs) {
 
 	outSubs.clear();
 
-	ammo_t* find = &ammoTable[ammoIndex];
+	ammo_t* find = &ammoTable[ammoIndex]; //which ammo we're looking for
+
+	//--futuza: note that doing things this way might be more accurate to what we're searching for, but would probably require a rewrite of JKG.ammo and most weapon files.
+	//			I would probably do it this way if instead of cycling to the next ammo you wanted to generate a list of ammo that worked with the weapon.
+	/*if (find->pSub->ammoIndex != ammoIndex) //if the ammo we're searching for is a substitution itself, recursive time
+	{
+		//find = &ammoTable[find->pSub->ammoIndex];
+		BG_GetAllAmmoSubstitutions(find->pSub->ammoIndex, outSubs);
+		return;
+	}*/
+
 	for (int i = 0; i < numAmmoLoaded; i++) {
 		ammo_t* thisAmmo = &ammoTable[i];
-		if (thisAmmo->pSub == find) {
+		if (thisAmmo->pSub == find || thisAmmo == find) {
 			outSubs.push_back(thisAmmo);
 		}
 	}
@@ -716,7 +735,8 @@ dead2:
 		JKG_ParseSimpleOverrideString(ammo->visualOverrides.projectile.runSound, "runSound", child);
 		JKG_ParseAmmoOverride_Float(child, "lightIntensity", ammo->visualOverrides.projectile.lightIntensity);
 		JKG_ParseSimpleOverrideVec3(ammo->visualOverrides.projectile.lightColor, "lightColor", child);
-		JKG_ParseSimpleOverrideString(ammo->visualOverrides.projectile.deathEffect, "miss", child);
+		JKG_ParseSimpleOverrideString(ammo->visualOverrides.projectile.deathEffect, "deathfx", child);
+		JKG_ParseSimpleOverrideString(ammo->visualOverrides.projectile.missEffect, "miss", child);
 		JKG_ParseSimpleOverrideString(ammo->visualOverrides.projectile.impactEffect, "hit", child);
 		JKG_ParseSimpleOverrideString(ammo->visualOverrides.projectile.deflectEffect, "deflect", child);
 	}
@@ -729,6 +749,7 @@ dead3:
 		ammo->visualOverrides.projectile.lightIntensity.bIsPresent = qfalse;
 		ammo->visualOverrides.projectile.lightColor.first = qfalse;
 		ammo->visualOverrides.projectile.deathEffect.first = qfalse;
+		ammo->visualOverrides.projectile.missEffect.first = qfalse;
 		ammo->visualOverrides.projectile.impactEffect.first = qfalse;
 		ammo->visualOverrides.projectile.deflectEffect.first = qfalse;
 	}
@@ -886,7 +907,7 @@ void BG_InitializeAmmo ( void )
 	int failed = 0;
 	int numFiles;
 
-	numFiles = trap->FS_GetFileList(ammoDir, ".ammo", ammoFiles, sizeof(ammoFiles));
+	numFiles = Q_FSGetFileListSorted(ammoDir, ".ammo", ammoFiles, sizeof(ammoFiles));
 	ammo = ammoFiles;
 
 	Com_Printf("------- Ammo -------\n");

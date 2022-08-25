@@ -17,7 +17,7 @@
             "firemode":     "models/weapons/dc-15a_rifle/firemode"
         },
         
-        "gunposition":      "4.0 -3.0 -6.6",
+        "gunposition":      "10.0 -4.0 -8.0",
         "ironsightsposition": "4.0 0.0 -5.3",
         "ironsightsfov": "70",
 		"barrelCount": "3",
@@ -74,25 +74,24 @@
         "firingtype":   "auto",
         "range":        5800.0,
         "recoil":       0.5,
-        "spread":       0.5,
         "projectilespeed": 4000.0,
         "projectileclass":"blaster_proj",
         "meansofdeath": "MOD_BLASTER",
-	"ammobase": "AMMO_POWERPACK_L",
+	"ammobase": "AMMO_POWERPACK_M",
 	"ammodefault": "AMMO_ION_POWERPACK_L",
         "clipSize":              100,
         "accuracy": {
-        	"accuracyRating": 60,
+        	"accuracyRating": 50,
         	"accuracyRatingPerShot": 4,
         	"msToDrainAccuracy": 55,
         	"maxAccuracyAdd": 70,
         	"crouchModifier": 0.85,
         	"runModifier": 1.6,
-        	"sightsModifier": 0.9,
+        	"sightsModifier": 0.5,
         	"walkModifier": 1.3,
         	"inAirModifier": 1.8
         },
-	"heatGenerated": 3
+	"heatGenerated": 1.8
     },
     
     "firemode1": {
@@ -111,17 +110,17 @@
         "projectileclass": "repeater_alt_proj",
         "meansofdeath": "MOD_BLASTER",
         "splashmeansofdeath": "MOD_BLASTER",
-	"ammobase": "AMMO_POWERPACK_L",
+	"ammobase": "AMMO_POWERPACK_M",
 	"ammodefault": "AMMO_ION_POWERPACK_L",
         "clipSize":              100,
         "accuracy": {
-        	"accuracyRating": 58,
+        	"accuracyRating": 50,
         	"accuracyRatingPerShot": 12,
         	"msToDrainAccuracy": 55,
         	"maxAccuracyAdd": 155,
-        	"crouchModifier": 0.99,
+        	"crouchModifier": 0.9,
         	"runModifier": 1.6,
-        	"sightsModifier": 0.98,
+        	"sightsModifier": 0.5,
         	"walkModifier": 1.3,
         	"inAirModifier": 1.8
         },

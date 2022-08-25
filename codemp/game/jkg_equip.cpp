@@ -16,6 +16,11 @@ void JKG_ShieldEquipped(gentity_t* ent, int shieldItemNumber, qboolean playSound
 		return;
 	}
 
+	if (JKG_HasFreezingBuff(ent->playerState)) //no changing equipment while stunned/frozen etc
+	{
+		return;
+	}
+
 	if (ent->client->shieldEquipped) {
 		// Already have a shield equipped. Mark the other shield as not being equipped.
 		for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
@@ -26,7 +31,7 @@ void JKG_ShieldEquipped(gentity_t* ent, int shieldItemNumber, qboolean playSound
 	}
 
 	itemInstance_t* item = &(*ent->inventory)[shieldItemNumber];
-	if (ent->client->ps.stats[STAT_MAX_SHIELD] == ent->client->ps.stats[STAT_SHIELD] && ent->client->ps.stats[STAT_SHIELD] != 0) {
+	if (ent->client->ps.stats[STAT_MAX_SHIELD] <= ent->client->ps.stats[STAT_SHIELD] && ent->client->ps.stats[STAT_SHIELD] != 0) {
 		// If we're at max shield, and upgrading capacity, increase our shield amount to match
 		ent->client->ps.stats[STAT_SHIELD] = item->id->shieldData.capacity;
 	}
@@ -51,6 +56,10 @@ Cmd_ShieldUnequipped
 */
 void Cmd_ShieldUnequipped(gentity_t* ent)
 {
+	if (JKG_HasFreezingBuff(ent->playerState)) //no changing equipment while stunned/frozen etc
+	{
+		return;
+	}
 
 	if (ent->client->shieldEquipped) {
 		for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
@@ -70,6 +79,11 @@ void Cmd_ShieldUnequipped(gentity_t* ent)
 //overloaded version - if you know the shield's index start there
 void Cmd_ShieldUnequipped(gentity_t* ent, unsigned int index)
 {
+	if (JKG_HasFreezingBuff(ent->playerState)) //no changing equipment while stunned/frozen etc
+	{
+		return;
+	}
+
 	if (index > ent->inventory->size())
 	{
 		trap->SendServerCommand(ent - g_entities, "Cmd_ShieldUnequipped() called with out of bounds index! Defaulting to 0.\n");
@@ -103,6 +117,11 @@ void JKG_JetpackEquipped(gentity_t* ent, int jetpackItemNumber) {
 		return;
 	}
 
+	if (JKG_HasFreezingBuff(ent->playerState)) //no changing equipment while stunned/frozen etc
+	{
+		return;
+	}
+
 	itemInstance_t* item = &(*ent->inventory)[jetpackItemNumber];
 	if (item->id->itemType != ITEM_JETPACK) {
 		trap->SendServerCommand(ent - g_entities, "print \"That item is not a jetpack.\n\"");
@@ -126,6 +145,10 @@ Cmd_JetpackUnequipped
 */
 void Cmd_JetpackUnequipped(gentity_t* ent)
 {
+	if (JKG_HasFreezingBuff(ent->playerState)) //no changing equipment while stunned/frozen etc
+	{
+		return;
+	}
 	// Iterate through the inventory and remove the jetpack that is equipped
 	for (auto it = ent->inventory->begin(); it != ent->inventory->end(); it++) {
 		if (it->equipped && it->id->itemType == ITEM_JETPACK) {
@@ -141,6 +164,11 @@ void Cmd_JetpackUnequipped(gentity_t* ent)
 //overloaded version - if you know the jetpack's index start there
 void Cmd_JetpackUnequipped(gentity_t* ent, unsigned int index)
 {
+	if (JKG_HasFreezingBuff(ent->playerState)) //no changing equipment while stunned/frozen etc
+	{
+		return;
+	}
+
 	if (index > ent->inventory->size())
 	{
 		trap->SendServerCommand(ent - g_entities, "Cmd_ShieldUnequipped() called with out of bounds index! Defaulting to 0.\n");
@@ -167,12 +195,21 @@ Our armor has been changed. Recalculate stats.
 ====================================
 */
 void JKG_ArmorChanged(gentity_t* ent) {
-	ent->client->ps.stats[STAT_MAX_HEALTH] = 100; // FIXME: not use a magic number
+	
+	bool haveFullHP = false;
+	if (ent->client->ps.stats[STAT_HEALTH] >= ent->client->ps.stats[STAT_MAX_HEALTH]) //check if we have full health already
+		haveFullHP = true;
 
+	ent->client->ps.stats[STAT_MAX_HEALTH] = ent->client->pers.maxHealth;
 	for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
 		if (it->equipped && it->id->itemType == ITEM_ARMOR) {
 			ent->client->ps.stats[STAT_MAX_HEALTH] += it->id->armorData.pArm->hp;
 		}
+	}
+	if (haveFullHP)
+	{
+		if(ent->client->ps.stats[STAT_HEALTH] < ent->client->ps.stats[STAT_MAX_HEALTH])
+			ent->health = ent->client->ps.stats[STAT_HEALTH] = ent->client->ps.stats[STAT_MAX_HEALTH]; //set current health to same as maximum
 	}
 }
 
@@ -200,6 +237,12 @@ void JKG_EquipItem(gentity_t *ent, int iNum)
 		return;
 	}
 
+	if (JKG_HasFreezingBuff(ent->playerState)) //no changing equipment while stunned/frozen etc
+	{
+		trap->SendServerCommand(ent->client->ps.clientNum, "print \"You cannot change your equipment right now.\n\"");
+		return;
+	}
+
 	auto item = (*ent->inventory)[iNum];
 	if (item.id->itemType == ITEM_WEAPON)
 	{
@@ -215,12 +258,11 @@ void JKG_EquipItem(gentity_t *ent, int iNum)
 
 		(*ent->inventory)[iNum].equipped = true;
 	}
-	else if (item.id->itemType == ITEM_ARMOR){
+	else if (item.id->itemType == ITEM_ARMOR)
+	{
 		armorData_t* pArm = item.id->armorData.pArm;
 		int previousArmor = ent->client->ps.armor[pArm->slot] - 1;
 		ent->client->ps.armor[pArm->slot] = pArm - armorTable + 1;
-
-		(*ent->inventory)[iNum].equipped = true; // set this armor piece to "equipped" so we know that we can unequip it later
 
 		if (previousArmor >= 0)
 		{
@@ -228,13 +270,14 @@ void JKG_EquipItem(gentity_t *ent, int iNum)
 			// We need to iterate through the inventory and remove the old equipped item.
 			for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
 			{
-				if (it->equipped && it->id->armorData.pArm == &armorTable[previousArmor])
+				if (it->equipped && it->id->itemType == ITEM_ARMOR
+					&& it->id->armorData.pArm->slot == armorTable[previousArmor].slot) //if its equipped armor, and takes up the same slot type, we can only have one per slot
 				{
 					it->equipped = qfalse;
-					break;
 				}
 			}
 		}
+		(*ent->inventory)[iNum].equipped = true; // set this armor piece to "equipped" so we know that we can unequip it later
 		JKG_ArmorChanged(ent);
 	}
 	else if (item.id->itemType == ITEM_SHIELD) {
@@ -269,6 +312,12 @@ void JKG_UnequipItem(gentity_t *ent, int iNum)
 	    return;
 	}
 
+	if (JKG_HasFreezingBuff(ent->playerState)) //no changing equipment while stunned/frozen etc
+	{
+		trap->SendServerCommand(ent->client->ps.clientNum, "print \"You cannot change your equipment right now.\n\"");
+		return;
+	}
+
 	item = &(*ent->inventory)[iNum];
 
 	if(!item->equipped)
@@ -280,12 +329,12 @@ void JKG_UnequipItem(gentity_t *ent, int iNum)
 	{
 		item->equipped = qfalse;
 	    trap->SendServerCommand (ent->s.number, "chw 0");
-		JKG_ArmorChanged(ent);
 	}
 	else if(item->id->itemType == ITEM_ARMOR)
 	{
 		item->equipped = qfalse;
 		ent->client->ps.armor[item->id->armorData.pArm->slot] = 0;
+		JKG_ArmorChanged(ent);
 	}
 	else if (item->id->itemType == ITEM_SHIELD) {
 		Cmd_ShieldUnequipped(ent);
@@ -346,6 +395,27 @@ void Jetpack_On(gentity_t *ent)
 		}
 	}
 
+	//can't activate jetpack if empstaggered by debuff
+	if (ent->client->ps.buffsActive)
+	{
+		for (int i = 0; i < PLAYERBUFF_BITS; i++)
+		{
+			if (ent->client->ps.buffsActive & (1 << i))
+			{
+				jkgBuff_t* pBuff = &buffTable[ent->client->ps.buffs[i].buffID];
+				if (pBuff->passive.empstaggered)
+				{
+					vec3_t higher;
+					VectorCopy(ent->client->ps.origin, higher);
+					higher[2] += 20.0f;
+					G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/energy_crackle.wav"));
+					G_PlayEffectID(G_EffectIndex( "effects/Player/electrocute.efx"), higher, ent->client->ps.viewangles);
+					return;
+				}
+			}
+		}
+	}
+
 	
 	if (jet->visuals.activateSound[0])
 		G_Sound(ent, CHAN_AUTO, G_SoundIndex(jet->visuals.activateSound));
@@ -389,6 +459,27 @@ void ItemUse_Jetpack(gentity_t *ent)
 			G_Sound(ent, CHAN_AUTO, G_SoundIndex(jet->visuals.sputterSound));
 
 		return;
+	}
+
+	//can't activate jetpack if empstaggered by debuff
+	if (ent->client->ps.buffsActive)
+	{
+		for (int i = 0; i < PLAYERBUFF_BITS; i++)
+		{
+			if (ent->client->ps.buffsActive & (1 << i))
+			{
+				jkgBuff_t* pBuff = &buffTable[ent->client->ps.buffs[i].buffID];
+				if (pBuff->passive.empstaggered)
+				{
+					vec3_t higher;
+					VectorCopy(ent->client->ps.origin, higher);
+					higher[2] += 20.0f;
+					G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/energy_crackle.wav"));
+					G_PlayEffectID(G_EffectIndex("effects/Player/electrocute.efx"), higher, ent->client->ps.viewangles);
+					return;
+				}
+			}
+		}
 	}
 
 	if (ent->client->ps.eFlags & EF_JETPACK_ACTIVE)

@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"22",
 	"maxStack":		20,
-	"itemIcon":		"models/weapons/Grenade_FlashBang/icon_default"
+	"itemIcon":		"models/weapons/Grenade_FlashBang/icon_default",
+	"itemDescription": "A simple grenade used since the time of the Old Republic by various groups, it will blind and deafen targets. The more modern versions also can affect non-organic senses."
 }

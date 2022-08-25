@@ -173,7 +173,8 @@ function ENT:OnUse(other, activator)
 	-- Get the player object
 	local ply = activator:ToPlayer()
 	-- Check if the player is currently hacking (ya know, the lock with the progress bar under it)
-	if ply.IsHacking() then
+	--if ply:IsHacking() then
+	if ply.Hacking then
 		-- If so, check if he finished
 		if ply:FinishedHacking() then
 			-- Yep, stop the hacking and proceed

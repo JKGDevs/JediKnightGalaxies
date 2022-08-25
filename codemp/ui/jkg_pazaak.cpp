@@ -14,10 +14,9 @@
 2. Typing in /y will accept the match and proceed as normal.
 3. Typing in /n will decline the match
 4. If challenged by more than one person within the 10 second grace period, system will respond to new challengers with, "Sorry this person has already been challenged by another opponent, ask them again later."
-5. When you accept a match, toggle god mode on for both players/make invincible.  This will be a server cfg setting, that can be turned on/off (so if it is a problem, people can't cheat using pazaak for invincibility in a match).
-6. When match finishes, turn off god mode.
+5. Add cvar for whether or not 2 player pazaak matches should be invulnerable or not?
 
-Note: the godmode bit is currently in the glua code under pzktest, but isn't a cfg setting yet
+Note: much of the implementation is also in pazaak.lua or misc.lua (pzktest)
 */
 
 #include "ui_shared.h"
@@ -869,7 +868,8 @@ void JKG_Pazaak_DrawHandSlot(int slot, float x, float y, float w, float h) {
 	width = (float)trap->R_Font_StrLenPixels(text, MenuFontToHandle(1), 1) * 0.5;
 
 	x = x + (w/4) + ((w / 4) - (width / 2));
-	trap->R_Font_DrawString(	x, y + (h*0.25f), text, colorWhite, MenuFontToHandle(1), -1, 0.5);
+	trap->R_Font_DrawString(x, y + (h  *0.25f), text, colorWhite, MenuFontToHandle(1), -1, 0.5);
+
 }
 
 void JKG_Pazaak_DrawNames(int player, float x, float y, float w, float h) {
@@ -889,7 +889,14 @@ void JKG_Pazaak_DrawNames(int player, float x, float y, float w, float h) {
 		width = (float)trap->R_Font_StrLenPixels(text, MenuFontToHandle(1), 1) * 0.5;	
 		x=x-width;
 	}
-	trap->R_Font_DrawString(x, y, text, colorWhite, MenuFontToHandle(1), -1, 0.5);	//--futuza note: ^xRGB code will make certain blue colors hard to see, needs a different outline or something
+
+	//draw a simple text shadow outline
+	char cleanText[MAX_NETNAME];
+	vec4_t textShadowColor = { 0.15, 0.15, 0.15, 1 };
+	Q_strncpyz(cleanText, text, sizeof(cleanText));
+	Q_StripColor(cleanText);
+	trap->R_Font_DrawString(x-0.6, y-0.75, cleanText, textShadowColor, MenuFontToHandle(1), -1, 0.51); //draw 'shadow' slightly off center, with a larger scale and dark grey color
+	trap->R_Font_DrawString(x, y, text, colorWhite, MenuFontToHandle(1), -1, 0.5);	//full color name
 }
 
 void JKG_Pazaak_DrawPoints(int player, float x, float y, float w, float h) {

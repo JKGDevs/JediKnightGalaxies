@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"25",
 	"maxStack":		20,
-	"itemIcon":		"models/weapons/Grenade_Stun/icon_default"
+	"itemIcon":		"models/weapons/Grenade_Stun/icon_default",
+	"itemDescription": "The C-10 stun grenade manufactured by Merr-Sonn Munitions is less effective than the C-14A variant, but can be discharged more quickly exploding on impact with any surface."
 }

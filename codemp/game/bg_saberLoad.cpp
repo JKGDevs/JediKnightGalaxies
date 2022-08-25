@@ -991,7 +991,7 @@ if(childNode)
 bool JKG_ParseHiltFiles( void )
 {
 	char hiltFiles[32967];
-	int numFiles = trap->FS_GetFileList ("ext_data/hilts", ".hilt", hiltFiles, sizeof (hiltFiles));
+	int numFiles = Q_FSGetFileListSorted ("ext_data/hilts", ".hilt", hiltFiles, sizeof (hiltFiles));
 	const char *hiltFile = hiltFiles;
 	int successful = 0;
     int failed = 0;
@@ -2372,7 +2372,7 @@ qboolean JKG_ParseSaberStanceFile( char *filename )
 qboolean JKG_LoadStanceData(void)
 {
 	char stanceFiles[16384];
-	int numFiles = trap->FS_GetFileList ("ext_data/stances", ".stance", stanceFiles, sizeof (stanceFiles));
+	int numFiles = Q_FSGetFileListSorted ("ext_data/stances", ".stance", stanceFiles, sizeof (stanceFiles));
 	const char *stanceFile = stanceFiles;
 	int successful = 0;
     int failed = 0;

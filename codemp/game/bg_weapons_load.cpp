@@ -15,35 +15,6 @@
 
 static int fmLoadCounter;
 
-static int BG_GetDamageFlagFromString(const char* szDamageFlagString)
-{
-	if (!Q_stricmp(szDamageFlagString, "DAMAGE_RADIUS"))
-	{
-		return DAMAGE_RADIUS;
-	}
-	else if (!Q_stricmp(szDamageFlagString, "DAMAGE_NO_SHIELD"))
-	{
-		return DAMAGE_NO_SHIELD;
-	}
-	else if (!Q_stricmp(szDamageFlagString, "DAMAGE_NO_KNOCKBACK"))
-	{
-		return DAMAGE_NO_KNOCKBACK;
-	}
-	else if (!Q_stricmp(szDamageFlagString, "DAMAGE_NO_PROTECTION"))
-	{
-		return DAMAGE_NO_PROTECTION;
-	}
-	else if (!Q_stricmp(szDamageFlagString, "DAMAGE_NO_HIT_LOC"))
-	{
-		return DAMAGE_NO_HIT_LOC;
-	}
-	else if (!Q_stricmp(szDamageFlagString, "DAMAGE_NO_DISMEMBER"))
-	{
-		return DAMAGE_NO_DISMEMBER;
-	}
-	return DAMAGE_NORMAL;
-}
-
 static void BG_ParseWeaponStatsFlags ( weaponData_t *weaponData, const char *flagStr )
 {
     if ( Q_stricmp (flagStr, "cookable") == 0 )
@@ -86,6 +57,36 @@ static void BG_ParseFireModeFiringType ( weaponFireModeStats_t *fireMode, const 
 
 #ifdef _GAME
 #include "jkg_damageareas.h"
+
+static int BG_GetDamageFlagFromString(const char* szDamageFlagString)
+{
+	if (!Q_stricmp(szDamageFlagString, "DAMAGE_RADIUS"))
+	{
+		return DAMAGE_RADIUS;
+	}
+	else if (!Q_stricmp(szDamageFlagString, "DAMAGE_NO_SHIELD"))
+	{
+		return DAMAGE_NO_SHIELD;
+	}
+	else if (!Q_stricmp(szDamageFlagString, "DAMAGE_NO_KNOCKBACK"))
+	{
+		return DAMAGE_NO_KNOCKBACK;
+	}
+	else if (!Q_stricmp(szDamageFlagString, "DAMAGE_NO_PROTECTION"))
+	{
+		return DAMAGE_NO_PROTECTION;
+	}
+	else if (!Q_stricmp(szDamageFlagString, "DAMAGE_NO_HIT_LOC"))
+	{
+		return DAMAGE_NO_HIT_LOC;
+	}
+	else if (!Q_stricmp(szDamageFlagString, "DAMAGE_NO_DISMEMBER"))
+	{
+		return DAMAGE_NO_DISMEMBER;
+	}
+	return DAMAGE_NORMAL;
+}
+
 static void BG_ParseDamage ( weaponFireModeStats_t *fireModeStats, cJSON *damageNode, qboolean secondary )
 {
     if ( !damageNode )
@@ -300,7 +301,14 @@ static void BG_ParseWeaponFireMode ( weaponFireModeStats_t *fireModeStats, cJSON
     
     node = cJSON_GetObjectItem (fireModeNode, "range");
     fireModeStats->range = (float)cJSON_ToIntegerOpt (node, WPR_M);
-    
+
+    node = cJSON_GetObjectItem(fireModeNode, "decayRate");
+    fireModeStats->decayRate = (float)cJSON_ToNumberOpt(node, 0.25);
+    if (fireModeStats->decayRate > 1) //check for invalid decayRates
+        fireModeStats->decayRate = 1;
+    if (fireModeStats->decayRate < 0)
+        fireModeStats->decayRate = 0;
+
     node = cJSON_GetObjectItem (fireModeNode, "splashrange");
     fireModeStats->rangeSplash = (float)cJSON_ToNumberOpt (node, 0.0);
     
@@ -315,6 +323,13 @@ static void BG_ParseWeaponFireMode ( weaponFireModeStats_t *fireModeStats, cJSON
 
     node = cJSON_GetObjectItem(fireModeNode, "heatThreshold");
     fireModeStats->heatThreshold = (unsigned int)cJSON_ToNumberOpt(node, (fireModeStats->maxHeat * 0.75)); //defaults to 75% of maxHeat
+
+    node = cJSON_GetObjectItem(fireModeNode, "reloadClearHeat");
+    fireModeStats->reloadClearHeat = (unsigned int)cJSON_ToNumberOpt(node, 50); //default is 50% (0 = no heat cleared, 100% of heat cleared)
+    if (fireModeStats->reloadClearHeat > 100)
+        fireModeStats->reloadClearHeat = 100;
+    if (fireModeStats->reloadClearHeat < 0)
+        fireModeStats->reloadClearHeat = 0;
 
 	node = cJSON_GetObjectItem(fireModeNode, "clipSize");
 	fireModeStats->clipSize = (unsigned int)cJSON_ToIntegerOpt(node, 0);
@@ -374,6 +389,12 @@ static void BG_ParseWeaponFireMode ( weaponFireModeStats_t *fireModeStats, cJSON
     node = cJSON_GetObjectItem (fireModeNode, "meansofdeath");
     str = cJSON_ToStringOpt (node, "MOD_UNKNOWN");
 	fireModeStats->weaponMOD = JKG_GetMeansOfDamageIndex(str);
+
+    if (fireModeStats->weaponMOD == JKG_GetMeansOfDamageIndex("MOD_ACP") )
+    {
+        node = cJSON_GetObjectItem(fireModeNode, "ACPRatio");
+        fireModeStats->ACPRatio = (float)cJSON_ToNumberOpt(node, 0.5f);
+    }
     
     node = cJSON_GetObjectItem (fireModeNode, "splashmeansofdeath");
     str = cJSON_ToStringOpt (node, "MOD_UNKNOWN");
@@ -427,6 +448,9 @@ static void BG_ParseWeaponStats ( weaponData_t *weaponData, cJSON *statsNode )
         
     node = cJSON_GetObjectItem (statsNode, "reloadmodifier");
     weaponData->reloadModifier = (float)cJSON_ToNumberOpt (node, 1.0);
+
+    node = cJSON_GetObjectItem(statsNode, "swaptime");
+    weaponData->swapTime = cJSON_ToNumberOpt(node, 300);
     
     node = cJSON_GetObjectItem (statsNode, "startzoomfov");
     weaponData->startZoomFov = (float)cJSON_ToNumberOpt (node, 50.0);
@@ -1020,7 +1044,7 @@ qboolean BG_LoadWeapons ( weaponData_t *weaponDataTable, unsigned int *numLoaded
 {
     int i;
     char weaponFiles[8192];
-    int numFiles = trap->FS_GetFileList ("ext_data/weapons", ".wpn", weaponFiles, sizeof (weaponFiles));
+    int numFiles = Q_FSGetFileListSorted ("ext_data/weapons", ".wpn", weaponFiles, sizeof (weaponFiles));
     const char *weaponFile = weaponFiles;
     int successful = 0;
     int failed = 0;

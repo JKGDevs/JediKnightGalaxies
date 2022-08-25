@@ -7,5 +7,6 @@
 	"weight":		"2",
 	"cost":		"60",
 	"maxStack":		3,
-	"itemIcon":		"models/weapons/Grenade_thermal/icon_default"
+	"itemIcon":		"models/weapons/Grenade_thermal/icon_default",
+	"itemDescription": "Merr-Sonn Munitions manufactures several different thermal detonators. Each implements use of baradium as fuel to cause a small thermonuclear explosion. The Class E is the standard yield suitable for most use cases while still being affordable."
 }

@@ -7,5 +7,6 @@
 	"weight":		"4",
 	"cost":		"1650",
 	"xml":			"xml/items/ACP_Array_Gun.xml",
-	"itemIcon":		"models/weapons/ACP_ArrayGun/icon_default"
+	"itemIcon":		"models/weapons/ACP_ArrayGun/icon_default",
+	"itemDescription": "Manufactured by Arakyd Industries, the Accelerated Charged Particle Array Gun, also referred to as the ACP Scatter Gun was an excellent weapon for close quarter combat and was extremely destructive to organics. It was favored by Trandoshans."
 }

@@ -368,6 +368,7 @@
 		"inventoryName": "@JKG_INVENTORY_MOD_ACP",
 
 		"modifiers": {
+			"ignoreShield": false,
 			"dodgeable": true,
 			"armor": 0.8,
 			"organic": 1.2,
@@ -527,9 +528,10 @@
 		"inventoryName": "@JKG_INVENTORY_MOD_FIRE",
 
 		"modifiers": {
+			"ignoreShield": false,
 			"armor": 0.8,
 			"organic": 1.4,
-			"shield": 0.0,
+			"shield": 0.5,
 			"droid": 0.8
 		},
 
@@ -648,14 +650,42 @@
 		}
 	},
 
+	"MOD_EMP": { 
+		// electromagnetic pulse shorts out electronics
+		"inventoryName": "@JKG_INVENTORY_MOD_ION",
+
+		"modifiers": {
+			"isEMP": true,
+			"armor": 0.6,
+			"organic": 1.0,
+			"shield": 1.7,
+			"droid": 1.8
+		},
+
+		"killFeed": {
+			"killMessage": "@JKG_INGAME_KILLED_ELECTRICAL",
+			"deathmessage": "@JKG_INGAME_DIED_ELECTRICAL",
+			"suicideMessageMale": "@JKG_INGAME_SUICIDE_ELECTRICAL_MALE",
+			"suicideMessageFemale": "@JKG_INGAME_SUICIDE_ELECTRICAL_FEMALE",
+			"suicideMessageNeuter": "@JKG_INGAME_SUICIDE_ELECTRICAL_GENDERLESS"
+		},
+
+		"plums": {
+			"damageColor": [ "157", "125", "255" ],
+			"lowDamageColor": [ "157", "100", "255" ],
+			"shieldDamageColor": [ "22", "168", "220" ]
+		}
+	},
+
 	"MOD_IGNITED": {
 		// Lit on fire
 		"inventoryName": "@JKG_INVENTORY_MOD_IGNITED",
 
 		"modifiers": {
+			"shieldBlocks": true,
 			"armor": 0.8,
 			"organic": 1.4,
-			"shield": 0.0,
+			"shield": 0.5,
 			"droid": 0.8
 		},
 
@@ -754,6 +784,38 @@
 		"plums": {
 			"damageColor": [ "17", "255", "17" ],
 			"lowDamageColor": [ "89", "247", "110" ]
+		}
+	},
+
+	"MOD_STAMINA_LOSE": {
+		// Taking damage to stamina/force power (can't actually kill you, but sorta hurts you?)
+		"inventoryName": "@JKG_INVENTORY_MOD_STAMINA",
+
+		"modifiers": {
+			"ignoreArmor": true,
+			"ignoreShield": true,
+			"droid": 0.0		//droids are not force sensitive
+		},
+
+		"plums": {
+			"damageColor": [ "25", "75", "200" ],
+			"lowDamageColor": [ "100", "75", "200" ]
+		}
+	},
+
+	"MOD_STAMINA_GAIN": {
+		// Recovering stamina/force power (heals)
+		"inventoryName": "@JKG_INVENTORY_MOD_STAMINA",
+
+		"modifiers": {
+			"ignoreArmor": true,
+			"ignoreShield": true,
+			"droid": 0.0		//droids are not force sensitive
+		},
+
+		"plums": {
+			"damageColor": [ "30", "160", "230" ],
+			"lowDamageColor": [ "100", "160", "230" ]
 		}
 	}
 }

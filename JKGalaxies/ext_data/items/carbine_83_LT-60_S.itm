@@ -7,5 +7,6 @@
 	"weight":		"6",
 	"cost":		"700",
 	"xml":			"xml/items/LT-60_Stealth.xml",
-	"itemIcon":		"models/weapons/lt-60_slugcarbine_stealth/icon_default"
+	"itemIcon":		"models/weapons/lt-60_slugcarbine_stealth/icon_default",
+	"itemDescription": "This version of the LT-60 comes with a scope, silencer, and features several small improvements designed to make it more accurate and increase its range. Metal slugs fired by this weapon can cause internal bleeding and bypass most energy shields."
 }

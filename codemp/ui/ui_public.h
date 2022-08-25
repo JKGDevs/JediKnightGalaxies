@@ -53,7 +53,8 @@ typedef enum uiMenuCommand_e {
 #define SORT_MAP			1
 #define SORT_CLIENTS		2
 #define SORT_GAME			3
-#define SORT_PING			4
+#define SORT_VERSION		4
+#define SORT_PING			5
 
 typedef struct uiImport_s {
 	void			(*Print)								( const char *msg, ... );

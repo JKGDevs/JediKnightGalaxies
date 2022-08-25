@@ -5,6 +5,7 @@
 	"weapon":		"WP_SABER",
 	"variation":		"15",
 	"weight":		"10",
+	"tier":			4,
 	"cost":		"1325",
 	"xml":			"",
 	"itemIcon":		"models/weapons/lightsabers/icons/firebrand.tga"

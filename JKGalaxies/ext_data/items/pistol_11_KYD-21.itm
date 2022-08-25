@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"500",
 	"xml":			"",
-	"itemIcon":		"models/weapons/KYD-21_Pistol/icon_targeter"
+	"itemIcon":		"models/weapons/KYD-21_Pistol/icon_targeter",
+	"itemDescription": "A high quality blaster pistol constructed from Hadrium alloy. These are often fancied by bounty hunters and others with need for both a powerful and compact weapon."
 }

@@ -3,6 +3,7 @@
 #include "game/bg_items.h"
 #include "game/bg_weapons.h"
 #include "qcommon/q_shared.h"
+#include <cctype>
 
 typedef enum {
 	JKGIFILTER_ALL,
@@ -10,6 +11,9 @@ typedef enum {
 	JKGIFILTER_ARMOR,
 	JKGIFILTER_CONSUMABLES,
 	JKGIFILTER_MISC,
+	JKGIFILTER_TOOLS,
+	JKGIFILTER_AMMO,
+	/*JKGFILTER_CRAFTING,*/
 } jkgFilterItems_t;
 
 
@@ -39,7 +43,10 @@ void JKG_Inventory_UnequipArmor(char** args);
 void JKG_Inventory_Open(char** args);
 void JKG_ConstructInventoryList();
 void JKG_ConstructItemDescription(itemInstance_t* pItem, std::vector<std::string>& vDescLines);
+void JKG_SplitDescriptionLines(const std::string& s, std::vector<std::string>& vDescLines);
 qboolean JKG_Inventory_HandleKey(int key);
+void JKG_LightenTextColor(vec4_t& color);
+void JKG_SetTierColor(int tier, vec4_t& color);
 
 
 //
@@ -65,6 +72,7 @@ char* JKG_Shop_LeftPriceText(int ownerDrawID);
 char* JKG_Shop_RightNameText(int ownerDrawID);
 char* JKG_Shop_RightPriceText(int ownerDrawID);
 char* JKG_ShopAmmoPriceText();
+char* JKG_ShopRefreshTimeText();
 void JKG_Shop_Sort(char** args);
 void JKG_Shop_SortSelectionName(itemDef_t* item, int ownerDrawID);
 void JKG_Shop_SortSelectionPrice(itemDef_t* item, int ownerDrawID);

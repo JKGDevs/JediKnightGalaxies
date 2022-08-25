@@ -5,5 +5,6 @@
 	"armor":		"swhelmet",
 	"weight":		"2",
 	"cost":			"650",
-	"itemIcon":		"gfx/item_icons/default.tga"
+	"itemIcon":		"gfx/item_icons/swamp_helmet.tga",
+	"itemDescription": "One of the highest quality helmets used by Imperial forces. The camouflage coloring was designed for special operatives placed in hazardous environments for months at a time. Unlike Imperial Stormtrooper helmets, it can filter out toxins."
 }

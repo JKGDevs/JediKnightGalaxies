@@ -1947,7 +1947,6 @@ void NPC_PrecacheType( char *NPC_type )
 void SP_NPC_spawner_tc(gentity_t *self, char *tc)
 {
 	int t;
-	char *temp;
 	gentity_t		*NPCspawner = NPC_Spawn_Do(self);
 
 

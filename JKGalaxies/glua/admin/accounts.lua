@@ -3,10 +3,11 @@
 	Accounts and admin system
 		
 	written by eezstreet
+	improved by Futuza
 --------------------------------------------------]]
 
 --[[ ------------------------------------------------
-	Accounts
+	Accounts / Data Structures
 --------------------------------------------------]]
 
 accounts = { }
@@ -20,6 +21,20 @@ permissions = { }
 sortedpermissions = { }
 local numPermissions = 0
 
+
+--[[ ------------------------------------------------
+	Generic Functions
+ ------------------------------------------------]]
+
+--used to count the total elements in a table
+function tablelength(T)
+	local count = 0
+	for _ in pairs(T) do count = count + 1 end
+	return count
+  end
+
+
+
 --[[ ------------------------------------------------
 	AddPermission( permissionname, permissiondefault, friendlyname, color )
 	Adds a permission to the permission table.
@@ -27,8 +42,8 @@ local numPermissions = 0
 
 local function AddPermission( permissionname, permissiondefault, friendlyname, color )
 	local permission = { }
-	permission["name"] = permissionname
-	permission["default"] = permissiondefault
+	permission["name"] = permissionname 
+	permission["default"] = permissiondefault or 0  --if no default permission specified use 0
 	permission["friendlyname"] = friendlyname
 	permission["color"] = color
 
@@ -53,33 +68,38 @@ end
 
 local function InitPermissions( )
 	AddPermission( "can-changedetails", 		1, "admchangedetails", 		"^3" )
-	AddPermission( "can-addaccounts", 		0, "admnewaccount", 		"^6" )
+	AddPermission( "can-addaccounts", 			0, "admnewaccount", 		"^6" )
 	AddPermission( "can-deleteaccounts", 		0, "admdeleteaccount", 		"^6" )
-	AddPermission( "can-kick", 		1, "admkick", 		"^6" )
-	AddPermission( "can-list-online", 		1, "admlist online", 		"^2" )
-	AddPermission( "can-list-admins", 		1, "admlist admins", 		"^2" )
-	AddPermission( "can-list-powers", 		1, "admlist ranks", 		"^2" )
-	AddPermission( "can-list-ranks", 		1, "admlist powers", 		"^2" )
+	AddPermission( "can-kick", 					0, "admkick", 		"^6" )
+	AddPermission( "can-list-online", 			1, "admlist online", 		"^2" )
+	AddPermission( "can-list-admins", 			0, "admlist admins", 		"^2" )
+	AddPermission( "can-list-powers", 			0, "admlist ranks", 		"^2" )
+	AddPermission( "can-list-ranks", 			0, "admlist powers", 		"^2" )
 	AddPermission( "can-list-permissions", 		0, "admlist permissions", 	"^2" )
-	AddPermission( "can-rank-inspect", 		1, "admrank inspect", 		"^2" )
-	AddPermission( "can-rank-create", 		0, "admrank create", 		"^1" )
-	AddPermission( "can-rank-delete", 		0, "admrank delete", 		"^1" )
+	AddPermission( "can-rank-inspect", 			0, "admrank inspect", 		"^2" )
+	AddPermission( "can-rank-create", 			0, "admrank create", 		"^1" )
+	AddPermission( "can-rank-delete", 			0, "admrank delete", 		"^1" )
 	AddPermission( "can-rank-addpermission", 	0, "admrank addpermission", 	"^1" )
 	AddPermission( "can-rank-deletepermission", 	0, "admrank deletepermission", 	"^1" )
 	AddPermission( "can-alter-rank", 		0, "admalter rank", 		"^6" )
-	AddPermission( "can-alter-password", 		0, "admalter password", 	"^6" )
-	AddPermission( "can-status", 			1, "admstatus", 		"^2" )
-	AddPermission( "can-say", 			1, "admsay", 			"^5" )
-	AddPermission( "can-tell", 			1, "admtell", 			"^5" )
-	AddPermission( "can-speak", 			1, "admspeak", 			"^5" )
-	AddPermission( "can-puppet", 			0, "admpuppet", 		"^8" )
-	AddPermission( "can-place", 			0, "bPlace", 			"^4" )
-	AddPermission( "can-delent", 			0, "bDelent", 			"^4" )
-	AddPermission( "can-entcount", 			1, "bEntCount", 		"^4" )
-	AddPermission( "can-showspawnvars", 		0, "bShowSpawnVars", 		"^4" )
-	AddPermission( "can-rotate", 			0, "bRotate", 			"^4" )
-	AddPermission( "use-cheats", 			0, "Use Cheats", 		"^8" )
-	AddPermission( "can-cinbuild", 		1, "cinbuild", 		"^6" )
+	AddPermission( "can-alter-password", 	0, "admalter password", 	"^6" )
+	AddPermission( "can-status", 			1, "admstatus", 			"^2" )
+	AddPermission( "can-say", 				0, "admsay", 				"^5" )
+	AddPermission( "can-tell", 				0, "admtell", 				"^5" )
+	AddPermission( "can-speak", 			0, "admspeak", 				"^5" )
+	AddPermission( "can-announce",			0, "admannounce",       	"^8" )
+	AddPermission( "can-puppet", 			0, "admpuppet", 			"^8" )
+	AddPermission( "can-changemap",			0, "admchangemap",			"^8" )
+	AddPermission( "can-teleport", 			0, "teleport", 				"^8" )
+	AddPermission( "can-setclip", 			0, "setclip",				"^8" )
+	AddPermission( "can-usetarg",			1, "usetarg",				"^8" )
+	AddPermission( "use-cheats", 			0, "Use Cheats", 			"^8" )
+	AddPermission( "can-place", 			0, "bPlace", 				"^4" )
+	AddPermission( "can-delent", 			0, "bDelent", 				"^4" )
+	AddPermission( "can-entcount", 			1, "bEntCount", 			"^4" )
+	AddPermission( "can-showspawnvars", 	0, "bShowSpawnVars", 		"^4" )
+	AddPermission( "can-rotate", 			0, "bRotate", 				"^4" )
+	AddPermission( "can-cinbuild", 			0, "cinbuild", 				"^6" )
 end
 
 --[[ ------------------------------------------------
@@ -138,7 +158,15 @@ local function InitRanks( )
 			local defvalue = sortedpermissions[j]["default"]
 
 			jObjectItem = json.GetObjectItem( jObject, permname )
-			rank[permname] = json.ToBooleanOpt( jObjectItem, defvalue )
+
+			--so lua is a bit dumb, 0 evaluates as true, so this will ensure only positive values == true
+			if defvalue < 1 then
+				defvalue = false
+			else
+				defvalue = true
+			end
+
+			rank[permname] = json.ToBooleanOpt( jObjectItem , defvalue )
 		end
 	
 		--
@@ -554,7 +582,8 @@ local function ChangePassword(ply, argc, argv)
 					SystemReply(ply, "^4Password changed.")
 				end
 			end
-		SystemReply(ply, "^1You are not logged in.")
+	else
+	SystemReply(ply, "^1You are not logged in.")
 	end
 end
 
@@ -675,14 +704,17 @@ end
 
 local function Profile(ply, argc, argv)
 	if ply.isLoggedIn then
-		local account = ply:GetAccount()
-		SystemReply(ply, "^4You are logged in as "^7 .. account .. " [^5Rank: " .. accounts[account]["rank"] .. "]")
+		local plyselaccountname = ply:GetAccount()
+		local plyselaccount = accounts[plyselaccountname]
+		SystemReply(ply, "^2You are logged in as ^4" .. plyselaccountname .. "^5 [Rank: " .. plyselaccount["rank"] .. "]")
 		return
+	else
+		SystemReply(ply, "^1You are not logged in.")
 	end
-	chatcmds.Ignore()
+		chatcmds.Ignore()
 end
 
-local function AddAccount(ply, argc, argv)
+local function CreateAccount(ply, argc, argv)
 	if ply.isLoggedIn then
 		-- Ya they're an logged in...but are they authorized?
 		local rank = GetRank(ply)
@@ -732,30 +764,30 @@ local function LogoutAccount(account)
 	end
 end
 
-local function DeleteAccount(ply, argc, argv)
+local function RemoveAccount(ply, argc, argv)
 	if ply.isLoggedIn then
 		local rank = GetRank(ply)
 		if rank["can-deleteaccounts"] ~= true then
 			SystemReply(ply, "^1You do not have permission to perform this action.")
+			return
 		else
-			-- Syntax:
-			-- /admdeleteaccount <username>
 			if argc ~= 2 then
 				SystemReply(ply, "^3Syntax: /admdeleteaccount <username>")
-			else
-				local desiredaccount = accounts[argv[1]]
-				if desiredaccount ~= nil then
-					local ourAccount = accounts[ply:GetAccount()]
-					if ourAccount["username"] ~= argv[1] then
-						LogoutAccount(desiredaccount)
-						DeleteAccount(desiredaccount)
-						SystemReply(ply, "^4Account deleted.")
-					else
-						SystemReply(ply, "^1You cannot delete your own account.")
-					end
+				return
+			end
+			
+			local desiredaccount = accounts[argv[1]]
+			if desiredaccount ~= nil then
+				local ourAccount = accounts[ply:GetAccount()]
+				if ourAccount["username"] ~= argv[1] then
+					LogoutAccount(desiredaccount)
+					DeleteAccount(desiredaccount)
+					SystemReply(ply, "^4Account deleted.")
 				else
-					SystemReply(ply, "^1Cannot delete account, it does not exist.")
+					SystemReply(ply, "^1You cannot delete your own account.")
 				end
+			else
+				SystemReply(ply, "^1Cannot delete account, it does not exist.")
 			end
 		end
 	else
@@ -766,7 +798,7 @@ end
 local function List(ply, argc, argv)
 	if ply.isLoggedIn then
 		if argc < 2 then
-			SystemReply(ply, "^3Syntax: /admlist <online/admins/ranks/powers>")
+			SystemReply(ply, "^3Syntax: /admlist <online/accounts/ranks/powers>")
 		else
 			local rank = GetRank(ply)
 			if argv[1] == "online" then
@@ -784,7 +816,7 @@ local function List(ply, argc, argv)
 								local plyselaccountname = plysel:GetAccount()
 								local plyselaccount = accounts[plyselaccountname]
 								if plyselaccount ~= nil then
-									printstring = printstring .. plysel:GetName() .. " [" .. plyselaccountname .. "--" .. plyselaccount["rank"] .. "], "
+									printstring = printstring .. plysel:GetName() .. " ^7[" .. plyselaccountname .. "--" .. plyselaccount["rank"] .. "], "
 								end
 							end
 						end
@@ -837,7 +869,7 @@ local function List(ply, argc, argv)
 					ply:SendPrint(AdminHelp_ListPowers( rank, true, true ))
 				end
 			else
-				SystemReply(ply, "^3Unknown admlist mode. Valid modes are online, admins, ranks, powers")
+				SystemReply(ply, "^3Unknown admlist mode. Valid modes are online, accounts, ranks, powers")
 			end
 		end
 	else
@@ -1019,12 +1051,13 @@ local function Status(ply, argc, argv)
 				local plysel = players.GetByID(k)
 				if plysel:IsValid() then
 					local plyselname = plysel:GetName()
-					printstring = printstring .. k .. " - " .. plyselname
+					printstring = printstring .. "\n^7" .. k .. " - " .. plyselname
 					if plysel.isLoggedIn then
 						local plyselaccountname = plysel:GetAccount()
 						local plyselaccount = accounts[plyselaccountname]
-						
-						printstring = printstring .. " ^7(^2Logged in as ^4" .. plyselaccountname .. " ^5[Rank: " .. plyselaccount["rank"] .. "]^7)"
+						printstring = printstring .. " ^7(^2Logged in as ^4" .. plyselaccountname .. " ^5[Rank: ^7" .. plyselaccount["rank"] .. "^5]^7)"
+					else
+						printstring = printstring .. " ^7(^1Not logged in.^7)"
 					end
 				end
 				k = k + 1
@@ -1036,15 +1069,16 @@ local function Status(ply, argc, argv)
 	end
 end
 
-local function Say(ply, argc, argv)
+local function Speak(ply, argc, argv)
 	if ply.isLoggedIn then
 		local rank = GetRank(ply)
-		if rank["can-say"] ~= true then
+		if rank["can-speak"] ~= true then
 			SystemReply(ply, "^1You do not have permission to perform this action.")
 		else
-			local accountname = ply:GetAccount()
 			local message = table.concat(argv," ",1, argc-1)
-			chatmsg( "^7[^5" .. accountname .. "^7] <" .. rank["name"] .. "> " .. message )
+			--local accountname = ply:GetAccount()
+			--chatmsg( "^7[^5" .. accountname .. "^7] <" .. rank["name"] .. "> " .. message )
+			chatmsg( "^7[^x39cAdmin^7] ^5" .. "^7<" .. rank["name"] .. "^7> ".. ply:GetName() .. "^7: ^3" .. message )
 		end
 	else
 		SystemReply(ply, "^1You are not logged in.")
@@ -1067,12 +1101,13 @@ local function Tell(ply, argc, argv)
 				end
 
 				local account = accounts[ply:GetAccount()]
-				local message = table.concat(argv," ",1, argc-1)
+				local message = table.concat(argv," ",2, argc-1)
 
-				plytarg:SendChat( "^5Admin " .. account["username"] .. " whispers: " .. message )
+				plytarg:SendChat( "^5Admin " .. ply.Name .. " ^5whispers: ^7" .. message )
+				ply:SendChat("^5You whisper: ^7" .. message )
 
 				if plytarg.lastadmtell == nil then
-					plytarg:SendChat( "^8Reply to this message using /SystemReply <msg>" )
+					plytarg:SendChat( "^8Reply to this message using /Reply <msg>" )
 				end
 				plytarg.lastadmtell = account["username"]
 			end
@@ -1082,7 +1117,7 @@ local function Tell(ply, argc, argv)
 	end
 end
 
--- NOT to be confused with SystemReply!!
+-- NOT to be confused with SystemReply!!  For replying to admtell messages.
 local function Reply(ply, argc, argv)
 	if argc < 2 then
 		SystemReply(ply, "^3Syntax: /Reply <message>")
@@ -1090,7 +1125,7 @@ local function Reply(ply, argc, argv)
 	end
 
 	if ply.lastadmtell == nil then
-		ply:SendChat( "^1You have not been messaged by an admin in this play session." )
+		ply:SendChat( "^1You have not been messaged by an admin in this play session.  Use /Tell <player name> <message> to msg a specific player." )
 		return
 	end
 
@@ -1100,43 +1135,75 @@ local function Reply(ply, argc, argv)
 	while players.GetByID(k) ~= nil do
 		local plytarg = players.GetByID(k)
 
-		if( account == plytarg:GetAccount() ) then
-			plytarg:SendChat( "^5" .. ply.Name .. " replies: " .. message )
+		if( account == plytarg:GetAccount() and plytarg ~= ply ) then
+			plytarg:SendChat( "^7" .. ply.Name .. "^5 replies: ^7" .. message )
 		end
 
 		k = k + 1
 	end
 
-	ply:SendChat( "^5You reply: " .. message )
+	ply:SendChat( "^5You reply: ^7" .. message )
 end
 
-local function Speak(ply, argc, argv)
+local function Say(ply, argc, argv)
 	if ply.isLoggedIn then
 		local rank = GetRank(ply)
-		if rank["can-speak"] ~= true then
+		if rank["can-say"] ~= true then
 			SystemReply(ply, "^1You do not have permission to perform this action.")
 			return
 		end
 
 		if argc < 2 then
-			SystemReply(ply, "^3Syntax: /admspeak <message>")
+			SystemReply(ply, "^3Syntax: /admsay <message>")
 			return
 		end
 
 		local k = 0
 		local message = table.concat(argv," ",1, argc-1)
 		local ourAccount = accounts[ply:GetAccount()]
+		local normalRadius = 1281 --how far away other players can hear us
+		local plyVec = vectorfnc.ObtainPlyVector(ply)
 
 		while players.GetByID(k) ~= nil do
-			local plytarg = players.GetByID(k)
-
-			if plytarg.isLoggedIn then
-				plytarg:SendChat( "^7[^4Admins^7] ^5" .. ourAccount["username"] .. "^7: " .. message )
+            local plytarg = players.GetByID(k)
+            local vecResult = vectorfnc.VectorSubtract(plyVec, vectorfnc.ObtainPlyVector(plytarg))       --subtract player's origin from target's origin
+            if vectorfnc.VectorLength(vecResult) < normalRadius then      --if the length is inside the radius
+                local fadelevel = vectorfnc.GetChatFadeLevel(vectorfnc.VectorLength(vecResult), normalRadius)
+				plytarg:SendFadedChat(fadelevel, "^7[^x39cAdmin^7] ^5" .. ply:GetName() .. "^7: " .. message )
+					--ourAccount["username"] --consider using actual account name?
 			end
-
 			k = k + 1
 		end
 		
+	else
+		SystemReply(ply, "^1You are not logged in.")
+	end
+end
+
+local function Announce(ply, argc, argv)
+	if ply.isLoggedIn then
+		local rank = GetRank(ply)
+		if rank["can-announce"] ~= true then
+			SystemReply(ply, "^1You do not have permission to perform this action.")
+			return
+		end
+
+		if argc < 2 then
+			SystemReply(ply, "^3Syntax: /admannounce <message>")
+			return
+		end
+
+		local message = table.concat(argv," ",1, argc-1)
+		local len = string.len(message)
+		
+		if  len > 75 then
+			SystemReply(ply, "^3Syntax: Announcements must be 75 characters or less.")
+			return
+		end
+
+		chatmsg( "^7System: " .. message )
+		ply:SendCenterPrintAll(message)
+
 	else
 		SystemReply(ply, "^1You are not logged in.")
 	end
@@ -1208,6 +1275,180 @@ local function Puppet(ply, argc, argv)
 	end
 end
 
+local function ChangeMap(ply, argc, argv)
+	if ply.isLoggedIn then
+		local rank = GetRank(ply)
+		if rank["can-changemap"] ~= true then
+			SystemReply(ply, "^1You do not have permission to perform this action.")
+			return
+		end
+
+		if (argc < 2 or argc > 2) then
+			SystemReply(ply, "/admchangemap <mapname>")
+			return
+		end
+
+		local maptarg = argv[1];
+		if maptarg == nil then
+			SystemReply(ply, "^1Invalid map specified.")
+			return
+		end
+
+		--SystemReply(ply, "Attempting to load map...")
+		
+
+
+		--get a list of all maps on the server in an array
+		--local maplist = ply:GetMapList() --maplist, cmd currently doesn't work
+
+		--local maps = {} --array to hold list of maps
+		--for k in (maplist .. ";"):gmatch("([^,]*),") do 
+			--table.insert(maps, k) 
+		--end
+
+		--for i,v in ipairs(maps) do 
+			--SystemReply(ply, v) --list all maps
+		--end
+		
+		-- Loop through the maps and make sure none match
+		--local k
+		--for k = 0, map_size-1 do
+			--if maps[k] == maptarg then --found our map
+				--SystemReply(ply, "^2Changing map...")
+				--send server map cmd
+				--return
+			--end
+		--end
+
+		SystemReply(ply, "^1This feature is not yet complete.")
+		return
+
+	else
+		SystemReply(ply, "^1You are not logged in.")
+	end
+end
+
+local function teleport(ply, argc, argv)
+	if ply.isLoggedIn then
+		local rank = GetRank(ply)
+		if rank["can-teleport"] ~= true then
+			SystemReply(ply, "^1You do not have permission to perform this action.")
+			return
+		end
+
+		--teleport to your cursor
+		if argc < 2 then
+			local trace = ply:GetEyeTrace()
+			ply:Teleport(trace.EndPos + trace.HitNormal * 25)
+		else
+			local target = players.GetByArg(argv[1])
+			if not target then
+				SystemReply(ply,"^1Target player not found")
+				return
+			end
+			if argc == 2 then
+				local trace = ply:GetEyeTrace()
+				target:Teleport(trace.EndPos + trace.HitNormal * 25)
+				return
+			end
+
+			if argc > 2 then
+				local destination = {}
+				local request = table.concat(argv," ",2, argc-1)
+
+				for i in (request .. " "):gmatch("%S+") do
+					if(tonumber(i)) then --make sure it can convert to a number
+						table.insert(destination, tonumber(i))
+					else
+						SystemReply(ply, "^3Syntax: /teleport - self to cursor, /teleport <playername/clientnumber> - target to cursor, /teleport <playername/clientnumber> <x> <y> <z> <yaw> - target to coords")
+						return
+					end
+				end
+
+				if tablelength(destination) == 4 then --check to make sure table is appropriate length
+					target:SetPos(Vector( tostring(destination[1]) .. " " .. tostring(destination[2]) .. " " .. tostring(destination[3]) ))
+					target:SetAngles(Vector("0 " .. tostring(destination[4]) .. " 0"))
+					return
+				end
+
+				SystemReply(ply, "^3Syntax: /teleport - self to cursor, /teleport <playername/clientnumber> - target to cursor, /teleport <playername/clientnumber> <x> <y> <z> <yaw> - target to coords")
+				return
+			end
+		end
+	else
+		SystemReply(ply, "^1You are not logged in.")
+	end
+end
+
+local function setclip(ply, argc, argv)
+	if ply.isLoggedIn then
+		local rank = GetRank(ply)
+		if rank["can-setclip"] ~= true then
+			SystemReply(ply, "^1You do not have permission to perform this action.")
+			return
+		end
+		
+		--toggle noclip on our self
+		if argc < 2 then
+			ply.NoClip = !ply.NoClip
+		else
+			local target = players.GetByArg(argv[1])
+			if not target then
+				SystemReply(ply, "^1Invalid player specified")
+				return
+			else --toggle noclip on specified player
+				target.NoClip = !target.NoClip
+			end
+		end
+	else
+		SystemReply(ply, "^1You are not logged in.")
+	end
+end
+
+local function usetarg(ply, argc, argv)
+	if ply.isLoggedIn then
+		local rank = GetRank(ply)
+		if rank["can-usetarg"] ~= true then
+			SystemReply(ply, "^1You do not have permission to perform this action.")
+			return
+		end
+
+		if argc < 2 then
+			SystemReply(ply, "^3Please specify a target.")
+		else
+			local target = argv[1]
+			local plyent = ply:GetEntity()
+			local entlist = ents.GetByName(target)
+			local k,v
+			for k,v in pairs(entlist) do
+				v:Use(plyent, plyent)
+			end
+		end
+	else
+		SystemReply(ply, "^1You are not logged in.")
+	end
+end
+--if not ply.IsAdmin then  --old way of verifying admins?
+
+
+local function Help(ply, argc, argv)
+	if ply.isLoggedIn then
+		local printstring = ""
+		SystemReply(ply, "See console for cmdlist.")
+		ply:SendPrint("Commands:")
+		printstring = "^3login ^7- allows user to sign into an account.\n^3logout ^7- signs out of the current account.\n^3changepassword ^7- change current account password.\n^3register ^7- register for a new client account.\n"
+		printstring = printstring .. "^3admkick ^7- kick a user off the server.\n^3admchangedetails ^7- edit account details.\n^3admprofile ^7- check what account you're logged in with.\n^3admnewaccount ^7- create a new account as an admin.\n"
+		printstring = printstring .. "^3admremoveaccount ^7- delete an account as an admin.\n^3admlist ^7- query for info about accounts.\n^3admrank ^7- query for permission held by a rank\n^3admalter ^7- alter an accounts rank or password.\n"
+		printstring = printstring .. "^3admstatus ^7- list logged in users and status.\n^3admsay ^7- imitates the /say cmd for admins.\n^3admtell ^7- imitates the /tell cmd for admins.\n^3admspeak ^7- imitates the /sayglobal cmd for admins."
+		ply:SendPrint(printstring) 	 --getting too long, gotta break it up
+		printstring = "^3admannounce ^7- make a server announcement.\n^3admpuppet ^7- allows admins to masquerade messages as other users.\n^3admchangemap ^7- change the current map (not implemented).\n"
+		printstring = printstring .. "^3teleport ^7- teleport to location or send player to location.\n^3toggleclip ^7- toggle noclip on/off self or specified player.\n^3admhelp^7/^3admcmds ^7- list admin cmds."
+		ply:SendPrint(printstring)
+	else
+		SystemReply(ply, "^1You are not logged in.  ^7To login, use the login cmd. eg: ^3/login <username> <password>")
+	end	
+end
+
 --[[ ------------------------------------------------
 	InitAccountCmds
 	This is what links all the commands into chat/console.
@@ -1221,19 +1462,26 @@ local function InitAccountCmds()
 	chatcmds.Add("admkick", Kick)
 	chatcmds.Add("admchangedetails", ChangeDetails)
 	chatcmds.Add("admprofile", Profile)
-	chatcmds.Add("admnewaccount", AddAccount)
-	chatcmds.Add("admdeleteaccount", DeleteAccount)
+	chatcmds.Add("admnewaccount", CreateAccount)
+	chatcmds.Add("admremoveaccount", RemoveAccount)
 	chatcmds.Add("admlist", List)
 	chatcmds.Add("admrank", Rank)
 	chatcmds.Add("admalter", Alter)
 	chatcmds.Add("admstatus", Status)
-	chatcmds.Add("admsay", Say)
-	chatcmds.Add("admtell", Tell)
 	chatcmds.Add("admspeak", Speak)
+	chatcmds.Add("admtell", Tell)
+	chatcmds.Add("admsay", Say)
+	chatcmds.Add("admannounce", Announce)
 	chatcmds.Add("admpuppet", Puppet)
+	chatcmds.Add("admchangemap", ChangeMap)
+	chatcmds.Add("teleport", teleport)
+	chatcmds.Add("toggleclip", setclip)
+	chatcmds.Add("usetarg", usetarg)
+	chatcmds.Add("admhelp", Help)
+	chatcmds.Add("admcmds", Help)
 
 	-- For replying to /admtells..this isn't an admin command, it can be used by any client
-	chatcmds.Add("SystemReply", Reply)
+	chatcmds.Add("Reply", Reply)
 
 	-- Add them to the console too.
 	cmds.Add("login", Login)
@@ -1243,16 +1491,24 @@ local function InitAccountCmds()
 	cmds.Add("admkick", Kick)
 	cmds.Add("admchangedetails", ChangeDetails)
 	cmds.Add("admprofile", Profile)
-	cmds.Add("admnewaccount", AddAccount)
-	cmds.Add("admdeleteaccount", DeleteAccount)
+	cmds.Add("admnewaccount", CreateAccount)
+	cmds.Add("admremoveaccount", RemoveAccount)
 	cmds.Add("admlist", List)
 	cmds.Add("admrank", Rank)
 	cmds.Add("admalter", Alter)
 	cmds.Add("admstatus", Status)
-	cmds.Add("admsay", Say)
-	cmds.Add("admtell", Tell)
 	cmds.Add("admspeak", Speak)
+	cmds.Add("admtell", Tell)
+	cmds.Add("admsay", Say)
+	cmds.Add("admannounce", Announce)
 	cmds.Add("admpuppet", Puppet)
+	cmds.Add("admchangemap", ChangeMap)
+	cmds.Add("teleport", teleport)
+	cmds.Add("toggleclip", setclip)
+	cmds.Add("usetarg", usetarg)
+	cmds.Add("admhelp", Help)
+	cmds.Add("admcmds", Help)
+	
 
 	-- For replying to /admtells..this isn't an admin command, it can be used by any client
 	cmds.Add("Reply", Reply)

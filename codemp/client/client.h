@@ -267,6 +267,7 @@ typedef struct serverInfo_s {
 	char	  	hostName[MAX_NAME_LENGTH];
 	char	  	mapName[MAX_NAME_LENGTH];
 	char	  	game[MAX_NAME_LENGTH];
+	char		gameversion[MAX_NAME_LENGTH];
 	int			netType;
 	int			gameType;
 	int		  	clients;
@@ -374,6 +375,7 @@ extern	cvar_t	*cl_freezeDemo;
 extern	cvar_t	*cl_yawspeed;
 extern	cvar_t	*cl_pitchspeed;
 extern	cvar_t	*cl_run;
+extern	cvar_t	*cl_crouch;
 extern	cvar_t	*cl_anglespeedkey;
 
 extern	cvar_t	*cl_sensitivity;

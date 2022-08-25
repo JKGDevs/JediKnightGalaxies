@@ -140,14 +140,19 @@ function PazaakGame:SetPlayers(ply1, ply2)
 	end
 	self.Players[1].Player = ply1
 	self.Players[2].Player = ply2
+	self.Players[1].Player.Busy = true --mark player1 with busy status
 	
-	--futuza: enable invincibility if there are 2 players
+	
 	if ply2 then
+	self.Players[2].Player.Busy = true --mark player2 with busy status
+	--futuza: enable invincibility if there are 2 players
 	self.Players[1].Player.GodMode = true
 	self.Players[1].Player.NoKnockback = true
+	self.Players[1].Player.NoDebuff = true
 	self.Players[2].Player.GodMode = true
 	self.Players[2].Player.NoKnockback = true
-	print( tostring(self.Players[1].Player:GetName()) .. " and " .. tostring(self.Players[2].Player:GetName()) .. " have been made invulnerable for a Pazaak match." )
+	self.Players[2].Player.NoDebuff = true
+	print( tostring(self.Players[1].Player:GetName()) .. "^7 and " .. tostring(self.Players[2].Player:GetName()) .. "^7 have been made invulnerable for a Pazaak match." )
 	end
 end
 
@@ -1087,13 +1092,15 @@ function PazaakGame:CleanUp()
 	--remove player invincibility: futuza
 	self.Players[1].Player.GodMode = false
 	self.Players[1].Player.NoKnockback = false
+	self.Players[1].Player.NoDebuff = false
 	self.Players[2].Player.GodMode = false
 	self.Players[2].Player.NoKnockback = false
-
-	--only bother announcing invulnerability being disabled if both are players
+	self.Players[2].Player.NoDebuff = false
 	if not self.Players[2].IsAI then
-		print( "Invulnerability disabled for " .. tostring(self.Players[1].Player:GetName()) .. " and " .. tostring(self.Players[2].Player:GetName()) )
+		print( "Invulnerability disabled for " .. tostring(self.Players[1].Player:GetName()) .. "^7 and " .. tostring(self.Players[2].Player:GetName()) .. "^7." )
 	end
+	self.Players[1].Player.Busy = false --no longer busy
+	self.Players[2].Player.Busy = false
 	
 	-- Close the pazaak board and we're finished
 	self.Players[1].Player:SendCommand("pzk stop")

@@ -7,5 +7,6 @@
 	"weight":		"6",
 	"cost":		"900",
 	"xml":			"xml/items/LT-60_Comm.xml",
-	"itemIcon":		"models/weapons/lt-60_slugcarbine_Comm/icon_default"
+	"itemIcon":		"models/weapons/lt-60_slugcarbine_Comm/icon_default",
+	"itemDescription": "An expensive customized variant of the LT-60, it has increased range, firing rate, and is even more devastating than its original design. While stil not quite as powerful as modern blasters, most energy shields do not provide protection from it."
 }

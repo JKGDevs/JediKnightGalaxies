@@ -7,5 +7,6 @@
 	"weight":		"14",
 	"cost":		"1300",
 	"xml":			"",
-	"itemIcon":		"models/weapons/bowcaster/icon_default"
+	"itemIcon":		"models/weapons/bowcaster/icon_default",
+	"itemDescription": "While based upon traditional Wookiee Crossbow designs, this modern weapon allows for a much larger clip size to allow rapid firing of several 'bolts' in quick succession. This configuration is suited for long range and uses a night scope attachment."
 }

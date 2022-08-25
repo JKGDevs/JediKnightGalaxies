@@ -1528,6 +1528,11 @@ qboolean NPC_FacePosition( vec3_t position, qboolean doPitch )
 	float		yawDelta;
 	qboolean	facing = qtrue;
 
+	if (!NPC || !NPC->client) //make sure it exists
+	{
+		return qfalse;
+	}
+
 	//Get the positions
 	if ( NPC->client && (NPC->client->NPC_class == CLASS_RANCOR || NPC->client->NPC_class == CLASS_WAMPA) )// || NPC->client->NPC_class == CLASS_SAND_CREATURE) )
 	{

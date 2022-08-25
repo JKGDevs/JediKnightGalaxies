@@ -5,6 +5,8 @@
 	"weapon":		"WP_BRYAR_PISTOL",
 	"variation":		"14",
 	"weight":		"1",
+	"tier":			2,
 	"cost":		"665",
-	"itemIcon":		"models/weapons/Westar-34_Pistol/icon_default"
+	"itemIcon":		"models/weapons/Westar-34_Pistol/icon_default",
+	"itemDescription": "A Mandalorian design capable of sustained fire thanks to its superb heat dissipation and high-temperature resistant Dallorian alloy. It suffers the drawbacks of only being effective in close quarters and rapidly burning through power supplies."
 }

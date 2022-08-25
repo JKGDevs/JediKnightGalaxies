@@ -17,7 +17,7 @@
             "firemode":     "models/weapons/LS-180_ACP_HeavyRepeater/firemode"
         },
         
-        "gunposition":      "10.0 -6.0 -3.0",
+        "gunposition":      "15.0 -8.0 -4.0",
         "ironsightsposition": "9.0 -3.0 -1.7",
         "ironsightsfov": "70",
 		"barrelCount": "3",
@@ -92,11 +92,11 @@
         	"maxAccuracyAdd": 75,
         	"crouchModifier": 0.95,
         	"runModifier": 1.5,
-        	"sightsModifier": 0.99,
+        	"sightsModifier": 0.6,
         	"walkModifier": 1.3,
         	"inAirModifier": 2
         },
-	"heatGenerated": 1.75
+	"heatGenerated": 1.05
     },
 
     "firemode1": {
@@ -136,7 +136,7 @@
         	"walkModifier": 1.6,
         	"inAirModifier": 2.5
         },
-	"maxHeat": 150
+	"maxHeat": 75
     },
     
     "playeranims": {

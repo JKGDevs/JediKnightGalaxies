@@ -979,6 +979,7 @@ qboolean NPC_CanUseAdvancedFighting()
 	case CLASS_WEAPONS_VENDOR:
 	case CLASS_ARMOR_VENDOR:
 	case CLASS_SUPPLIES_VENDOR:
+	case CLASS_EQUIPMENT_VENDOR:
 	case CLASS_FOOD_VENDOR:
 	case CLASS_MEDICAL_VENDOR:
 	case CLASS_GAMBLER_VENDOR:
@@ -2325,100 +2326,7 @@ void NPC_SetHitBox( void )
 		NPC->r.mins[1] = -8;
 		NPC->r.mins[0] = -8;
 		break;
-	case CLASS_ATST:
-	case CLASS_CLAW:
-	case CLASS_FISH:
-	case CLASS_FLIER2:
-	case CLASS_GLIDER:
-	case CLASS_GONK:				// droid
-	case CLASS_HOWLER:
-	case CLASS_INTERROGATOR:		// droid 
-	case CLASS_MARK1:			// droid
-	case CLASS_MARK2:			// droid
-	case CLASS_GALAKMECH:		// droid
-	case CLASS_MINEMONSTER:
-	case CLASS_MURJJ:
-	case CLASS_PROBE:			// droid
-	case CLASS_REMOTE:
-	case CLASS_SEEKER:			// droid
-	case CLASS_SENTRY:
-	case CLASS_VEHICLE:
-	case CLASS_RANCOR:
-	case CLASS_WAMPA:
-		// UQ1: Will leave these ones alone...
-		break;
-	case CLASS_BARTENDER:
-	case CLASS_BESPIN_COP:		
-	case CLASS_COMMANDO:
-	case CLASS_DESANN:		
-	case CLASS_GALAK:
-	case CLASS_GRAN:
-	case CLASS_IMPERIAL:
-	case CLASS_IMPWORKER:
-	case CLASS_JAN:				
-	case CLASS_JEDI:
-	case CLASS_KYLE:				
-	case CLASS_LANDO:			
-	case CLASS_LUKE:				// UQ1: TODO - maybe should be allowed to switch to pistol/blaster???
-	case CLASS_MONMOTHA:			
-	case CLASS_MORGANKATARN:
-	case CLASS_PRISONER:
-	case CLASS_PROTOCOL:			// droid
-	case CLASS_REBEL:
-	case CLASS_REBORN:
-	case CLASS_REBORN_CULTIST:
-	case CLASS_REELO:
-	case CLASS_RODIAN:
-	case CLASS_SHADOWTROOPER:
-	case CLASS_MERC://Stoiss add merc class
-	case CLASS_STORMTROOPER:
-	case CLASS_SWAMP:
-	case CLASS_SWAMPTROOPER:
-	case CLASS_TAVION:
-	case CLASS_TRANDOSHAN:
-	case CLASS_TUSKEN:
-	case CLASS_UGNAUGHT:
-	case CLASS_JAWA:
-	case CLASS_WEEQUAY:
-	case CLASS_BOBAFETT:
-	case CLASS_CIVILIAN:			// UQ1: Random civilian NPCs...
-	case CLASS_GENERAL_VENDOR:
-	case CLASS_WEAPONS_VENDOR:
-	case CLASS_ARMOR_VENDOR:
-	case CLASS_SUPPLIES_VENDOR:
-	case CLASS_FOOD_VENDOR:
-	case CLASS_MEDICAL_VENDOR:
-	case CLASS_GAMBLER_VENDOR:
-	case CLASS_TRADE_VENDOR:
-	case CLASS_ODDITIES_VENDOR:
-	case CLASS_DRUG_VENDOR:
-	case CLASS_TRAVELLING_VENDOR:
-	case CLASS_JKG_FAQ_IMP_DROID:
-	case CLASS_JKG_FAQ_ALLIANCE_DROID:
-	case CLASS_JKG_FAQ_SPY_DROID:
-	case CLASS_JKG_FAQ_CRAFTER_DROID:
-	case CLASS_JKG_FAQ_MERC_DROID:
-	case CLASS_JKG_FAQ_JEDI_MENTOR:
-	case CLASS_JKG_FAQ_SITH_MENTOR:
-	case CLASS_BOT_FAKE_NPC:
 	default:
-		// Humanoid...
-		if (NPC->client->ps.pm_flags & PMF_DUCKED)
-		{
-			NPC->r.maxs[2] = NPC->client->ps.crouchheight;
-			NPC->r.maxs[1] = 8;
-			NPC->r.maxs[0] = 8;
-			NPC->r.mins[1] = -8;
-			NPC->r.mins[0] = -8;
-		}
-		else if (!(NPC->client->ps.pm_flags & PMF_DUCKED))
-		{
-			NPC->r.maxs[2] = NPC->client->ps.standheight;
-			NPC->r.maxs[1] = 8;
-			NPC->r.maxs[0] = 8;
-			NPC->r.mins[1] = -8;
-			NPC->r.mins[0] = -8;
-		}
 		break;
 	}
 }
@@ -2438,7 +2346,7 @@ void NPC_Think ( gentity_t *self)//, int msec )
 {
 	vec3_t	oldMoveDir;
 	int i = 0;
-	gentity_t *player;
+	//gentity_t *player; //unused
 
 	self->nextthink = level.time + FRAMETIME;
 
@@ -2484,31 +2392,6 @@ void NPC_Think ( gentity_t *self)//, int msec )
 
 	self->nextthink = level.time + FRAMETIME/2;
 
-
-	while (i < MAX_CLIENTS)
-	{
-		player = &g_entities[i];
-
-		if (player->inuse && player->client && player->client->sess.sessionTeam != TEAM_SPECTATOR &&
-			!(player->client->ps.pm_flags & PMF_FOLLOW))
-		{
-			//if ( player->client->ps.viewEntity == self->s.number )
-			if (0) //rwwFIXMEFIXME: Allow controlling ents
-			{//being controlled by player
-				G_DroidSounds( self );
-				//FIXME: might want to at least make sounds or something?
-				//NPC_UpdateAngles(qtrue, qtrue);
-				//Which ucmd should we send?  Does it matter, since it gets overridden anyway?
-				NPCInfo->last_ucmd.serverTime = level.time - 50;
-				ClientThink( NPC->s.number, &ucmd );
-				//VectorCopy(self->s.origin, self->s.origin2 );
-				VectorCopy(self->r.currentOrigin, self->client->ps.origin);
-				return;
-			}
-		}
-		i++;
-	}
-
 	if ( NPCInfo->nextBStateThink <= level.time )
 	{
 #if	AI_TIMERS
@@ -2543,23 +2426,27 @@ void NPC_Think ( gentity_t *self)//, int msec )
 	else
 	{
 		VectorCopy( oldMoveDir, self->client->ps.moveDir );
+
 		//or use client->pers.lastCommand?
 		NPCInfo->last_ucmd.serverTime = level.time - 50;
-		if ( !NPC->next_roff_time || NPC->next_roff_time < level.time )
-		{//If we were following a roff, we don't do normal pmoves.
+		if (!NPC->next_roff_time || NPC->next_roff_time < level.time)
+		{ //If we were following a roff, we don't do normal pmoves.
 			//FIXME: firing angles (no aim offset) or regular angles?
 			NPC_UpdateAngles(qtrue, qtrue);
-			memcpy( &ucmd, &NPCInfo->last_ucmd, sizeof( usercmd_t ) );
+			memcpy(&ucmd, &NPCInfo->last_ucmd, sizeof(usercmd_t));
 			ClientThink(NPC->s.number, &ucmd);
 		}
 		else
 		{
 			NPC_ApplyRoff();
 		}
-		//VectorCopy(self->s.origin, self->s.origin2 );
 	}
-	//must update icarus *every* frame because of certain animation completions in the pmove stuff that can leave a 50ms gap between ICARUS animation commands
+
+	// must update icarus *every* frame because of certain animation
+	// completions in the pmove stuff that can leave a 50ms gap between
+	// ICARUS animation commands
 	trap->ICARUS_MaintainTaskManager(self->s.number);
+
 	VectorCopy(self->r.currentOrigin, self->client->ps.origin);
 }
 

@@ -7,5 +7,6 @@
 	"weight":		"2",
 	"cost":		"95",
 	"maxStack":		5,
-	"itemIcon":		"models/weapons/grenade_cryoban/icon_default"
+	"itemIcon":		"models/weapons/grenade_cryoban/icon_default",
+	"itemDescription": "Originally designed for use as an emergency fire suppressant, it was later adapted by Merr-Sonn Munitions for combat. Uses carbon freezing technology developed for cold storage. Freezes targets causing cold tissue damage and immobilizing the target."
 }

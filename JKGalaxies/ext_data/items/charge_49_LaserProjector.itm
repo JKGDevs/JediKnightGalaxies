@@ -5,5 +5,6 @@
 	"weapon":		"WP_DET_PACK",
 	"variation":		"1",
 	"maxStack":		5,
-	"itemIcon":		"models/weapons/LaserProjector/icon_default"
+	"itemIcon":		"models/weapons/LaserProjector/icon_default",
+	"itemDescription": "The Class VI Laser Projector created by BlasTech Industries offers a significant tactical advantage for ground squads, especially in confined spaces such as hallways. The sentry can be attached to solid surfaces and operate continuously in bursts."
 }

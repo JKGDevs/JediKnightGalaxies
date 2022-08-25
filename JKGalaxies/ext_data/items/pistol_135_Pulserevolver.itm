@@ -1,0 +1,13 @@
+{
+	"name":             "@JKG_ITEMS_pistol_PulseRevolver",
+	"internal":             "pistol_pulserevolver",
+	"itemtype":             "weapon",
+	"weapon":		"WP_BRYAR_PISTOL",
+	"variation":		"16",
+	"weight":		"1",
+    "tier":			3,
+	"cost":		"700",
+	"xml":			"",
+	"itemIcon":		"models/weapons/PulseRevolver/icon_default",
+	"itemDescription": "Manufactured by Arakyd Industries as a novelty pistol for wealthier clients, the Pulse Revolver combines modern armor piercing pulse technology with a stylish design inspired by ancient slugthrower revolvers."
+}

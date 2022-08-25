@@ -1,0 +1,10 @@
+{
+	"name":         "Galinolo Mark II Huntsman Helm",
+	"internal":     "helmet_bountyhunter2",
+	"itemtype":     "armor",
+	"armor":		"bh2helmet",
+	"weight":		"3",
+	"cost":			"450",
+	"itemIcon":		"gfx/item_icons/bh1_helmet.tga",
+	"itemDescription": "While the original Mark I version was marketed toward planetary military groups by Galinolo Corp, the superseding Mark II, has been customized for bounty hunters after the line became popular in the Outer Rim. Features an anti-toxin injection system."
+}

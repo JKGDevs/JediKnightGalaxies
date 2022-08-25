@@ -609,51 +609,44 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		weaponData_t *weapon = GetWeaponData (ent->s.weapon, ent->s.weaponVariation);
 		weaponFireModeStats_t *fireMode = &weapon->firemodes[ent->s.firingMode];
 		
-		if ( ent->damage ) {
-			vec3_t	velocity;
+		vec3_t	velocity;
 
-			BG_EvaluateTrajectoryDelta( &ent->s.pos, level.time, velocity );
-			if ( VectorLength( velocity ) == 0 ) {
-				velocity[2] = 1;	// stepped on a grenade
-			}
+		BG_EvaluateTrajectoryDelta( &ent->s.pos, level.time, velocity );
+		if ( VectorLength( velocity ) == 0 ) {
+			velocity[2] = 1;	// stepped on a grenade
+		}
 
-            JKG_DoDamage (&fireMode->primary, other, ent, &g_entities[ent->r.ownerNum], velocity, ent->r.currentOrigin, 0, ent->methodOfDeath);
-            
-            if ( fireMode->secondaryDmgPresent )
-            {
-                JKG_DoDamage (&fireMode->secondary, other, ent, &g_entities[ent->r.ownerNum], velocity, ent->r.currentOrigin, 0, ent->methodOfDeath);
-            }
+		float distance = Distance(ent->s.pos.trBase, ent->r.currentOrigin); //check how far we shot
 
-			if (other->client)
-			{ //What I'm wondering is why this isn't in the NPC pain funcs. But this is what SP does, so whatever.
-				class_t	npc_class = other->client->NPC_class;
+		/* We're in range to do damage*/
+		if (distance < ent->maxRange)
+		{
+			damageDecay_t decay = {};
+			decay.maxRange = ent->maxRange;
+			decay.recommendedRange = ent->range;
+			decay.distanceToDamageOrigin = distance;
+			decay.decayRate = ent->decayRate;
 
-				// If we are a robot and we aren't currently doing the full body electricity...
-				if ( npc_class == CLASS_SEEKER || npc_class == CLASS_PROBE || npc_class == CLASS_MOUSE ||
-					   npc_class == CLASS_GONK || npc_class == CLASS_R2D2 || npc_class == CLASS_R5D2 || npc_class == CLASS_REMOTE ||
-					   npc_class == CLASS_MARK1 || npc_class == CLASS_MARK2 || //npc_class == CLASS_PROTOCOL ||//no protocol, looks odd
-					   npc_class == CLASS_INTERROGATOR || npc_class == CLASS_ATST || npc_class == CLASS_SENTRY )
-				{
-					// special droid only behaviors
-					if ( other->client->ps.electrifyTime < level.time + 100 )
-					{
-						// ... do the effect for a split second for some more feedback
-						other->client->ps.electrifyTime = level.time + 450;
-					}
-					//FIXME: throw some sparks off droids,too
-				}
-			}
+			JKG_DoDamage(
+				fireMode,
+				other,
+				ent,
+				g_entities + ent->r.ownerNum,
+				velocity,
+				ent->r.currentOrigin,
+				0,
+				ent->methodOfDeath,
+				&decay);
 		}
 	}
+
 killProj:
 	// is it cheaper in bandwidth to just remove this ent and create a new
 	// one, rather than changing the missile into the explosion?
 
 	if ( other->takedamage && other->client && !isKnockedSaber ) {
-		{
-			G_AddEvent( ent, EV_MISSILE_HIT, DirToByte( trace->plane.normal ) );
-			ent->s.otherEntityNum = other->s.number;
-		}
+		G_AddEvent( ent, EV_MISSILE_HIT, DirToByte( trace->plane.normal ) );
+		ent->s.otherEntityNum = other->s.number;
 	} else if( trace->surfaceFlags & SURF_METALSTEPS ) {
 		G_AddEvent( ent, EV_MISSILE_MISS_METAL, DirToByte( trace->plane.normal ) );
 	} else if (ent->s.weapon != G2_MODEL_PART && !isKnockedSaber) {
@@ -679,9 +672,20 @@ killProj:
 		ent->freeAfterEvent = qfalse; //it will free itself
 	}
 
-	if(ent->splashRadius && ent->splashDamage && !ent->genericValue10)
+	if (ent->splashRadius && ent->splashDamage && !ent->genericValue10)
 	{
+		//to consider here:
+		//reduce splash damage for certain missile types that are fired 
+		//while keeping other types unaltered (eg: rockets shouldn't be affected, energy blasts should)
+
+		//why call G_RadiusDamage directly instead of JKG_DoSplashDamage()?  This prevents us from being able to do area debuffs etc.  Needs improvement.  --Futuza
 		G_RadiusDamage(trace->endpos, &g_entities[ent->r.ownerNum], ent->splashDamage, ent->splashRadius, NULL, ent, ent->methodOfDeath);
+
+		//VV---to do: test if the below is a suitable replacement---VV
+		/*weaponData_t* weapon = GetWeaponData(ent->s.weapon, ent->s.weaponVariation);
+		weaponFireModeStats_t* fireMode = &weapon->firemodes[ent->s.firingMode];
+		JKG_DoSplashDamage(&fireMode->primary, trace->endpos, ent, &g_entities[ent->r.ownerNum], NULL, ent->methodOfDeath);*/
+
 	}
 
 	trap->LinkEntity( (sharedEntity_t *)ent );

@@ -18,7 +18,7 @@
             "firemode":     "models/weapons/SuppressorPistol/firemode"
         },
         
-        "gunposition":      "8.0 -3.0 -5.0",
+        "gunposition":      "12.0 -4.0 -7.0",
         "ironsightsposition": "8.5 0.0 -4.1",
         "ironsightsfov": "75",
 		"barrelCount": "1",
@@ -75,13 +75,14 @@
         "projectilespeed": 3000.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_ACP",
-	"ammobase": "AMMO_ACP_POWERCELL_S",
-	"ammodefault": "AMMO_ACP_POWERCELL_S",
+        "ACPRatio": 0.2,
+	    "ammobase": "AMMO_ACP_POWERCELL_S",
+	    "ammodefault": "AMMO_ACP_POWERCELL_S",
         "clipSize":              10,
-	"accuracy": {
-		"accuracyRating": 11,
-		"sightsModifier": 0.3
-	}
+	    "accuracy": {
+		    "accuracyRating": 11,
+		    "sightsModifier": 0.3
+	    }
     },
     
     "playeranims": {

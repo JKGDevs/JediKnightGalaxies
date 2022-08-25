@@ -17,7 +17,7 @@
             "firemode":     "models/weapons/DXR6_HeavyCarbine/firemode"
         },
         
-        "gunposition":      "8.0 -3.0 -6.6",
+        "gunposition":      "8.0 -4.0 -8.0",
         "ironsightsposition": "9.0 0.0 -5.1",
         "ironsightsfov": "70",
 		"barrelCount": "3",
@@ -83,7 +83,7 @@
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
         "splashmeansofdeath": "MOD_BLASTER",
-	"ammoBase": "AMMO_POWERCELL_L",
+	"ammoBase": "AMMO_POWERCELL",
 	"ammoDefault": "AMMO_POWERCELL_S",
         "clipSize":              16,
             "accuracy": {
@@ -118,7 +118,7 @@
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_DISRUPTOR",
         "splashmeansofdeath": "MOD_DISRUPTOR",
-	"ammoBase": "AMMO_POWERCELL_L",
+	"ammoBase": "AMMO_POWERCELL",
 	"ammoDefault": "AMMO_POWERCELL_S",
         "clipSize":              16,
         "accuracy": {

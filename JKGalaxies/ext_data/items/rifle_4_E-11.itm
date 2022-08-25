@@ -7,5 +7,6 @@
 	"weight":		"5",
 	"cost":		"1300",
 	"xml":			"",
-	"itemIcon":		"models/weapons/e-11_rifle/icon_default"
+	"itemIcon":		"models/weapons/e-11_rifle/icon_default",
+	"itemDescription": "Standard-issue for Imperial Stormtroopers the E-11 was an iconic weapon of the Empire. It came equipped with a simple electroscope. It had considerable stopping fire and a high rate of fire."
 }

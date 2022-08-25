@@ -4487,6 +4487,92 @@
 			}
 		}
 
+		itemDef 
+		{
+		   	name 			prevwpn_button		
+			group 			controls3Menu
+			text			@JKG_MAINMENU_PREVWEAPON
+			type			ITEM_TYPE_BIND_FIXED
+			selectionZone			479 213 117 7
+			rect				460 207 155 19
+			background			"gfx/ui/mainsub_sliderbar"
+			font				5
+			font2				5
+			textscale				0.5
+			textscale2				0.4
+			textalign				ITEM_ALIGN_RIGHT
+			text2align				ITEM_ALIGN_LEFT
+			textalignx			10
+			textaligny			1
+			text2alignx			22
+			text2aligny			4
+			forecolor			1 1 1 1
+
+	   		visible 		1
+
+			cvar				"weapprev"
+
+			mouseenter 
+			{ 
+				show			highlight_sliderbutton
+				setitemrect		highlight_sliderbutton 	460 207 155 19
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight_sliderbutton
+				hide			keybindstatus
+					clearfocus
+			} 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+			}
+		}
+
+		itemDef 
+		{
+		   	name 			nextwpn_button		
+			group 			controls3Menu
+			text			@JKG_MAINMENU_NEXTWEAPON
+			type			ITEM_TYPE_BIND_FIXED
+			selectionZone			479 224 117 7
+			rect				460 218 155 19
+			background			"gfx/ui/mainsub_sliderbar"
+			font				5
+			font2				5
+			textscale				0.5
+			textscale2				0.4
+			textalign				ITEM_ALIGN_RIGHT
+			text2align				ITEM_ALIGN_LEFT
+			textalignx			10
+			textaligny			1
+			text2alignx			22
+			text2aligny			4
+			forecolor			1 1 1 1
+
+	   		visible 		1
+
+			cvar				"weapnext"
+
+			mouseenter 
+			{ 
+				show			highlight_sliderbutton
+				setitemrect		highlight_sliderbutton 	460 218 155 19
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight_sliderbutton
+				hide			keybindstatus
+					clearfocus
+			} 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+			}
+		}
+
 //----------------------------------------------------------------------------------------------
 //
 //	OPTION FIELDS

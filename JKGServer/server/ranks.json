@@ -7,8 +7,11 @@
 
 				// Specific booleans stating whether we can do certain things
 
-				// Do we want to use cheats? This includes stuff like /god, /notarget, etc...
-				"use-cheats":		1,
+				// Moderator Powers
+				"use-cheats":		1, // Do we want to use cheats? This includes stuff like /god, /notarget, etc...
+				"can-changemap":	1, //can tell the server to change maps (not yet imlemented)
+				"can-teleport":		1, //teleport admin to crosshair, or a specified player to cross hair or coordinates
+				"can-setclip":		1, //can toggle noclip cmd off for self, or a specified player
 
 				// Defaults to 1
 				"can-changedetails":	1,
@@ -26,6 +29,7 @@
 				"can-tell":		1,
 				"can-speak":		1,
 				"can-puppet":		1,
+				"can-announce":		1,
 				
 				// admlist command
 				"can-list-online":	1,
@@ -53,7 +57,7 @@
 
 			{
 				"name":			"Client",
-				"use-cheats":		0,
+				"use-cheats":		0,		//as a note if a value is not specified, it will use the default setting (usually a 0)
 				"can-changedetails":	0,
 				"can-addaccounts":	0,
 				"can-deleteaccounts":	0,
@@ -91,6 +95,7 @@
 				"can-say":		0,
 				"can-tell":		0,
 				"can-speak":		0,
+				"can-announce":		0,
 				"can-puppet":		0,
 				"can-list-online":	0,
 				"can-list-admins":	0,
@@ -102,6 +107,38 @@
 				"can-rank-alter":	0,
 				"can-alter-rank":	0,
 				"can-alter-password":	0,
+				"can-place":		1,
+				"can-delent":		1,
+				"can-showspawnvars":	1,
+				"can-entcount":		1,
+				"can-rotate":		1
+			},
+
+			{
+				"name":			"Moderator",
+				"use-cheats":		1,
+				"can-teleport":		1,
+				"can-setclip":		1,
+				"can-changedetails":	0,
+				"can-addaccounts":	0,
+				"can-deleteaccounts":	0,
+				"can-status":		1,
+				"can-kick":	1,
+				"can-say":		1,
+				"can-tell":		1,
+				"can-speak":		1,
+				"can-announce":		1,
+				"can-puppet":		1,
+				"can-list-online":	1,
+				"can-list-admins":	1,
+				"can-list-ranks":	1,
+				"can-list-powers":	1,
+				"can-rank-inspect":	1,
+				"can-rank-create":	0,
+				"can-rank-delete":	0,
+				"can-rank-alter":	0,
+				"can-alter-rank":	0,
+				"can-alter-password":	1,
 				"can-place":		1,
 				"can-delent":		1,
 				"can-showspawnvars":	1,

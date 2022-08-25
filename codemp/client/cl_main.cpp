@@ -1647,6 +1647,7 @@ void CL_InitServerInfo( serverInfo_t *server, netadr_t *address ) {
 	server->needPassword = qfalse;
 	server->ping = -1;
 	server->game[0] = '\0';
+	server->gameversion[0] = '\0';
 	server->gameType = 0;
 }
 
@@ -2700,6 +2701,7 @@ void CL_Init( void ) {
 	cl_packetdup = Cvar_Get ("cl_packetdup", "1", CVAR_ARCHIVE );
 
 	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE);
+	cl_crouch = Cvar_Get ("cl_crouch", "0", CVAR_ARCHIVE);
 	cl_sensitivity = Cvar_Get ("sensitivity", "5", CVAR_ARCHIVE);
 	cl_mouseAccel = Cvar_Get ("cl_mouseAccel", "0", CVAR_ARCHIVE);
 	cl_freelook = Cvar_Get( "cl_freelook", "1", CVAR_ARCHIVE );
@@ -2910,6 +2912,7 @@ static void CL_SetServerInfo(serverInfo_t *server, const char *info, int ping) {
 			Q_strncpyz(server->mapName, Info_ValueForKey(info, "mapname"), MAX_NAME_LENGTH);
 			server->maxClients = atoi(Info_ValueForKey(info, "sv_maxclients"));
 			Q_strncpyz(server->game,Info_ValueForKey(info, "game"), MAX_NAME_LENGTH);
+			Q_strncpyz(server->gameversion, Info_ValueForKey(info, "gameversion"), MAX_NAME_LENGTH);
 			server->gameType = atoi(Info_ValueForKey(info, "gametype"));
 			server->netType = atoi(Info_ValueForKey(info, "nettype"));
 			server->minPing = atoi(Info_ValueForKey(info, "minping"));

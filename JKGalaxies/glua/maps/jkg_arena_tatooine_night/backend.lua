@@ -721,6 +721,6 @@ function backend.DoLoadout(arena, ply)
 		
 		-- Finally, heal them to max (possible feature: handicaps)
 		ply.Health = ply.MaxHealth
-		ply.Armor = ply.MaxArmor
+		ply.Shield = ply.MaxShield
 	end
 end

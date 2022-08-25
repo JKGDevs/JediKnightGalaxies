@@ -27,6 +27,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "botlib/be_aas.h"
 #include "bg_saga.h"
+#include "game/bg_public.h"
+#include "game/bg_weapons.h"
 #include "ghoul2/G2.h"
 #include "qcommon/q_shared.h"
 #include "jkg_damageareas.h"
@@ -178,16 +180,15 @@ static	vec3_t	muzzle;
 #define MAX_PLACEABLE_CONSUME_WPNS			20		//default: 10 (used by tripmines and detonators)
 
 
-const weaponFireModeStats_t *GetEntsCurrentFireMode ( const gentity_t *ent )
+const weaponFireModeStats_t *GetEntsCurrentFireMode( const gentity_t *ent, const weaponData_t* weapon )
 {
-    const weaponData_t *weapon = GetWeaponData (ent->s.weapon, ent->s.weaponVariation);
-	const weaponFireModeStats_t *fireMode = &weapon->firemodes[ent->s.firingMode];
-	/*if ( ent->s.eFlags & EF_ALT_FIRING )
-	{
-	    fireMode = &weapon->firemodes[1];
-	}*/
-	
-	return fireMode;
+	return &weapon->firemodes[ent->s.firingMode];
+}
+
+const weaponFireModeStats_t *GetEntsCurrentFireMode( const gentity_t *ent )
+{
+	const weaponData_t *weapon = GetWeaponData(ent->s.weapon, ent->s.weaponVariation);
+	return GetEntsCurrentFireMode(ent, weapon);
 }
 
 extern qboolean G_BoxInBounds( vec3_t point, vec3_t mins, vec3_t maxs, vec3_t boundsMins, vec3_t boundsMaxs );
@@ -1180,12 +1181,7 @@ void DetPackBlow(gentity_t *self)
 
 	if ( self->target_ent )
 	{//we were attached to something, do *direct* damage to it!
-		JKG_DoDirectDamage(&fireMode->primary, self->target_ent, self, self->parent, vec3_origin, self->r.currentOrigin, 0, mod);
-		
-		if ( fireMode->secondaryDmgPresent )
-		{
-			JKG_DoDirectDamage(&fireMode->secondary, self->target_ent, self, self->parent, vec3_origin, self->r.currentOrigin, 0, mod);
-		}
+		JKG_DoDirectDamage(fireMode, self->target_ent, self, self->parent, vec3_origin, self->r.currentOrigin, 0, mod);
 	}
 	
 	JKG_DoSplashDamage(&fireMode->primary, self->r.currentOrigin, self, self->parent, self, mod);
@@ -1482,12 +1478,7 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 
 		G_Sound( tr_ent, CHAN_WEAPON, G_SoundIndex( va("sound/weapons/melee/punch%d", Q_irand(1, 4)) ) );
 
-		JKG_DoDamage (&fireMode->primary, tr_ent, ent, ent, forward, tr.endpos, DAMAGE_NO_KNOCKBACK, mod);
-		
-		if ( fireMode->secondaryDmgPresent )
-		{
-		    JKG_DoDamage (&fireMode->secondary, tr_ent, ent, ent, forward, tr.endpos, DAMAGE_NO_KNOCKBACK, mod);
-		}
+		JKG_DoDamage(fireMode, tr_ent, ent, ent, forward, tr.endpos, DAMAGE_NO_KNOCKBACK, mod);
 
 		if (tr_ent->client)
 		{ //if it's a player then use the shock effect
@@ -2117,6 +2108,46 @@ void WP_CalculateMuzzlePoint( gentity_t *ent, vec3_t forward, vec3_t right, vec3
 }
 
 /**************************************************
+* WP_GetMaxRangeWithDecay
+*
+* Returns the maximum range of the weapon given 
+* its range value, damage, and decayRate.
+* damage == 0 when fired at this maxrange.
+*
+* If looking for maxrange when damage == 1, 
+* subtract .01 from the result, or truncate the
+* return type to an interger via cast.
+* eg: static_cast<int>()
+**************************************************/
+
+//find the maximum effective range beyond a weapon's range (when damage == 0)
+float WP_GetMaxRangeWithDecay(int damage, float range, float decayRate)
+{
+	//flip damage for heals
+	if (damage < 0)
+	{
+		damage = -damage;
+	}
+
+	if (damage && range > 0 && decayRate > 0.0 && decayRate < 1.0)
+	{
+		if (decayRate < 0.0001)
+			decayRate = 0.0001;
+
+		float multiplier = static_cast<float>(std::log(1.0 / damage) / std::log(decayRate)); // --futuza: gcc has a stupid bug so we can't use logf(), see: https://stackoverflow.com/questions/55458487/stdexpf-and-stdlogf-not-recognized-by-gcc-7-2-0
+		float maxRange = (range * multiplier) + range;
+
+		//don't allow ranges beyond 10x
+		if ((maxRange / range) > MAX_RANGE_MULTIPLIER)
+			range = range * MAX_RANGE_MULTIPLIER;
+		else
+			range = maxRange;
+	}
+
+	return (range);
+}
+
+/**************************************************
 * WP_FireGenericMissile
 *
 * Fires a generic grenade for the currently equiped
@@ -2205,7 +2236,9 @@ gentity_t *WP_FireGenericMissile( gentity_t *ent, int firemode, vec3_t origin, v
 	qboolean	 bGravity			 = WP_GetWeaponGravity( ent, firemode );
 	int			 iMOD				 = WP_GetWeaponMOD( ent, firemode );
 	int			 iSplashMOD			 = WP_GetWeaponSplashMOD( ent, firemode );
+	float		 fDecayRate			 = WP_GetWeaponDecayRate(ent, firemode);
 	float		 fRange				 = WP_GetWeaponRange( ent, firemode );
+	float		 fMaxRange			 = WP_GetMaxRangeWithDecay(iDamage, fRange, fDecayRate);
 	float		 fSpeed				 = WP_GetWeaponSpeed( ent, firemode );
 	float		 fSplashRange		 = WP_GetWeaponSplashRange( ent, firemode );
 	gentity_t	*missile			 = NULL;
@@ -2224,10 +2257,25 @@ gentity_t *WP_FireGenericMissile( gentity_t *ent, int firemode, vec3_t origin, v
 	/* Set the appropriate range for the bullet */
 	if ( fRange >= 0.0f )
 	{
-		//missile->s.eventParm		 = fRange;
-		// Xycaleth: casual hi-jacking of some random variable. It's so random you'd have
-		// thought it wasn't out of place at all in Raven's code! :D
-		missile->s.apos.trBase[0]   = fRange;
+		//if our maxRange is different, we need to calculate damage decay
+		if (fRange != fMaxRange)
+		{
+			missile->range = fRange;
+			missile->maxRange = fMaxRange;
+			missile->decayRate = fDecayRate;
+			missile->s.apos.trBase[0] = fMaxRange;
+		}
+		else
+		{
+			missile->range = fRange;
+			missile->maxRange = fRange;
+			missile->decayRate = 1;
+
+			//missile->s.eventParm		 = fRange;
+			// Xycaleth: casual hi-jacking of some random variable. It's so random you'd have
+			// thought it wasn't out of place at all in Raven's code! :D
+			missile->s.apos.trBase[0] = fRange;
+		}
 	}
 
 	/* If this missile uses gravity, and if such give a slighty boost and set the movement type */
@@ -2288,7 +2336,9 @@ void WP_FireGenericTraceLine( gentity_t *ent, int firemode )
 {
 	int			 iDamage		 = WP_GetWeaponDamage( ent, firemode );
 	float		 fRange			 = WP_GetWeaponRange( ent, firemode );
+	float		 fMaxRange		 = fRange; //same as range, unless decayRate is set
 	int			 iSkip			 = ent->s.number;
+	float		 fDecayRate		 = WP_GetWeaponDecayRate(ent, firemode);
 
 	gentity_t	*traceEnt, *tent;
 	trace_t		 tr;
@@ -2307,11 +2357,17 @@ void WP_FireGenericTraceLine( gentity_t *ent, int firemode )
 		start[2] += 24;
 	}
 
+	/* Increase search up to maxRange if decayRate is a factor */
+	if (fDecayRate > 0.0 && fDecayRate < 1.0)
+	{
+		fMaxRange = WP_GetMaxRangeWithDecay(iDamage, fRange, fDecayRate);
+	}
+
 	while( iDamage > 0 )
 	{
-		/* Set the range forward to the end */
-		VectorMA( start, fRange, forward, end );
-
+		/* Set the range forward to the end*/
+		VectorMA(start, fMaxRange, forward, end);
+			
 		/* Start the trace until we hit something */
 		trap->Trace( &tr, start, NULL, NULL, end, iSkip, MASK_SHOT, 0, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, 3 );
 
@@ -2344,7 +2400,7 @@ void WP_FireGenericTraceLine( gentity_t *ent, int firemode )
 			VectorSubtract( tr.endpos, start, difference );
 
 			/* Substract the range, set the skip entity and copy the end position as the start */
-			fRange	= fRange - VectorNormalize( difference );
+			fMaxRange = fMaxRange - VectorNormalize( difference );
 			iSkip	= tr.entityNum;
 			VectorCopy( tr.endpos, start );
 			continue;
@@ -2409,16 +2465,28 @@ void WP_FireGenericTraceLine( gentity_t *ent, int firemode )
 			/* This isn't a client but can take damage, is a mover or a glass brush. Smash it up! */
 			if ( traceEnt->r.svFlags & SVF_GLASS_BRUSH || traceEnt->takedamage || traceEnt->s.eType == ET_MOVER )
 			{
-				if ( traceEnt->takedamage )
-				{
-					weaponFireModeStats_t *fireMode = (weaponFireModeStats_t*)GetEntsCurrentFireMode (ent);
+				weaponFireModeStats_t *fireMode = (weaponFireModeStats_t*)GetEntsCurrentFireMode (ent);
+				float distance = Distance(start, tr.endpos);  //measure distance from origin to impact point
 
-					JKG_DoDirectDamage(&fireMode->primary, traceEnt, ent, ent, forward, tr.endpos, DAMAGE_NO_KNOCKBACK, WP_GetWeaponMOD(ent, firemode));
-					    
-					if ( fireMode->secondaryDmgPresent )
-					{
-						JKG_DoDirectDamage(&fireMode->secondary, traceEnt, ent, ent, forward, tr.endpos, DAMAGE_NO_KNOCKBACK, WP_GetWeaponMOD(ent, firemode));
-					}
+				/* We're in range to do damage*/
+				if (distance < fMaxRange)
+				{
+					damageDecay_t decay = {};
+					decay.maxRange = fMaxRange;
+					decay.recommendedRange = fRange;
+					decay.distanceToDamageOrigin = distance;
+					decay.decayRate = fDecayRate;
+
+					JKG_DoDirectDamage(
+						fireMode,
+						traceEnt,
+						ent,
+						ent,
+						forward,
+						tr.endpos,
+						DAMAGE_NO_KNOCKBACK,
+						WP_GetWeaponMOD(ent, firemode),
+						&decay);
 				}
 			}
 			/* This always shows the sniper miss event, it's used for both primary and secondary fire. */
@@ -2440,19 +2508,32 @@ void WP_FireGenericTraceLine( gentity_t *ent, int firemode )
 			vec3_t	preAng;
 			int		preHealth	= traceEnt->health;
 			weaponFireModeStats_t *fireMode = (weaponFireModeStats_t*)GetEntsCurrentFireMode (ent);
+			float distance = Distance(start, tr.endpos);  //measure distance from origin to impact point
 
 			/* Remember the legs/torse stance and client angles */
-			if ( traceEnt->client )
+			if (traceEnt->client)
 			{
-				VectorCopy( traceEnt->client->ps.viewangles, preAng );
+				VectorCopy(traceEnt->client->ps.viewangles, preAng);
 			}
-
-			/* Throw the damage at the client, we'll be able to see if we're disintegrating him after this! */
-			JKG_DoDirectDamage(&fireMode->primary, traceEnt, ent, ent, forward, tr.endpos, DAMAGE_NO_KNOCKBACK, WP_GetWeaponMOD(ent, firemode));
-			    
-			if ( fireMode->secondaryDmgPresent )
+			/* We're in range to do damage*/
+			if (distance < fMaxRange)
 			{
-				JKG_DoDirectDamage(&fireMode->secondary, traceEnt, ent, ent, forward, tr.endpos, DAMAGE_NO_KNOCKBACK, WP_GetWeaponMOD(ent, firemode));
+				damageDecay_t decay = {};
+				decay.maxRange = fMaxRange;
+				decay.recommendedRange = fRange;
+				decay.distanceToDamageOrigin = distance;
+				decay.decayRate = fDecayRate;
+
+				JKG_DoDirectDamage(
+					fireMode,
+					traceEnt,
+					ent,
+					ent,
+					forward,
+					tr.endpos,
+					DAMAGE_NO_KNOCKBACK,
+					WP_GetWeaponMOD(ent, firemode),
+					&decay);
 			}
 
 			/* Remove the amount of damage hit on this client from our trace, this way even normal disruptor shots can continue! */
@@ -2653,13 +2734,7 @@ void WP_CalculateSpread( float *pitch, float *yaw, float accuracyRating, float m
 **************************************************/
 static void WP_GetWeaponDirection( gentity_t *ent, int firemode, const vec3_t forward, vec3_t direction )
 {
-
-	weaponData_t	*thisWeaponData = GetWeaponData( ent->s.weapon, ent->s.weaponVariation );
-	double				 fKnockBack		= ( double )thisWeaponData->firemodes[firemode].baseDamage;
-	float			 fSpreadModifiers = 1.0f;
-	vec3_t			 fAngles;
-
-	JKG_ApplyAmmoOverride(fKnockBack, ammoTable[ent->s.ammoType].overrides.knockback);
+	vec3_t fAngles;
 		
 	/* Convert the forward to angle's to be able to modify it */
 	vectoangles( forward, fAngles );
@@ -2672,43 +2747,48 @@ static void WP_GetWeaponDirection( gentity_t *ent, int firemode, const vec3_t fo
 		// Crouching			= Slightly Accurate
 		// Stationary			= Very Accurate
 		// Stationary + Crouch	= Pinpoint Accuracy
+		// Rolling				= Random direction lol
 
-		bool bIsCrouching	= ent->client->ps.pm_flags & PMF_DUCKED;
-		bool bIsMoving		= ( ent->client->pers.cmd.forwardmove || ent->client->pers.cmd.rightmove || ent->client->pers.cmd.upmove > 0 );
-		bool bIsWalking		= (ent->client->pers.cmd.buttons & BUTTON_WALKING) && !BG_IsSprinting (&ent->client->ps, &ent->client->pers.cmd, qfalse);
-		bool bInIronsights  = (ent->client->pers.cmd.buttons & BUTTON_IRONSIGHTS);
-		bool bIsInAir		= (ent->client->ps.groundEntityNum == ENTITYNUM_NONE);
+		gclient_t *cl = ent->client;
+		const bool bIsCrouching	= cl->ps.pm_flags & PMF_DUCKED;
+		const bool bIsRolling = cl->ps.pm_flags & PMF_ROLLING;
+		const bool bIsMoving	= ( cl->pers.cmd.forwardmove || cl->pers.cmd.rightmove || cl->pers.cmd.upmove > 0 );
+		const bool bIsWalking	= (cl->pers.cmd.buttons & BUTTON_WALKING) && !BG_IsSprinting (&cl->ps, &cl->pers.cmd, qfalse);
+		const bool bInIronsights  = (cl->pers.cmd.buttons & BUTTON_IRONSIGHTS);
+		const bool bIsInAir		= (cl->ps.groundEntityNum == ENTITYNUM_NONE);
 
-		int nAccuracyBaseRating = thisWeaponData->firemodes[firemode].weaponAccuracy.accuracyRating;
-		JKG_ApplyAmmoOverride(nAccuracyBaseRating, ammoTable[ent->s.ammoType].overrides.accuracyRatingBase);
+		const weaponData_t *thisWeaponData = GetWeaponData( ent->s.weapon, ent->s.weaponVariation );
+		const weaponFireModeStats_t* fireMode = GetEntsCurrentFireMode(ent, thisWeaponData);
+		const weaponAccuracyDetails_t* weaponAccuracy = &fireMode->weaponAccuracy;
+		const ammo_t *currentAmmo = ammoTable + ent->s.ammoType;
 
-		int nAccuracyRating = nAccuracyBaseRating + ent->client->ps.stats[STAT_ACCURACY];
-
-		int accuracyDrainDebounce = ( ent->client->accuracyDebounce > level.time ) ? 0 : thisWeaponData->firemodes[firemode].weaponAccuracy.msToDrainAccuracy;
+		float fSpreadModifiers = 1.0f;
+		double fKnockBack = ( double )fireMode->baseDamage;
+		JKG_ApplyAmmoOverride(fKnockBack, currentAmmo->overrides.knockback);
 
 		/* Client is in air, might be using a jetpack or something, add some slop! */
 		if ( bIsInAir )
 		{
-			fSpreadModifiers *= thisWeaponData->firemodes[firemode].weaponAccuracy.inAirModifier;
+			fSpreadModifiers *= weaponAccuracy->inAirModifier;
 			fKnockBack	*= 3.00f;
 		}
 		/* Client is currently running and not walking and/or crouching, a different slop value */
 		else if ( !bIsCrouching && bIsMoving && !bIsWalking )
 		{
-			fSpreadModifiers *= thisWeaponData->firemodes[firemode].weaponAccuracy.crouchModifier;
+			fSpreadModifiers *= weaponAccuracy->crouchModifier;
 			fKnockBack	*= 2.00f;
 		}
 		/* Client is walking around and is not crouching, somewhat better accuracy then running */
 		else if ( bIsMoving && bIsWalking && !bIsCrouching )
 		{
-			fSpreadModifiers *= thisWeaponData->firemodes[firemode].weaponAccuracy.walkModifier;
+			fSpreadModifiers *= weaponAccuracy->walkModifier;
 			fKnockBack	*= 1.55f;
 		}
 		/* Client is crouching, even less spread. */
 		else if ( bIsMoving && bIsWalking && bIsCrouching )
 		{
-			fSpreadModifiers *= thisWeaponData->firemodes[firemode].weaponAccuracy.crouchModifier;
-			fSpreadModifiers *= thisWeaponData->firemodes[firemode].weaponAccuracy.walkModifier;
+			fSpreadModifiers *= weaponAccuracy->crouchModifier;
+			fSpreadModifiers *= weaponAccuracy->walkModifier;
 			fKnockBack	*= 1.35f;
 		}
 		/* Client is stationary and not crouching. Very good accuracy. */
@@ -2719,21 +2799,27 @@ static void WP_GetWeaponDirection( gentity_t *ent, int firemode, const vec3_t fo
 		/* Client is crouching and stationary, pinpoint accuracy. Code for demonstrative purposes only! */
 		else
 		{
-			fSpreadModifiers *= thisWeaponData->firemodes[firemode].weaponAccuracy.crouchModifier;
+			fSpreadModifiers *= weaponAccuracy->crouchModifier;
 			fKnockBack	*= 1.0f;
+		}
+
+		/* Special case - client is rolling, shots should go wildly everywhere */
+		if (bIsRolling)
+		{
+			fSpreadModifiers *= static_cast<float>(Q_irandSafe(50, 150));
+			fKnockBack *= 3.0f;
 		}
 			
 		/* The sights modifier is altered based on how far into scoping we are.
 		 * This prevents "no-scoping" as seen in Call of Duty
 		 */
-		float phase = JKG_CalculateIronsightsPhase(&ent->client->ps, level.time, &ent->client->ironsightsBlend);
-		float sightsDiff = thisWeaponData->firemodes[firemode].weaponAccuracy.sightsModifier - 1.0f;
-		float adjustedSightsDiff = sightsDiff * phase;
-		float finalSightsModifier = 1.0f + adjustedSightsDiff;
+		const float phase = JKG_CalculateIronsightsPhase(&cl->ps, level.time, &cl->ironsightsBlend);
+		const float sightsDiff = weaponAccuracy->sightsModifier - 1.0f;
+		const float adjustedSightsDiff = sightsDiff * phase;
+		const float finalSightsModifier = 1.0f + adjustedSightsDiff;
 
 		/* Additional stabilising factor is in ironsights */
-		if ( !bIsMoving && !bIsInAir &&
-			bInIronsights )
+		if ( !bIsMoving && !bIsInAir && bInIronsights )
 		{
 			fSpreadModifiers *= finalSightsModifier;
 			fKnockBack  *= 0.8f;
@@ -2744,6 +2830,10 @@ static void WP_GetWeaponDirection( gentity_t *ent, int firemode, const vec3_t fo
 		}
 
 		/* We have some extra slop to add, so let's add it now */
+		int nAccuracyBaseRating = weaponAccuracy->accuracyRating;
+		JKG_ApplyAmmoOverride(nAccuracyBaseRating, currentAmmo->overrides.accuracyRatingBase);
+
+		const int nAccuracyRating = nAccuracyBaseRating + cl->ps.stats[STAT_ACCURACY];
 		if( nAccuracyRating )
 		{
 			float pitch = 1.0f; // just putting in a dummy value here
@@ -2755,39 +2845,37 @@ static void WP_GetWeaponDirection( gentity_t *ent, int firemode, const vec3_t fo
 			fAngles[YAW] += yaw;
 		}
 
+		int accuracyDrainDebounce = ( cl->accuracyDebounce > level.time ) ? 0 : weaponAccuracy->msToDrainAccuracy;
 		/* We get more and more inaccurate every time we fire.
 		If we're firing from an awkward position (such as being
 		in mid-air), it takes us longer to recover from that shot. */
 		accuracyDrainDebounce *= fSpreadModifiers;
 
-		ent->client->accuracyDebounce = level.time + accuracyDrainDebounce;
+		cl->accuracyDebounce = level.time + accuracyDrainDebounce;
 
-		int nAccuracyRatingPerShot = thisWeaponData->firemodes[firemode].weaponAccuracy.accuracyRatingPerShot;
+		int nAccuracyRatingPerShot = weaponAccuracy->accuracyRatingPerShot;
+		JKG_ApplyAmmoOverride(nAccuracyRatingPerShot, currentAmmo->overrides.accuracyRatingPerShot);
 
-		JKG_ApplyAmmoOverride(nAccuracyRatingPerShot, ammoTable[ent->s.ammoType].overrides.accuracyRatingPerShot);
+		cl->ps.stats[STAT_ACCURACY] = Q_min(
+			cl->ps.stats[STAT_ACCURACY] + nAccuracyRatingPerShot,
+			weaponAccuracy->maxAccuracyAdd);
 
-		ent->client->ps.stats[STAT_ACCURACY] += nAccuracyRatingPerShot;
-		if( ent->client->ps.stats[STAT_ACCURACY] > thisWeaponData->firemodes[firemode].weaponAccuracy.maxAccuracyAdd )
+		/* See if we have a decent knockback on this weapon! */
+		if ( thisWeaponData->hasKnockBack )
 		{
-			ent->client->ps.stats[STAT_ACCURACY] = thisWeaponData->firemodes[firemode].weaponAccuracy.maxAccuracyAdd;
-		}
-	}
+			vec3_t dir;
 
-	/* See if we have a decent knockback on this weapon! */
-	if ( thisWeaponData->hasKnockBack )
-	{
-		vec3_t dir;
-
-		/* Get the forward angle vector for this client */
-		AngleVectors( ent->client->ps.viewangles, dir, NULL, NULL );
-		VectorMA( ent->client->ps.velocity, -fKnockBack, dir, ent->client->ps.velocity );
-		dir[YAW] = -dir[YAW];
-			
-		if ( fKnockBack > 280.0f )
-		{
-			Jetpack_Off( ent );
-			G_Knockdown( ent, NULL, dir, fKnockBack, qtrue );
-			G_Damage( ent, ent, ent, dir, ent->client->ps.origin, fKnockBack / 20, DAMAGE_NO_KNOCKBACK | DAMAGE_NO_SHIELD, MOD_UNKNOWN );
+			/* Get the forward angle vector for this client */
+			AngleVectors( cl->ps.viewangles, dir, NULL, NULL );
+			VectorMA( cl->ps.velocity, -fKnockBack, dir, cl->ps.velocity );
+			dir[YAW] = -dir[YAW];
+				
+			if ( fKnockBack > 280.0f )
+			{
+				Jetpack_Off( ent );
+				G_Knockdown( ent, NULL, dir, fKnockBack, qtrue );
+				G_Damage( ent, ent, ent, dir, cl->ps.origin, fKnockBack / 20, DAMAGE_NO_KNOCKBACK | DAMAGE_NO_SHIELD, MOD_UNKNOWN );
+			}
 		}
 	}
 
@@ -2839,7 +2927,7 @@ int WP_GetWeaponMOD( gentity_t *ent, int firemode )
 /**************************************************
 * WP_GetWeaponSplashMOD
 *
-* Gets the splash means of deathe for the currently 
+* Gets the splash means of death for the currently 
 * selected weapon with the appropriate mode. This 
 * references the weapon table for this information.
 **************************************************/
@@ -2876,6 +2964,26 @@ float WP_GetWeaponRange( gentity_t *ent, int firemode )
 
 	return WPR_M;
 }
+
+/**************************************************
+* GetWeaponDecayRate
+*
+* Gets the weapon's decayRate for the currently selected
+* weapon with the appropriate mode. This references
+* the weapon table for this information.
+**************************************************/
+float WP_GetWeaponDecayRate(gentity_t* ent, int firemode)
+{
+	weaponData_t* thisWeaponData = GetWeaponData(ent->s.weapon, ent->s.weaponVariation);
+
+	if (thisWeaponData->firemodes[firemode].decayRate)
+	{
+		return thisWeaponData->firemodes[firemode].decayRate;
+	}
+
+	return 0.25;
+}
+
 
 /**************************************************
 * WP_GetWeaponShotCount

@@ -104,6 +104,7 @@ struct ammo_t {
 			std::pair<qboolean, std::string> deathEffect;
 			std::pair<qboolean, std::string> impactEffect;
 			std::pair<qboolean, std::string> deflectEffect;
+			std::pair<qboolean, std::string> missEffect;
 		} projectile;
 
 	} visualOverrides;

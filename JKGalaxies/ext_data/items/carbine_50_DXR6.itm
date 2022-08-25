@@ -7,5 +7,6 @@
 	"weight":		"15",
 	"cost":		"1100",
 	"xml":			"",
-	"itemIcon":		"models/weapons/DXR6_HeavyCarbine/icon_default"
+	"itemIcon":		"models/weapons/DXR6_HeavyCarbine/icon_default",
+	"itemDescription": "Disruptor weapons are an illegal subset of blasters, capable of disintegrating matter at a molecular level. This standard DXR6 Carbine features a disruptor mode and regular blaster mode for a combination of mixed operating ranges."
 }

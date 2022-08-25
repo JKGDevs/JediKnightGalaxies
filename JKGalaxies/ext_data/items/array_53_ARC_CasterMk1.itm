@@ -7,5 +7,6 @@
 	"weight":		"5",
 	"cost":		"1800",
 	"xml":			"xml/items/Mk1_ARC_Caster.xml",
-	"itemIcon":		"models/weapons/ARC_CasterMk1/icon_default"
+	"itemIcon":		"models/weapons/ARC_CasterMk1/icon_default",
+	"itemDescription": "The Mk 1 was the first functional ARC caster prototype created by Torval Nokk's father and was based on a modified E-11a rifle. It was stolen by Imperials and used to design the Arc Caster."
 }

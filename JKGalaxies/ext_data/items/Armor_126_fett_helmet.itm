@@ -1,0 +1,11 @@
+{
+	"name":         "Boba Fett's Helmet",
+	"internal":     "helmet_fett",
+	"itemtype":     "armor",
+	"tier":			5,
+	"armor":		"fetthelmet",
+	"weight":		"3",
+	"cost":			"5000",
+	"itemIcon":		"gfx/item_icons/fett_helmet.tga",
+	"itemDescription": "The helmet of the infamous bounty hunter, Boba Fett.  Made by Mandalorian metalsmiths out of beskar, it provides optimal protection for its wearer. Fett has modified the helmet extensively."
+}

@@ -159,7 +159,7 @@ void QDECL SV_SendServerCommand(client_t *cl, const char *fmt, ...) {
 	// The actual cause of the bug is probably further downstream
 	// and should maybe be addressed later, but this certainly
 	// fixes the problem for now
-	if ( strlen ((char *)message) > 1022 ) {
+	if ( strlen ((char *)message) > MAX_STRING_CHARS-2) { //--futuza: originally magic number 1022
 		return;
 	}
 
@@ -592,6 +592,7 @@ void SVC_Info( netadr_t from ) {
 	Info_SetValueForKey( infostring, "challenge", Cmd_Argv(1) );
 
 	Info_SetValueForKey( infostring, "protocol", va("%i", PROTOCOL_VERSION) );
+	Info_SetValueForKey( infostring, "gameversion", va("%s", JKG_VERSION JKG_VERSION_SUFFIX) );
 	Info_SetValueForKey( infostring, "hostname", sv_hostname->string );
 	Info_SetValueForKey( infostring, "mapname", sv_mapname->string );
 	Info_SetValueForKey( infostring, "clients", va("%i", count) );

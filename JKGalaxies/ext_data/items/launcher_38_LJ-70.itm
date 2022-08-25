@@ -7,5 +7,6 @@
 	"weight":		"20",
 	"cost":		"2750",
 	"xml":			"",
-	"itemIcon":		"models/weapons/LJ-70_ConcRifle/icon_default"
+	"itemIcon":		"models/weapons/LJ-70_ConcRifle/icon_default",
+	"itemDescription": "Based on the earlier LJ-50 Concussion Rifle, this Arakyd Industry Concussion rifle, improves the prior weapon's effective range, implosion density and ammo consumption over that which was used in the Clone Wars. It excels in short and medium ranges."
 }

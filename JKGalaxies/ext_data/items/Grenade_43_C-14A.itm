@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"40",
 	"maxStack":		5,
-	"itemIcon":		"models/weapons/Grenade_C-14A/icon_default"
+	"itemIcon":		"models/weapons/Grenade_C-14A/icon_default",
+	"itemDescription": "A small grenade created by Merr-Sonn Munitions, used to incapacitate and stun targets. Used primarily by private security and law enforcement agencies. On rare occasions it may become lethal from adverse reaction to stun technologies."
 }

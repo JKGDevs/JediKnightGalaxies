@@ -2037,6 +2037,9 @@ static int UI_OwnerDrawWidth(int ownerDraw, int ownerDrawID, float scale) {
 		case UI_JKG_SHOP_AMMOPRICE:
 			s = JKG_ShopAmmoPriceText();
 			break;
+		case UI_JKG_SHOP_REFRESHTIME:
+			s = JKG_ShopRefreshTimeText();
+			break;
     default:
       break;
   }
@@ -5670,6 +5673,16 @@ static void UI_BuildServerDisplayList(int force) {
 						continue;
 				}
 			}*/
+
+			if(ui_serverFilterType.integer > 0)
+			{
+				if (Q_stricmp(Info_ValueForKey(info, "gameversion"), serverFilters[ui_serverFilterType.integer].gameversion) != 0 &&
+					serverFilters[ui_serverFilterType.integer].gameversion[0]) {
+					trap->LAN_MarkServerVisible(UI_SourceForLAN(), i, qfalse);
+					continue;
+				}
+			}
+
 			// make sure we never add a favorite server twice
 			if (ui_netSource.integer == AS_FAVORITES) {
 				UI_RemoveServerFromDisplayList(i);
@@ -5704,7 +5717,7 @@ serverStatusCvar_t serverStatusCvars[] = {
 	{"gamename", "Game name"},
 	{"g_gametype", "Game type"},
 	{"mapname", "Map"},
-	{"version", ""},
+	{"gameversion", "Version"},
 	{"protocol", ""},
 	{"timelimit", ""},
 	{"fraglimit", ""},
@@ -6463,8 +6476,9 @@ static const char *UI_FeederItemText(float feederID, int index, int column,
 							Q_strncpyz( needPass, "Inactive", sizeof( needPass ) );
 						Q_strncpyz( needPass, "Unknown", sizeof( needPass ) );
 					}
-
 					return needPass;
+				case SORT_VERSION :
+					return Info_ValueForKey(info, "gameversion");
 				case SORT_PING : 
 					if (ping <= 0) {
 						return "...";
@@ -6472,6 +6486,7 @@ static const char *UI_FeederItemText(float feederID, int index, int column,
 						return Info_ValueForKey(info, "ping");
 					}
 				}
+
 			}
 		} else if (feederID == FEEDER_SERVERSTATUS) {
 			if ( index >= 0 && index < uiInfo.serverStatusInfo.numLines ) {

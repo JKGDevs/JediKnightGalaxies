@@ -7,5 +7,6 @@
 	"weight":		"4",
 	"cost":		"1125",
 	"xml":			"xml/items/ACP_Rifle.xml",
-	"itemIcon":		"models/weapons/A200_ACP_BattleRifle/icon_default"
+	"itemIcon":		"models/weapons/A200_ACP_BattleRifle/icon_default",
+	"itemDescription": "Developed by Barrakan Arms for use during the Trandoshan clan wars, it was designed to quietly ambush enemies and remains a favored choice. Imperial regulations have made the 'Ambusher' much harder to find on the market."
 }

@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"375",
 	"xml":			"",
-	"itemIcon":		"models/weapons/SuppressorPistol/icon_adv"
+	"itemIcon":		"models/weapons/SuppressorPistol/icon_adv",
+	"itemDescription": "A mostly internal redesign of the trandoshan suppressor pistol greatly increasing its rate of fire and plasma temperatures resulting in an accelerated charged particle weapon able to compete with typically more advanced blaster weaponry."
 }

@@ -294,6 +294,29 @@ static int GLua_Player_SendCenterPrint(lua_State *L) {
 	return 0;
 }
 
+static int GLua_Player_SendCenterPrintAll(lua_State *L) {
+	char buff[980] = { 0 }; // (not 1024, to keep the command from being oversize (cmd included)
+	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 1);
+	int args = lua_gettop(L);
+	const char *res;
+	int i;
+	if (!ply) return 0;
+	// Lets do this a lil different, concat all args and use that as the message ^^
+	GLua_Push_ToString(L); // Ref to tostring (instead of a global lookup, in case someone changes it)
+	for (i = 2; i <= args; i++) {
+		lua_pushvalue(L, -1);
+		lua_pushvalue(L, i);
+		lua_call(L, 1, 1); // Assume this will never error out
+		res = lua_tostring(L, -1);
+		if (res) {
+			Q_strcat(&buff[0], 980, res);
+		}
+		lua_pop(L, 1);
+	}
+	trap->SendServerCommand(-1, va("cp \"%s\n\"", &buff[0]));
+	return 0;
+}
+
 static int GLua_Player_SendPrint(lua_State *L) {
 	char buff[980] = {0}; // (not 1024, to keep the command from being oversize (cmd included)
 	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 1);
@@ -316,6 +339,26 @@ static int GLua_Player_SendPrint(lua_State *L) {
 	trap->SendServerCommand(ply->clientNum, va("print \"%s\n\"", &buff[0]));
 	return 0;
 }
+
+//incomplete function, need to probably request the map list from the server itself with a cmd (function does nothing atm)
+/*static int GLua_Player_GetMapList(lua_State *L) 
+{
+	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 1);
+	if (!ply) return 0;
+	char map[24] = "";
+	std::string maplist = "";
+	for (int i = 0; i < level.arenas.num; i++)
+	{
+		Q_strncpyz(map, Info_ValueForKey(level.arenas.infos[i], "map"), sizeof(map));
+		Q_StripColor(map);
+		maplist.append(map);
+		maplist.append(",");
+	}
+
+	const char *maps = maplist.c_str();
+	lua_pushstring(L, maps);
+	return 1;
+}*/
 
 static int GLua_Player_SendCommand(lua_State *L) { // Use with caution!
 	char buff[980] = {0}; // (not 1024, to keep the command from being oversize (cmd included)
@@ -543,32 +586,46 @@ static int GLua_Player_MaxHealth_Set(lua_State *L) {
 	return 0;
 }
 
+static int GLua_Player_MaxStamina_Get(lua_State* L) {
+	GLua_Data_Player_t* ply = GLua_CheckPlayer(L, 1);
+	if (!ply) return 0;
+	lua_pushinteger(L, level.clients[ply->clientNum].ps.stats[STAT_MAX_STAMINA]);
+	return 1;
+}
 
-static int GLua_Player_MaxArmor_Get(lua_State *L) {
+static int GLua_Player_MaxStamina_Set(lua_State* L) {
+	GLua_Data_Player_t* ply = GLua_CheckPlayer(L, 1);
+	if (!ply) return 0;
+	level.clients[ply->clientNum].ps.stats[STAT_MAX_STAMINA] = level.clients[ply->clientNum].pers.maxStamina = luaL_checkinteger(L, 2);
+	return 0;
+}
+
+
+static int GLua_Player_MaxShield_Get(lua_State *L) {
 	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 1);
 	if (!ply) return 0;
 	lua_pushinteger(L,level.clients[ply->clientNum].ps.stats[STAT_MAX_SHIELD]);
 	return 1;
 }
 
-static int GLua_Player_MaxArmor_Set(lua_State *L) {
+static int GLua_Player_MaxShield_Set(lua_State *L) {
 	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 1);
 	if (!ply) return 0;
 	level.clients[ply->clientNum].ps.stats[STAT_MAX_SHIELD] = luaL_checkinteger(L, 2);
 	return 0;
 }
 
-static int GLua_Player_Armor_Get(lua_State *L) {
+static int GLua_Player_Shield_Get(lua_State *L) {
 	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 1);
 	if (!ply) return 0;
 	lua_pushinteger(L,level.clients[ply->clientNum].ps.stats[STAT_SHIELD]);
 	return 1;
 }
 
-static int GLua_Player_Armor_Set(lua_State *L) {
-	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 1);
+static int GLua_Player_Shield_Set(lua_State* L) {
+	GLua_Data_Player_t* ply = GLua_CheckPlayer(L, 1);
 	if (!ply) return 0;
-	level.clients[ply->clientNum].ps.stats[STAT_SHIELD] = luaL_checkinteger(L, 2);
+	level.clients[ply->clientNum].ps.stats[STAT_SHIELD] = g_entities[ply->clientNum].playerState->stats[STAT_SHIELD] = luaL_checkinteger(L, 2);
 	return 0;
 }
 
@@ -583,6 +640,20 @@ static int GLua_Player_Health_Set(lua_State *L) {
 	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 1);
 	if (!ply) return 0;
 	level.clients[ply->clientNum].ps.stats[STAT_HEALTH] = g_entities[ply->clientNum].health = luaL_checkinteger(L, 2);
+	return 0;
+}
+
+static int GLua_Player_Stamina_Get(lua_State* L) {
+	GLua_Data_Player_t* ply = GLua_CheckPlayer(L, 1);
+	if (!ply) return 0;
+	lua_pushinteger(L, level.clients[ply->clientNum].ps.forcePower);
+	return 1;
+}
+
+static int GLua_Player_Stamina_Set(lua_State* L) {
+	GLua_Data_Player_t* ply = GLua_CheckPlayer(L, 1);
+	if (!ply) return 0;
+	level.clients[ply->clientNum].ps.forcePower = g_entities[ply->clientNum].playerState->forcePower = luaL_checkinteger(L, 2);
 	return 0;
 }
 
@@ -943,6 +1014,107 @@ static int GLua_Player_HasNoKnockback(lua_State *L) {
 	return 1;
 }
 
+static int GLua_Player_SetBusy(lua_State* L)
+{
+	GLua_Data_Player_t* ply = GLua_CheckPlayer(L, 1);
+	int active = lua_toboolean(L, 2);
+	gentity_t* ent;
+	if (!ply) return 0;
+	ent = &g_entities[ply->clientNum];
+	if (active) {
+		ent->flags |= FL_BUSYMODE;
+	}
+	else {
+		ent->flags &= ~FL_BUSYMODE;
+	}
+	return 0;
+}
+
+static int GLua_Player_HasBusy(lua_State* L)
+{
+	GLua_Data_Player_t* ply = GLua_CheckPlayer(L, 1);
+	gentity_t* ent;
+	if (!ply) return 0;
+	ent = &g_entities[ply->clientNum];
+	if (ent->flags & FL_BUSYMODE) {
+		lua_pushboolean(L, 1);
+	}
+	else {
+		lua_pushboolean(L, 0);
+	}
+	return 1;
+}
+
+static int GLua_Player_SetNoDebuff(lua_State *L)
+{
+	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 1);
+	int active = lua_toboolean(L, 2);
+	gentity_t *ent;
+	if (!ply) return 0;
+	ent = &g_entities[ply->clientNum];
+	if (active) {
+		ent->flags |= FL_NO_DEBUFF;
+	}
+	else {
+		ent->flags &= ~FL_NO_DEBUFF;
+	}
+	return 0;
+}
+
+static int GLua_Player_HasNoDebuff(lua_State *L)
+{
+	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 1);
+	gentity_t *ent;
+	if (!ply) return 0;
+	ent = &g_entities[ply->clientNum];
+	if (ent->flags & FL_NO_DEBUFF) {
+		lua_pushboolean(L, 1);
+	}
+	else {
+		lua_pushboolean(L, 0);
+	}
+	return 1;
+}
+
+extern void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity, int duration);
+static int GLua_Player_AddBuff(lua_State* L) 
+{
+	//L1 = Player (required), L2 = Buffname (required), L3 = duration, L4 = intensity
+	if (lua_isnoneornil(L, 3)) return luaL_error(L, "No buff name provided");
+	GLua_Data_Player_t* ply = GLua_CheckPlayer(L, 2);
+	if (!ply) return 0;
+	gentity_t* ent;
+	ent = &g_entities[ply->clientNum];
+
+	int duration = 5000; // default to 5 seconds
+	float intensity = 1.0f; // default to normal intensity
+	int buffID = -1;
+	
+	const char *buffName = luaL_checkstring(L, 3);
+	if(sizeof(buffName) > BUFF_NAME_LEN)
+	{
+		return luaL_error(L, "Invalid buff name provided");
+	}
+
+	buffID = JKG_ResolveBuffName(buffName);
+	if (buffID < 0)
+	{
+		return luaL_error(L, "Invalid buff name provided");
+	}
+
+	//grab duration and intensity values (if present)
+	if (lua_gettop(L) > 3)
+	{
+		duration = lua_tointeger(L, 4);
+
+		if(lua_gettop(L) > 4)
+			intensity = lua_tonumber(L, 5);
+	}
+
+	G_BuffEntity(ent, ent, buffID, intensity, duration);
+	return 0;
+}
+
 static int GLua_Player_SetNoTarget(lua_State *L) {
 	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 1);
 	int active = lua_toboolean(L,2);
@@ -989,6 +1161,10 @@ static int GLua_Player_SetIsolate(lua_State *L) {
 	if (!ply2) {
 		return luaL_error(L, "Bad player provided");
 	}
+	if (ply->clientNum == ply2->clientNum) {
+		return luaL_error(L, "Must be different clients");
+	}
+
 	if (isolate) {
 		JKG_PlayerIsolate(ply->clientNum, ply2->clientNum);
 	} else {
@@ -1269,6 +1445,10 @@ static int GLua_Player_SetAnimHoldTime(lua_State *L) {
 		BG_SetTorsoAnimTimer(&ent->client->ps, time);
 	}
 	if (!section || section == 2) {
+		BG_SetLegsAnimTimer(&ent->client->ps, time);
+	}
+	if (!section || section == 3) {
+		BG_SetTorsoAnimTimer(&ent->client->ps, time);
 		BG_SetLegsAnimTimer(&ent->client->ps, time);
 	}
 	return 0;
@@ -1665,7 +1845,9 @@ static const struct luaL_reg player_m [] = {
 	{"SendChat", GLua_Player_SendChat},
 	{"SendFadedChat", GLua_Player_SendFadedChat},
 	{"SendCenterPrint", GLua_Player_SendCenterPrint},
+	{"SendCenterPrintAll", GLua_Player_SendCenterPrintAll},
 	{"SendPrint", GLua_Player_SendPrint},
+	//{"GetMapList", GLua_Player_GetMapList},
 	{"SendCommand", GLua_Player_SendCommand},
 	{"Kill", GLua_Player_Kill},
 	{"Disintegrate", GLua_Player_Disintegrate},
@@ -1682,17 +1864,18 @@ static const struct luaL_reg player_m [] = {
 	{"Spawn", GLua_Player_Spawn},
 	//{"Health", GLua_Player_Health},
 	//{"MaxHealth", GLua_Player_MaxHealth},
-	//{"MaxArmor", GLua_Player_MaxArmor},
-	//{"Armor", GLua_Player_Armor},
+	//{"MaxShield", GLua_Player_MaxShield},
+	//{"Shield", GLua_Player_Shield},
 	//{"SetHealth", GLua_Player_SetHealth},
 	//{"SetMaxHealth", GLua_Player_SetMaxHealth},
-	//{"SetMaxArmor", GLua_Player_SetMaxArmor},
-	//{"SetArmor", GLua_Player_SetArmor},
+	//{"SetMaxShield", GLua_Player_SetMaxShield},
+	//{"SetShield", GLua_Player_SetShield},
 	{"GetEyeTrace", GLua_Player_GetEyeTrace},
 	{"GetEntity", GLua_Player_GetEntity},
 	{"GetWeapon", GLua_Player_GetWeapon},
 	{"SetWeapon", GLua_Player_SetWeapon},
 	{"Damage", GLua_Player_Damage},
+	{"AddBuff", GLua_Player_AddBuff},
 	{"GiveForce", GLua_Player_GiveForce},
 	{"TakeForce", GLua_Player_TakeForce},
 	{"HasForce", GLua_Player_HasForce},
@@ -1715,7 +1898,7 @@ static const struct luaL_reg player_m [] = {
 	{"AddVelocity", GLua_Player_AddVelocity},
 	{"GetVelocity", GLua_Player_GetVelocity},
 	{"GetUserInfo", GLua_Player_GetUserInfo},
-	//{"IsHacking", GLua_Player_IsHacking},
+	//{"IsHacking", GLua_Player_IsHacking},  //use ply.Hacking now instead (part of player class instead of function)
 	{"FinishedHacking", GLua_Player_FinishedHacking},
 	{"StartHacking", GLua_Player_StartHacking},	
 	{"SetAmmo", GLua_Player_SetAmmo},
@@ -1766,9 +1949,11 @@ static const struct luaL_reg player_m [] = {
 
 static const struct GLua_Prop player_p [] = {
 	{"Health",	GLua_Player_Health_Get,		GLua_Player_Health_Set},
-	{"Armor",	GLua_Player_Armor_Get,		GLua_Player_Armor_Set},
+	{"Stamina", GLua_Player_Stamina_Get,	GLua_Player_Stamina_Set},
+	{"Shield",	GLua_Player_Shield_Get,		GLua_Player_Shield_Set},
 	{"MaxHealth", GLua_Player_MaxHealth_Get, GLua_Player_MaxHealth_Set},
-	{"MaxArmor", GLua_Player_MaxArmor_Get, GLua_Player_MaxArmor_Set},
+	{"MaxStamina", GLua_Player_MaxStamina_Get, GLua_Player_MaxStamina_Set},
+	{"MaxShield", GLua_Player_MaxShield_Get, GLua_Player_MaxShield_Set},
 	{"ID",		GLua_Player_GetID,			NULL},
 	{"Name",	GLua_Player_GetName,		NULL},
 	{"IP",		GLua_Player_GetIP,			NULL},
@@ -1783,6 +1968,8 @@ static const struct GLua_Prop player_p [] = {
 	{"GodMode", GLua_Player_HasGodMode,		GLua_Player_SetGodMode},
 	{"NoClip",	GLua_Player_HasNoClip,		GLua_Player_SetNoClip},
 	{"NoKnockback", GLua_Player_HasNoKnockback, GLua_Player_SetNoKnockback },		//futuza: adding NoKnockback for players
+	{"Busy",	GLua_Player_HasBusy,		GLua_Player_SetBusy },					//futuza: check if the player is busy with something else (eg: in a pazaak game, hacking, trading, etc)
+	{"NoDebuff", GLua_Player_HasNoDebuff,	GLua_Player_SetNoDebuff },
 	{"NoTarget",GLua_Player_HasNoTarget,	GLua_Player_SetNoTarget},
 	{"Gravity", GLua_Player_GetGravity,		GLua_Player_SetGravity},
 	{"Undying", GLua_Player_GetUndying,		GLua_Player_SetUndying},

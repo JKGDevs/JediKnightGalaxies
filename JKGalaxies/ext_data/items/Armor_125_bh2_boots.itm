@@ -1,0 +1,10 @@
+{
+	"name":         "Galinolo Huntsman Boots",
+	"internal":     "boots_bountyhunter2",
+	"itemtype":     "armor",
+	"armor":		"bh2boots",
+	"weight":		"2",
+	"cost":			"300",
+	"itemIcon":		"gfx/item_icons/bh1_boots.tga",
+	"itemDescription": "Initially marketed toward planetary military groups, by Galinolo Corporation, these leather covered durasteel boots have become popular among bounty hunters and mercenaries operating in the Outer Rim."
+}

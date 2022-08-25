@@ -7,5 +7,6 @@
 	"weight":		"2",
 	"cost":		"75",
 	"maxStack":		5,
-	"itemIcon":		"models/weapons/Grenade_CodeKey/icon_default"
+	"itemIcon":		"models/weapons/Grenade_CodeKey/icon_default",
+	"itemDescription": "A specialized thermal detonator first used by the Galactic Republic's clone soldiers, it was later used by Imperial special op troopers such as Stormtroopers. Activation was restricted by use of a codekey, to help stop Rebel saboteurs."
 }

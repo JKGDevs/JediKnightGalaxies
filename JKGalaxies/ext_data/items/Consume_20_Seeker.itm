@@ -6,5 +6,6 @@
 	"pSpell":		"13",
 	"pSpell2":		"15",
 	"cost":		"175",
-	"xml":			"xml/items/seeker.xml"
+	"xml":			"xml/items/seeker.xml",
+	"itemDescription": "Fast-moving and unpredictable, this small simple droid is primarily used to train marksmen. While normally harmless, replacing the non-lethal weapon on the droid would be relatively simple. Commonly referred to as Seekers or Seeker Drones."
 }

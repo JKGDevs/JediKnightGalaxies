@@ -1441,6 +1441,17 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			{
 				WP_SetSaber( es->number, cgs.clientinfo[es->number].saber, 0, weaponData->sab.hiltname );
 				JKG_SwapToSaber( 0, &cgs.clientinfo[es->number], weaponData->sab.hiltname, weapon, variation );
+
+				const saberCrystalData_t* crystal = JKG_GetSaberCrystal(weaponData->sab.defaultcrystal);
+				if(crystal)
+				{
+					cg.predictedPlayerState.saberCrystal[0] = crystal->crystalID;
+					cg_entities[es->number].currentState.saberCrystal[0] = crystal->crystalID;
+
+					//--futuza todo: handle additional sabers eg: cg.predictedPlayerState.saberCrystal[1]
+				}
+
+
 				//CG_InitG2SaberData( 0, &cgs.clientinfo[es->number] );
 				cgs.clientinfo[es->number].saber[0].SetDesiredLength(0, -1);
 				cgs.clientinfo[es->number].saber[1].SetDesiredLength(0, -1);
@@ -1567,8 +1578,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			qhandle_t warning = trap->S_RegisterSound(va("sound/weapons/common/heatWarning.wav"));
 			trap->S_StartSound(es->pos.trBase, es->number, CHAN_WEAPON, warning);
 
-			//add fx of slight steam?
-
 		}
 		break;
 
@@ -1580,9 +1589,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 			qhandle_t heatSound = trap->S_RegisterSound(va("sound/weapons/common/overheat0%i.wav", Q_irand(0, 3)));
 			trap->S_StartSound(es->pos.trBase, es->number, CHAN_WEAPON, heatSound);
-
-			//add fx of lots of steam coming off gun here
-
+			//also steam comes off gun once in an overheated state see cg_weapons JKG_RenderOverheatEffect() function
 		}
 		break;
 

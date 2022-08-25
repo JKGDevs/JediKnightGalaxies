@@ -6,5 +6,6 @@
 	"cost":		"80",
 	"ammoclass":	"AMMO_QUARREL_BOUNCING",
 	"ammoquantity":	"40",
-	"itemIcon": "gfx/item_icons/default.tga"	//needs icon!
+	"itemIcon": "gfx/item_icons/ammo_metallic_bolts.tga",	//needs icon!
+	"itemDescription": "These crossbow bolt munitions appear to have been magnetically charged enabling them to bounce off non-organic surfaces several times before losing their charge."
 }

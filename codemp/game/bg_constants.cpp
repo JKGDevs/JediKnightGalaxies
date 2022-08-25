@@ -34,6 +34,8 @@ static void DefineBaselineConstants(void)
 	bgConstants.sprintSpeedModifier = 1.3f;
 	//Stoiss end
 
+	bgConstants.consumableTime = 3000;
+
 	bgConstants.staminaDrains.lossFromJumping = 10;
 	bgConstants.staminaDrains.lossFromKicking = 5;
 	bgConstants.staminaDrains.lossFromPunching = 5;
@@ -113,6 +115,9 @@ static void ParseConstantsFile ( const char *fileText )
 		jsonNode = cJSON_GetObjectItem (json, "sprintSpeedModifier");
 		bgConstants.sprintSpeedModifier = cJSON_ToNumber(jsonNode);
 		//Stoiss end
+
+		jsonNode = cJSON_GetObjectItem(json, "consumableTime");
+		bgConstants.consumableTime = cJSON_ToIntegerOpt(jsonNode, 3000);
 
 		jsonNode = cJSON_GetObjectItem(json, "stamina");
 		if (jsonNode) {

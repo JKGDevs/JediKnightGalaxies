@@ -1,0 +1,10 @@
+{
+	"name":		"Merr-Sonn JT-12 Jetpack",
+	"internal":	"jetpack_jango",
+	"itemtype":	"jetpack",
+	"cost":		900,
+	"itemTier": 2,
+	"itemIcon":	"gfx/item_icons/mando_jetpack.tga",
+	"jetpack":	"jetpack_jango",
+	"itemDescription": "First manufactured by Merr-Sonn Munitions in 25 BBY to compete with the Mitronomon Z-6 Jetpack favored by Mandalorians, it can provide horizontal or vertical thrust and help it's wearer maintain an aerial advantage."
+}

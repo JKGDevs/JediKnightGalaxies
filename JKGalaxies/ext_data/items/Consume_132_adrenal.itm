@@ -1,0 +1,12 @@
+{
+	"name":			"Adrenal Stamina",
+	"internal":      "adrenal_stamina",
+	"cost":		"75",
+	"itemtype":             "consumable",
+	"maxStack":		2,
+	"consumeScript":	"item_adrenal",
+	"partStaminaReq": true,
+	"weight":		"0.4",
+	"itemIcon":		"gfx/item_icons/bacta.tga",
+	"itemDescription": "An injection of this stimulant provides a boost of stamina for the user. The effect wears off after a short time, and side effects are considered minimal."
+}

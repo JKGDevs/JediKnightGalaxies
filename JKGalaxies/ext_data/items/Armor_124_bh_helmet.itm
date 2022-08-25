@@ -1,0 +1,10 @@
+{
+	"name":         "Kessler Hunting Helmet",
+	"internal":     "helmet_bountyhunter",
+	"itemtype":     "armor",
+	"armor":		"bhhelmet",
+	"weight":		"3",
+	"cost":			"315",
+	"itemIcon":		"gfx/item_icons/bounty_hunter_helmet.tga",
+	"itemDescription": "A helmet marketed toward bounty hunters produced by Kessler Corp.  It has found widespread adoption among the Ivax Syndicate and in the Outer Rim."
+}

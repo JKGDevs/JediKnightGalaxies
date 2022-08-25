@@ -1,0 +1,10 @@
+{
+	"name":         "Kessler Mercenary Gloves",
+	"internal":      "gloves_bountyhunter",
+	"itemtype":     "armor",
+	"armor":		"bhgloves",
+	"weight":		"1",
+	"cost":			"60",
+	"itemIcon":		"gfx/item_icons/bounty_hunter_gloves.tga",
+	"itemDescription": "A pair of lightly armored gloves produced by Kessler Corp.  Designed to provide flexibility and protection."
+}

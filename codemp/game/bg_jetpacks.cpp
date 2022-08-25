@@ -217,7 +217,7 @@ void JKG_LoadJetpacks() {
 	int failed = 0;
 	int numFiles;
 
-	numFiles = trap->FS_GetFileList(jetpackDir, ".jet", jetpackFiles, sizeof(jetpackFiles));
+	numFiles = Q_FSGetFileListSorted(jetpackDir, ".jet", jetpackFiles, sizeof(jetpackFiles));
 	jetpack = jetpackFiles;
 
 	Com_Printf("------- Jetpacks -------\n");

@@ -196,25 +196,23 @@ void TreasureClass::StackGuard(const std::string& szCheck) {
 		return;
 	}
 	for (auto it = vTreasure.begin(); it != vTreasure.end(); ++it) {
-		if (it->tc.szTreasureClass != nullptr) {
-			// Go ahead and resolve it
-			if (szCheck == it->tc.szTreasureClass) {
-				Com_Printf("^3Found a treasure class which loops on itself (\"%s\"), removing looping element...\n", szCheck.c_str());
-				it = vTreasure.erase(it);
+		// Go ahead and resolve it
+		if (szCheck == it->tc.szTreasureClass) {
+			Com_Printf("^3Found a treasure class which loops on itself (\"%s\"), removing looping element...\n", szCheck.c_str());
+			it = vTreasure.erase(it);
+		}
+		else {
+			// Recurse over it
+			std::string sSearchString = it->tc.szTreasureClass;
+			auto it2 = umTreasureClasses.find(sSearchString);
+			if (it2 == umTreasureClasses.end()) //check if wasn't found
+			{
+				//not sure how to proceed with this case where we hit end	--futuza
+				Com_Printf("^3\"%s\" not found in treasure class!\n", sSearchString.c_str());
+				continue;
 			}
-			else {
-				// Recurse over it
-				std::string sSearchString = it->tc.szTreasureClass;
-				auto it2 = umTreasureClasses.find(sSearchString);
-				if (it2 == umTreasureClasses.end()) //check if wasn't found
-				{
-					//not sure how to proceed with this case where we hit end	--futuza
-					Com_Printf("^3\"%s\" not found in treasure class!\n", sSearchString.c_str());
-					continue;
-				}
-				it->tc.pTreasureClass = it2->second;
-				it->tc.pTreasureClass->StackGuard(szCheck);
-			}
+			it->tc.pTreasureClass = it2->second;
+			it->tc.pTreasureClass->StackGuard(szCheck);
 		}
 	}
 }

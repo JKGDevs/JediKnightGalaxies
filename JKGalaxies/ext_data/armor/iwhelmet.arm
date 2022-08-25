@@ -3,6 +3,7 @@
 	"slot":		"head",
 	"armor":		70,
 	"movemodifier":	1.0,
+	"filter": true,
 
 	"visuals": {
 		"model":	"models/players/imperial_worker/model.glm*default",

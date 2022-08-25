@@ -12,5 +12,7 @@
 	"brokenSoundEffect":	"sound/shield/shield_broken7",
 	"equippedSoundEffect":	"sound/shield/shield_equipped_junk",
 	"rechargeSoundEffect":	"sound/shield/shield_recharge6",
-	"chargedSoundEffect":	"sound/shield/shield_charged6"
+	"chargedSoundEffect":	"sound/shield/shield_charged6",
+	
+	"itemDescription": "This shield doesn't seem to match any known manufacturer's shield, it appears to be cobbled together from various mechanical parts. It has dried blood encrusted on the outside of its casing and seems rather well worn."
 }

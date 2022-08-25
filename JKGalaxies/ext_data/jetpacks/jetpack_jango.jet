@@ -1,0 +1,63 @@
+{
+	// Jetpack file - Jedi Knight Galaxies
+	// ref - reference that gets linked to .itm file
+	// fuelCapacity - total fuel capacity of the jetpack
+	// fuelConsumption - how fast (not how many!!) units are consumed while hovering (not holding jump)
+	// thrustConsumption - how fast units are consumed while thrusting (pressing jump)
+	// fuelRegeneration - scale of how fast fuel gets regenerated
+
+	"ref":			"jetpack_jango",
+	"fuelCapacity":		60,
+	"fuelConsumption":	1.1,
+	"thrustConsumption":	2.4,
+	"fuelRegeneration":	0.5,
+	
+	"movement": {
+		// Movement - done on both client and server
+		// hoverGravity - amount to decay height by while hovering (actual units, not a modifier)
+		// fowardMove - amount to modify forward move by while hovering (not thrusting)
+		// backMove - amount to modify backward move by while hovering (not thrusting)
+		// sideMove - amount to modify side move by while hovering (not thrusting)
+		// downMove - amount to modify downward movement by
+		// thrustFwd/thrustBack/thrustSide - same as above, but when thrusting
+		// thrustUp - amount to modify upward movement by
+		"hoverGravity":	"-1.0",
+
+		"forwardMove": 1.0,
+		"backMove": 1.0,
+		"sideMode": 1.0,
+		"downMove": 1.0,
+
+		"thrustFwd": 1.0,
+		"thrustBack": 1.0,
+		"thrustSide": 1.0,
+		"thrustUp": 1.0,
+
+		"fwdThrustAmt": 3.0,
+		"loadBearingAllowed": false
+	},
+
+	"visuals": {
+		// Visuals - anything handled on the server is marked with an (S), all else is client
+		// modelName - the ghoul2 model to bolt onto the player (it always bolts onto *chestg)
+		// effectBolts - bone(s) on the JETPACK model to bolt effects onto
+		// hoverEffect - effect to play while hovering (not holding jump)
+		// thrustEffect - effect to play while thrusting (holding jump)
+		// idleSound - sound to play while hovering
+		// thrustSound - sound to play while thrusting
+		// activateSound (S) - sound to play when jetpack is activated
+		// deactivateSound (S) - sound to play when jetpack is deactivated
+
+		"modelName":	"models/weapons2/jetpack_jango/model.glm",
+		"effectBolts": [
+			"ljet",
+			"rjet"
+		],
+		"hoverEffect": "effects/player/jetpack.efx",
+		"thrustEffect": "effects/player/jetpack.efx",
+		"idleSound": "sound/jkg/jetpack/jethover",
+		"thrustSound": "sound/jkg/jetpack/jetlp",
+		"activateSound": "sound/jkg/jetpack/jeton",
+		"deactivateSound": "sound/jkg/jetpack/jetoff"
+	}
+}

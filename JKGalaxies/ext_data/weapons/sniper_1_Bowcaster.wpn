@@ -13,11 +13,12 @@
         "selectsound":      "sound/weapons/select_sniper.wav",
         
         "indicators": {
-            "ammo":         [ "models/weapons/bowcaster/numbers3", "models/weapons/bowcaster/numbers2", "models/weapons/bowcaster/numbers1" ],
+            "ammo":         [ "models/weapons/bowcaster/numbers3",
+			"models/weapons/bowcaster/numbers2", "models/weapons/bowcaster/numbers1" ],
             "firemode":     "models/weapons/bowcaster/firemode"
         },
         
-        "gunposition":      "9.5 -4.0 -5.0",
+        "gunposition":      "9.5 -5.0 -7.0",
         "ironsightsposition": "9.0 -0.6 -4.6",
         "ironsightsfov": "20",
         
@@ -75,10 +76,10 @@
         "ballistic":    true,
         "ammocost":     1,
         "burstshotdelay": 100,
-        "firedelay":    2400,
+        "firedelay":    1600,
         "firingtype":   "burst",
         "range":        9000.0,
-        "recoil":       1.8,
+        "recoil":       1.4,
         "shotsperburst": 4,
         "spread":       0.5,
         "projectilespeed": 8000.0,
@@ -92,9 +93,9 @@
         	"accuracyRatingPerShot": 6,
         	"msToDrainAccuracy": 140,
         	"maxAccuracyAdd": 65,
-        	"crouchModifier": 0.9,
+        	"crouchModifier": 0.6,
         	"runModifier": 1.6,
-        	"sightsModifier": 0.65,
+        	"sightsModifier": 0.4,
         	"walkModifier": 1.4,
         	"inAirModifier": 2.1
         }

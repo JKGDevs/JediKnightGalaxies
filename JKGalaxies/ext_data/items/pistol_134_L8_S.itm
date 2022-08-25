@@ -1,0 +1,12 @@
+{
+	"name":             "@JKG_ITEMS_pistol_L8Striker_Scope",
+	"internal":             "pistol_L8_Scope",
+	"itemtype":             "weapon",
+	"weapon":		"WP_BRYAR_PISTOL",
+	"variation":		"15",
+	"weight":		"1",
+	"cost":		"675",
+	"xml":			"",
+	"itemIcon":		"models/weapons/l8striker_pistol/icon_rusty",
+	"itemDescription": "This version of the L8 Striker includes a scope for when concealment is less important, than a longer operating range and greater accuracy at a distance."
+}

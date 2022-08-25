@@ -4,7 +4,7 @@ Arena prototype changelog
 v2.0 (so-far)
 - The waiting rooms doors now correctly open at the start of the match
 - Dismemberment and disintegration is disabled when fighting in the arena
-- Health and armor is now set to the max health and armor, instead of 100
+- Health and shield is now set to the max health and shield, instead of 100
 - Fixed a respawn bug causing players in reinforcements mode to respawn even if the reinforcement count is 0
 
 v1.0

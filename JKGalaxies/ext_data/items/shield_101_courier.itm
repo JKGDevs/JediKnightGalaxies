@@ -12,5 +12,7 @@
 	"brokenSoundEffect":	"sound/shield/shield_broken",
 	"equippedSoundEffect":	"sound/shield/shield_equipped",
 	"rechargeSoundEffect":	"sound/shield/shield_recharge2",
-	"chargedSoundEffect":	"sound/shield/shield_charged"
+	"chargedSoundEffect":	"sound/shield/shield_charged",
+	
+	"itemDescription": "This Merr-Sonn manufactured shield was originally designed to protect couriers operating in dangerous areas, particularly in the Outer Rim. It features an extremely fast regeneration rate, but can take some time to begin recharging when overloaded."
 }

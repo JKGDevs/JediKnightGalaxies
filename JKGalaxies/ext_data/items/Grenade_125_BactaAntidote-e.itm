@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"60",
 	"maxStack":		5,
-	"itemIcon":		"gfx/Item_Icons/default"
+	"itemIcon":		"gfx/Item_Icons/default",
+	"itemDescription": "A long-range healing device that disperses synthetic healing spray in a small radius around it when detonated. This model uses modified bacta which not only heals but acts as an antitoxin for several types of poison."
 }

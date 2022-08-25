@@ -12,5 +12,7 @@
 	"brokenSoundEffect":	"sound/shield/shield_broken7",
 	"equippedSoundEffect":	"sound/shield/shield_equipped_junk2",
 	"rechargeSoundEffect":	"sound/shield/shield_recharge6",
-	"chargedSoundEffect":	"sound/shield/shield_charged6"
+	"chargedSoundEffect":	"sound/shield/shield_charged6",
+	
+	"itemDescription": "This shield doesn't seem to match any known manufacturer's shield, but some parts of the casing resembles the Atgar Personal Shield. It appears to be cobbled together with other various parts by a mechanic."
 }

@@ -107,7 +107,7 @@ void PM_StartTorsoAnim( int anim );
 void PM_ContinueLegsAnim( int anim );
 void PM_ForceLegsAnim( int anim );
 
-void PM_BeginWeaponChange( int weaponId );
+void PM_BeginWeaponChange( int weaponId, const weaponData_t* weaponData);
 void PM_FinishWeaponChange( void );
 
 void PM_SetAnim(int setAnimParts,int anim,int setAnimFlags);

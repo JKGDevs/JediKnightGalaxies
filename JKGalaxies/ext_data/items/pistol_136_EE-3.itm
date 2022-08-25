@@ -1,0 +1,12 @@
+{
+	"name":             "@JKG_ITEMS_pistol_EE-3_Pistol",
+	"internal":             "pistol_EE-3",
+	"itemtype":             "weapon",
+	"weapon":		"WP_BRYAR_PISTOL",
+	"variation":		"13",
+	"weight":		"1",
+	"cost":		"515",
+	"xml":			"",
+	"itemIcon":		"models/weapons/ee-3_pistol/icon_default",
+	"itemDescription": "This pistol is a modified Blastech EE-3 Blaster Rifle, with a shortened barrel, it lacks the cooling capacity and firerate of an unmodified EE-3, but still packs a punch."
+}

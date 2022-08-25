@@ -12,5 +12,7 @@
 	"rechargeSoundEffect":	"sound/shield/shield_recharge2",
 	"brokenSoundEffect":	"sound/shield/shield_broken2",
 	"equippedSoundEffect":	"sound/shield/shield_equipped4",
-	"chargedSoundEffect":	"sound/shield/shield_charged5"
+	"chargedSoundEffect":	"sound/shield/shield_charged5",
+	
+	"itemDescription": "This superior projectile shield while ineffective at protecting its wearer from energy and blaster weapons, offers protection from slugthrowers and other more primitive projectiles."
 }

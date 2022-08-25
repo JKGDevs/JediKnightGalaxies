@@ -63,7 +63,6 @@ static void JKG_EfxBuffRefEntity(centity_t* cent, refEntity_t* refEntity, debuff
 void JKG_PlayerDebuffVisuals ( centity_t *cent, refEntity_t *refEntity )
 {
 	const entityState_t *es = &cent->currentState;
-	const qboolean isLocalPlayer = (es->number == cg.predictedPlayerState.clientNum);
 
 	for (int i = 0; i < PLAYERBUFF_BITS; i++)
 	{

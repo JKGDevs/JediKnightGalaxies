@@ -18,7 +18,7 @@
         },
         
 //        "gunposition":      "9.0 -3.0 -7.0",
-        "gunposition":      "7.0 -3.5 -8.0",
+        "gunposition":      "10.0 -4.0 -8.0",
         "ironsightsposition": "12.0 0.0 -4.9",
         "ironsightsfov": "62",
 		"barrelCount": "2",
@@ -85,17 +85,18 @@
 		"ammodefault": "AMMO_POWERPACK_L",
         "clipSize":              80,
         "accuracy": {
-        	"accuracyRating": 65,
-        	"accuracyRatingPerShot": 5,
-        	"msToDrainAccuracy": 50,
-        	"maxAccuracyAdd": 100,
-        	"crouchModifier": 0.9,
-        	"runModifier": 1.7,
-        	"sightsModifier": 0.9,
-        	"walkModifier": 1.2,
-        	"inAirModifier": 1.9
+			"accuracyRating": 45,
+			"accuracyRatingPerShot": 5,
+			"msToDrainAccuracy": 50,
+			"maxAccuracyAdd": 60,
+			"crouchModifier": 0.85,
+			"runModifier": 1.6,
+			"sightsModifier": 0.6,
+			"walkModifier": 1.3,
+			"inAirModifier": 1.8
         },
-	"heatGenerated": 3.75
+	"heatGenerated": 1.20,
+	"maxHeat": 75
     },
         
     "firemode1": {
@@ -106,7 +107,7 @@
         "range":        7000.0,
         "recoil":       4.6,
         "spread":       0.3,
-		"splashrange":  75.0,
+		"splashrange":  100.0,
 		"splashmeansofdeath": "MOD_BLASTER",
         "projectilespeed": 5500.0,
         "projectileclass":"blaster_proj",
@@ -115,17 +116,17 @@
 		"ammodefault": "AMMO_POWERPACK_L",
         "clipSize":              80,
         "accuracy": {
-        	"accuracyRating": 85,
+        	"accuracyRating": 40,
         	"accuracyRatingPerShot": 10,
         	"msToDrainAccuracy": 75,
         	"maxAccuracyAdd": 100,
-        	"crouchModifier": 0.99,
+        	"crouchModifier": 0.8,
         	"runModifier": 1.7,
-        	"sightsModifier": 0.97,
+        	"sightsModifier": 0.6,
         	"walkModifier": 1.3,
         	"inAirModifier": 1.9
         },
-	"maxHeat": 150
+	"heatGenerated": 20
     },
     
     "playeranims": {

@@ -39,14 +39,8 @@
 		{
 			"Damage":
 			{
-				"multiply": 0.9
-			},
-			"splashmeansofdeath": "MOD_FIRE",
-			"splashRange":
-			{
-				"add": 100
-			},			
-
+				"multiply": 0.9 //0.9
+			},	
 			"buffs": 
 			[
 				{

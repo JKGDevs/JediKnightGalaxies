@@ -2,6 +2,8 @@
 	"ref":		"swhelmet",
 	"slot":		"head",
 	"armor":		190,
+	"hp": 			25,
+	"filter":		true,
 	"movemodifier":	1.0,
 
 	"visuals": {

@@ -8,5 +8,6 @@
 	"weight":		"6",
 	"cost":		"1250",
 	"xml":			"xml/items/ACP_Rifle_Holo.xml",
-	"itemIcon":		"models/weapons/A200_ACP_BattleRifle/icon_tube"
+	"itemIcon":		"models/weapons/A200_ACP_BattleRifle/icon_tube",
+	"itemDescription": "This upgraded model of the ACP Battle Rifle contains a scope and sights making it much deadlier at long range as well as launcher with small explosive flechette rounds. It was favored during the Trandoshan Clan Wars (21-19 BBY)."
 }

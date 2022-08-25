@@ -1,0 +1,10 @@
+{
+	"name":         "Traditional Padded Weequay Cuirass",
+	"internal":     "torso_weequay",
+	"itemtype":     "armor",
+	"armor":		"wqtorso",
+	"weight":		"10",
+	"cost":			"100",
+	"itemIcon":		"gfx/item_icons/weequay_torso.tga",
+	"itemDescription": "A padded vest made of various animal hides and leather materials, it provides only simple primitive protection.  Worn traditionally by Weequay warriors."
+}

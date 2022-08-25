@@ -26,6 +26,7 @@ include("modules/json.lua")
 include("modules/stringbuilder.lua")
 include("modules/cinematics.lua")
 include("modules/conversations.lua")
+include("modules/vectorfnc.lua")
 
 -- Managers
 include("managers/cinematics.lua")

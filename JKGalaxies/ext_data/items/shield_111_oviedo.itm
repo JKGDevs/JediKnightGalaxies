@@ -12,5 +12,7 @@
 	"rechargeSoundEffect":	"sound/shield/shield_recharge7",
 	"brokenSoundEffect":	"sound/shield/shield_broken3",
 	"equippedSoundEffect":	"sound/shield/shield_equipped4",
-	"chargedSoundEffect":	"sound/shield/shield_charged4"
+	"chargedSoundEffect":	"sound/shield/shield_charged4",
+	
+	"itemDescription": "First created for use by engineers operating in hazardous areas, and later deployed during the Clone Wars for important personnel. While its parent company no longer exists, it remains a popular second hand product with a long lifetime of use."
 }

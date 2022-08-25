@@ -1,0 +1,10 @@
+{
+	"name":         "Galinolo Mark II Huntsman Armor",
+	"internal":     "torso_bountyhunter2",
+	"itemtype":     "armor",
+	"armor":		"bh2torso",
+	"weight":		"7",
+	"cost":			"475",
+	"itemIcon":		"gfx/item_icons/bh1_torso.tga",
+	"itemDescription": "While the original Mark I version of the Huntsman Armor was marketed toward planetary military groups by Galinolo Corp, the superseding Mark II, has been customized for bounty hunters after the line became popular in the Outer Rim."
+}

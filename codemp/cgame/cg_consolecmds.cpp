@@ -365,17 +365,6 @@ static void Cmd_PrintWeaponList_f ( void )
 	BG_PrintWeaponList();
 }
 
-static void JKG_ToggleCrouch ( void )
-{
-	if((cg.time - cg.crouchToggleTime) <= 400)
-	{
-		// You can now no longer "teabag at maximum velocity" --eez
-		return;
-	}
-	cg.crouchToggled = !cg.crouchToggled;
-	cg.crouchToggleTime = cg.time;
-}
-
 static void JKG_PrintItemList(void)
 {
 	BG_PrintItemList();
@@ -424,7 +413,6 @@ static consoleCommand_t	commands[] = {
 	
 	
 	// Jedi Knight Galaxies
-	
 	{ "+camera", CG_Start360Camera },
 	{ "-camera", CG_Stop360Camera },
 	{ "cameraZoomIn", CG_CameraZoomIn },
@@ -447,10 +435,8 @@ static consoleCommand_t	commands[] = {
 	{ "showslope", CG_ShowSlope },
 	{ "aw_badheight", AIMod_MarkBadHeight },
 	{ "awc_addremovalspot", AIMod_AddRemovalPoint },
-	{ "awc_addbadheight", AIMod_AWC_MarkBadHeight },
+	{ "awc_addbadheight", AIMod_AWC_MarkBadHeight }
 #endif //__AUTOWAYPOINT__
-
-	{ "togglecrouch", JKG_ToggleCrouch },
 };
 
 static size_t numCommands = ARRAY_LEN( commands );

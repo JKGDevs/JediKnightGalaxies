@@ -1,5 +1,6 @@
 #include "jkg_damageareas.h"
 #include "g_local.h"
+#include "game/bg_weapons.h"
 #include "qcommon/q_shared.h"
 
 static std::vector<damageArea_t> damageAreas;
@@ -134,12 +135,24 @@ void G_RemoveBuff(gentity_t* ent, int index)
 	ent->client->ps.buffsActive &= ~(1 << index);
 	if (pBuff->passive.overridePmoveType.first)
 	{
-		if (pBuff->passive.overridePmoveType.second == PM_FREEZE || pBuff->passive.overridePmoveType.second == PM_LOCK)
+		if (pBuff->passive.overridePmoveType.second == PM_FREEZE)
 		{
-			ent->client->pmfreeze = qfalse;
+			ent->client->pmlock = ent->client->pmfreeze = qfalse;
+		}
+
+		if (pBuff->passive.overridePmoveType.second == PM_LOCK)
+		{
 			ent->client->pmlock = qfalse;
 		}
+
+		if (pBuff->passive.overridePmoveType.second == PM_NOMOVE)
+		{
+			ent->client->pmnomove = qfalse;
+		}
 	}
+	pBuff->passive.stacks = 0;
+	pBuff->passive.movemodifier_cur = 1.0;
+	pBuff->remove_f = false; //reset flag
 }
 
 /*
@@ -166,7 +179,7 @@ void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity
 	// Try and cancel out any existing buffs first, this will clear out room for the new buff ideally
 	for (i = 0; i < PLAYERBUFF_BITS; i++)
 	{
-		
+
 		if (ent->client->ps.buffsActive & (1 << i))
 		{
 			jkgBuff_t* pOtherBuff = &buffTable[ent->client->ps.buffs[i].buffID];
@@ -228,9 +241,30 @@ void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity
 			ent->buffData[i].endTime = level.time + duration;
 			ent->buffData[i].lastDamageTime = level.time;
 
+			//check if having a shield blocks the buff
+			if (pBuff->cancel.shieldRemoval && ent->client->ps.stats[STAT_SHIELD] > 0)
+			{
+				// Play the shield hit effect
+				gentity_t* evEnt;
+				evEnt = G_TempEntity(ent->client->ps.origin, EV_SHIELD_HIT);
+				evEnt->s.otherEntityNum = ent->s.number;
+				evEnt->s.eventParm = DirToByte(ent->client->ps.viewangles);
+				evEnt->s.time2 = 10; //strength
+				G_RemoveBuff(ent, i);  //--futuza: remove it?  could also just not apply the effects, but leave the debuff on the player...
+				return;
+			}
+
+			//****
+			//
+			//	Don't forget to undo anything you add below in the G_RemoveBuff() function.
+			//
+			//****
+			pBuff->remove_f = false; //should already be set, but just in case
+			
+			//override movement type
 			if (pBuff->passive.overridePmoveType.first)
 			{
-				if (pBuff->passive.overridePmoveType.second == PM_FREEZE)
+				if (pBuff->passive.overridePmoveType.second == PM_FREEZE) //freeze in place no movement - note this includes a pmlock as well
 				{
 					// clear out the velocity vector only if we are not in midair
 					if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
@@ -241,10 +275,162 @@ void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity
 					ent->client->ps.freezeTorsoAnim = ent->client->ps.torsoAnim;
 					ent->client->pmlock = ent->client->pmfreeze = qtrue;
 				}
+				else if (pBuff->passive.overridePmoveType.second == PM_NOMOVE) //can't move legs, but can twist/aim
+				{
+					// clear out the velocity vector only if we are not in midair
+					if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
+					{
+						VectorClear(ent->client->ps.velocity);
+					}
+					ent->client->ps.freezeLegsAnim = ent->client->ps.legsAnim;
+					ent->client->pmnomove = qtrue;
+				}
+				else if (pBuff->passive.overridePmoveType.second == PM_LOCK) 
+				{
+					//need more animation freeze here too?
+					ent->client->pmlock = qtrue;
+				}
 			}
+
+			//do a knockback if applicable
+			if (pBuff->passive.knockdown)
+			{
+				G_Knockdown(ent, buffer, buffer->client->ps.origin, 50.0, qtrue);
+			}
+
+			//override movement speed
+			if (pBuff->passive.maxstacks && pBuff->passive.movemodifier != 1.0)
+			{
+				if (pBuff->passive.maxstacks > pBuff->passive.stacks) //if we can fit more stacks, increase the effect
+				{
+					if (pBuff->passive.stacks == 0)
+					{
+						pBuff->passive.movemodifier_cur = pBuff->passive.movemodifier; //initialize first stack
+					}
+
+					//add/subtract additional stacks of movement effects
+					else
+					{
+						if (pBuff->passive.movemodifier > 1)
+						{
+							pBuff->passive.movemodifier_cur += (pBuff->passive.movemodifier - 1.0);		//caution: could go potentially infinite speed
+						}
+
+						if (pBuff->passive.movemodifier < 1 && pBuff->passive.movemodifier > 0)
+						{
+							pBuff->passive.movemodifier_cur -= (1.0 - pBuff->passive.movemodifier);
+							pBuff->passive.movemodifier_cur < 0 ? pBuff->passive.movemodifier_cur = 0 : 0; //can't go slower than 0
+						}
+					}
+					pBuff->passive.stacks++;
+				}
+			}
+
+			if (pBuff->passive.empstaggered)
+			{
+				if (ent->client->ps.eFlags & EF_JETPACK_ACTIVE)
+					Jetpack_Off(ent);
+
+				//todo: tell client to display jetpack is disabled icon
+			}
+
 			return;
 		}
 	}
+}
+
+int JKG_AdjustAmbientHeatDamage(bool heat, int damage)
+{
+	//heat == 1 is fire debuff, 0==cold debuff
+
+	//don't waste time here, if we're already at default heat
+	if (jkg_heatDissipateTime.integer == 100)
+	{
+		return damage;
+	}
+
+	enum categories { verycold = -2, cold = -1, temperate = 0, hot = 1, veryhot = 2 };  //categories of tempature
+	int temp = 0;
+
+	float percent = (jkg_heatDissipateTime.integer > 0 ? static_cast<float>(jkg_heatDissipateTime.integer) : 1.0f) / 100.0f;
+	if (percent > 2.0f)
+		percent = 2.0f;		//max cap
+
+	if (percent < 0.01f)
+		percent = 0.01f;	//low cap
+
+	//determine ranges of categories
+	//very cold
+	if (percent <= 0.5f)
+	{
+		temp = verycold;
+	}
+
+	//cold
+	else if (percent > 0.5 && percent < 0.9f)
+	{
+		temp = cold;
+	}
+
+	//temperate
+	else if (percent >= 0.9 && percent <= 1.1)
+	{
+		temp = temperate;
+	}
+
+	//hot
+	else if (percent > 1.1 && percent <= 1.5f)
+	{
+		temp = hot;
+	}
+
+	//very hot
+	else //(percent > 1.5f)
+	{
+		temp = veryhot;
+	}
+
+	switch (temp)
+	{
+		case verycold:
+			if (heat)
+				damage -= 2;
+			else
+				damage += 2;
+			break;
+
+		case cold:
+			if (heat)
+				damage -= 1;
+			else
+				damage += 1;
+			break;
+
+		case temperate:
+			break;
+
+		case hot:
+			if (heat)
+				damage += 1;
+			else
+				damage -= 1;
+			break;
+
+		case veryhot:
+			if (heat)
+				damage += 2;
+			else
+				damage -= 2;
+			break;
+
+		default:
+			break;
+	}
+
+	if (damage < 1)
+		damage = 1;	//it should always do at least 1
+
+	return damage;
 }
 
 /*
@@ -272,6 +458,13 @@ void G_TickBuffs(gentity_t* ent)
 				continue;
 			}
 
+			// check for removal
+			if (pBuff->remove_f)
+			{
+				G_RemoveBuff(ent, i);
+				continue;
+			}
+
 			// check for dealing damage
 			if (ent->buffData[i].lastDamageTime + pBuff->damage.damageRate <= level.time)
 			{
@@ -287,6 +480,18 @@ void G_TickBuffs(gentity_t* ent)
 						damage > 1 ? damage : damage = 1;	//do at least 1 damage
 					else
 						damage < 0 ? damage : damage = -1;
+				}
+				
+				//adjust damage based on ambient tempature for fire
+				if (!Q_stricmp(pBuff->category, "fire"))
+				{
+					damage = JKG_AdjustAmbientHeatDamage(1, damage);
+				}
+
+				//adjust damage based on ambient tempature for cold
+				if (!Q_stricmp(pBuff->category, "cold"))
+				{
+					damage = JKG_AdjustAmbientHeatDamage(0, damage);
 				}
 
 				//check if debuff is doing damage
@@ -333,18 +538,15 @@ void G_TickBuffs(gentity_t* ent)
 /*
  *	Applies debuffs as given to the player with damage areas
  */
-static void DebuffPlayer ( gentity_t *player, damageArea_t *area, int damage, int mod )
+static void DebuffPlayer( gentity_t *player, const damageArea_t *area, int damage, int mod )
 {
-    vec3_t dir;
     int i = 0;
-    int flags = 0;
 	debuffData_t debuffs[MAX_DEBUFFS_PRESENT];
 	int numDebuffs;
 	int ammoType;
     
-    if ( !player->client )
+    if ( !player || !player->client )
     {
-		//JKG_DoObjectDamage(data, targ, inflictor, attacker, dir, origin, dflags, mod);
         return;
     }
 
@@ -352,15 +554,9 @@ static void DebuffPlayer ( gentity_t *player, damageArea_t *area, int damage, in
 		return;
 	}
 
-	// Deal damage to the client
-	if (damage)	//positive or negative damage works, 0 does not
+	if (player->flags & FL_NO_DEBUFF)  //check for no debuff flag
 	{
-		if (!area->data->radial)
-		{
-			VectorCopy(area->context.direction, dir);
-		}
-
-		G_Damage(player, area->context.inflictor, area->context.attacker, dir, player->client->ps.origin, damage, flags | area->context.damageFlags, mod);
+		return;
 	}
 
 	if (mod > 0 && mod < allMeansOfDamage.size())
@@ -371,13 +567,9 @@ static void DebuffPlayer ( gentity_t *player, damageArea_t *area, int damage, in
 			return;
 		}
 	}
-    
-    SmallestVectorToBBox (dir, area->origin, player->r.absmin, player->r.absmax);
-    dir[2] += 24.0f; // Push the player up a bit to get some air time.
-    VectorNormalize (dir);
 
 	// Do ammo type override for debuffs
-	memcpy(debuffs, area->data->debuffs, sizeof(debuffData_t) * MAX_DEBUFFS_PRESENT);
+	memcpy(debuffs, area->data->debuffs, sizeof(debuffs));
 	numDebuffs = area->data->numberDebuffs;
 	ammoType = area->context.ammoType;
 	if (area->context.attacker->client && ammoType >= 0)
@@ -492,8 +684,6 @@ static void DebuffPlayer ( gentity_t *player, damageArea_t *area, int damage, in
 		G_BuffEntity(player, area->context.attacker, 
 			debuffs[i].debuff, debuffs[i].intensity, debuffs[i].duration);
 	}
-    
-    area->lastDamageTime = level.time;
 }
 
 /*
@@ -508,103 +698,99 @@ static damageArea_t *GetFreeDamageArea()
     return &damageAreas.back();
 }
 
+static void DamageEntityAndDebuffPlayer(
+	gentity_t *ent,
+	const damageArea_t *area,
+	vec3_t dir,
+	int damage
+) {
+	G_Damage(
+		ent,
+		area->context.inflictor,
+		area->context.attacker,
+		dir,
+		ent->r.currentOrigin,
+		damage,
+		area->context.damageFlags,
+		area->context.methodOfDeath);
+	if (ent->client) {
+		DebuffPlayer(ent, area, damage, area->context.methodOfDeath);
+	}
+}
+
 /*
  * Damages players in the damage area. Returns qtrue if the area has decayed and we need to remove it.
  */
-static qboolean DamagePlayersInArea ( damageArea_t *area )
-{
-    float damageRadiusSquared = 0.0f;
-    int entList[MAX_GENTITIES] = { 0 };
-    int numEnts = 0;
-    vec3_t areaMins, areaMaxs;
-    gentity_t *ent = NULL;
-    int j = 0;
-    float damageRadius;
-    
-    if ( area->startTime > level.time )
-    {
-        // Delayed start. Doing do anything yet.
-        return qfalse;
-    }
-    
-    if ( (area->startTime + area->data->lifetime) < level.time )
-    {
-        // Area has decayed, set as inactive.
-		return qtrue;
-    }
+static void DamageEntitiesInArea(damageArea_t *area) {
+	if (area->startTime > level.time) {
+		// Delayed start. Doing do anything yet.
+		return;
+	}
 
-    if ( (area->lastDamageTime + area->data->damageDelay) > level.time )
-    {
-        // Too soon to try to damage players again.
-        return qfalse;
-    }
-    
-    damageRadius = CalculateDamageRadius (area);
-    damageRadiusSquared = damageRadius * damageRadius;
-    
-    for ( j = 0; j < 3; j++ )
-    {
-        areaMins[j] = area->origin[j] - damageRadius;
-        areaMaxs[j] = area->origin[j] + damageRadius;
-    }
-    
-    numEnts = trap->EntitiesInBox (areaMins, areaMaxs, entList, MAX_GENTITIES);
-    for ( j = 0; j < numEnts; j++ )
-    {
-        vec3_t playerOrigin;
-        trace_t tr;
-        int damage;
-        vec3_t v;
-        
-        ent = &g_entities[entList[j]];
-        if ( !ent->inuse || !ent->client )
-        {
-            continue;
-        }
-        
-        if ( ent->s.eType != ET_NPC &&
-            (ent->client->pers.connected != CON_CONNECTED || 
-                ent->client->sess.sessionTeam == TEAM_SPECTATOR) )
-        {
-            continue;
-        }
-        
-        if ( !ent->takedamage || ent == area->context.ignoreEnt )
-        {
-            continue;
-        }
-        
-        if ( ent->health <= 0 )
-        {
-            continue;
-        }
+	if ((area->startTime + area->data->lifetime) < level.time) {
+		// Area has decayed, set as inactive.
+		return;
+	}
 
-        // Check to make sure the player is within the radius.
-        SmallestVectorToBBox (v, area->origin, ent->r.absmin, ent->r.absmax);
-        if ( VectorLengthSquared (v) > damageRadiusSquared )
-        {
-            continue;
-        }
-        
-        VectorCopy (ent->client->ps.origin, playerOrigin);
-        if ( area->data->penetrationType != PT_WALLS )
-        {
-            trap->Trace (&tr, area->origin, NULL, NULL, playerOrigin, -1, CONTENTS_SOLID, 0, 0, 0);
-            if ( tr.fraction != 1.0f )
-            {
-                continue;
-            }
-        }
-        
-        // Check for armor etc
-        // if 
-        
-        // Apply the damage and its effects.
-        damage = CalculateDamageForDistance (area, ent->r.absmin, ent->r.absmax, playerOrigin, damageRadius);
-		DebuffPlayer (ent, area, damage, area->context.methodOfDeath);
-    }
+	if ((area->lastDamageTime + area->data->damageDelay) > level.time) {
+		// Too soon to try to damage players again.
+		return;
+	}
 
-	return qfalse;
+	const float damageRadius = CalculateDamageRadius(area);
+	const float damageRadiusSquared = damageRadius * damageRadius;
+
+	vec3_t areaMins, areaMaxs;
+	for (int j = 0; j < 3; j++) {
+		areaMins[j] = area->origin[j] - damageRadius;
+		areaMaxs[j] = area->origin[j] + damageRadius;
+	}
+
+	int entList[MAX_GENTITIES] = {0};
+	int numEnts = 0;
+	numEnts = trap->EntitiesInBox(areaMins, areaMaxs, entList, MAX_GENTITIES);
+	for (int j = 0; j < numEnts; j++) {
+		vec3_t v;
+
+		gentity_t *ent = &g_entities[entList[j]];
+		if (!ent->inuse) {
+			continue;
+		}
+
+		if (!ent->takedamage || ent == area->context.ignoreEnt) {
+			continue;
+		}
+
+		if (ent->health <= 0) {
+			continue;
+		}
+
+		// Check to make sure the player is within the radius.
+		SmallestVectorToBBox(v, area->origin, ent->r.absmin, ent->r.absmax);
+		if (VectorLengthSquared(v) > damageRadiusSquared) {
+			continue;
+		}
+
+		vec3_t entOrigin;
+		VectorCopy(ent->r.currentOrigin, entOrigin);
+		if (area->data->penetrationType != PT_WALLS) {
+			trace_t tr;
+			trap->Trace(&tr, area->origin, NULL, NULL, entOrigin, -1, CONTENTS_SOLID, 0, 0, 0);
+			if (tr.fraction != 1.0f) {
+				continue;
+			}
+		}
+
+		// Apply the damage and its effects.
+		const int damage = CalculateDamageForDistance(area, ent->r.absmin, ent->r.absmax, entOrigin, damageRadius);
+		vec3_t dir;
+		VectorSubtract(entOrigin, area->origin, dir);
+		VectorNormalize(dir);
+
+		DamageEntityAndDebuffPlayer(ent, area, dir, damage);
+	}
+
+	area->lastDamageTime = level.time;
 }
 
 //=========================================================
@@ -639,90 +825,97 @@ int JKG_ChargeDamageOverride( gentity_t *inflictor, bool bIsTraceline ) {
 }
 
 //=========================================================
-// JKG_DoDamage
+// JKG_DoDirectDamage
 //---------------------------------------------------------
-// Description: This is a wrapper for the G_Damage				--FUTUZA: FILTHY LIES, its a wrapper for DebuffPlayer() which is the true wrapper for G_Damage
+// Description: This is a wrapper for the G_Damage
 // function, which also does debuffs. It does _not_ create
 // damage areas. It only does direct damage like with
 // G_Damage.   
 //=========================================================
-void JKG_DoDirectDamage ( damageSettings_t* data, gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t origin, int dflags, int mod )
+static void JKG_DoDirectDamage(
+    damageSettings_t *data,
+    gentity_t *targ,
+    gentity_t *inflictor,
+    gentity_t *attacker,
+    vec3_t dir,
+    vec3_t origin,
+    int dflags,
+    int mod,
+    const damageDecay_t *decay)
 {
-    damageArea_t area;
+	damageArea_t area;
 	int damage;
-        
-    if ( !targ->takedamage )
-    {
-        return;
-    }
-    
-    if ( targ->health <= 0 )
-    {
-        return;
-    }
-    
-    if ( !targ->client )
-    {
-        return;
-    }
-    
-    memset (&area, 0, sizeof (area));
+
+	if (!targ->takedamage) {
+		return;
+	}
+
+	if (targ->health <= 0) {
+		return;
+	}
+
+	memset(&area, 0, sizeof(area));
 
 	area.data = data;
-	
+
 	// The firing mode's base damage can lie! It doesn't account for dynamic damage amounts (ie weapon charging)
 	area.context.damageOverride = JKG_ChargeDamageOverride(inflictor, inflictor == attacker);
-	if(area.context.damageOverride != 0 && area.data->damage != area.context.damageOverride) 
-	{
+	if (area.context.damageOverride != 0 && area.data->damage != area.context.damageOverride) {
 		damage = area.context.damageOverride;
-	}
-	else 
-	{
+	} else {
 		damage = data->damage;
 	}
 
-    VectorCopy (dir, area.context.direction);
-	if (attacker->client && attacker->client->ps.ammoType)
-	{
+	if (decay != nullptr) {
+		if (decay->maxRange > decay->recommendedRange &&
+			decay->distanceToDamageOrigin < decay->maxRange) {
+			/* Fired at a distance beyond recommended range. */
+			damage = JKG_CalculateDamageDecay(
+				damage,
+				decay->distanceToDamageOrigin,
+				decay->recommendedRange,
+				decay->decayRate);
+		}
+	}
+
+	VectorCopy(dir, area.context.direction);
+	if (attacker->client && attacker->client->ps.ammoType) {
 		area.context.ammoType = attacker->client->ps.ammoType;
 		JKG_ApplyAmmoOverride(damage, ammoTable[area.context.ammoType].overrides.damage);
-	}
-	else
-	{
+	} else {
 		area.context.ammoType = -1;
 	}
-    area.context.ignoreEnt = NULL;
-    area.context.attacker = attacker;
-    area.context.damageFlags = dflags;
-    area.context.inflictor = inflictor;
-    area.context.methodOfDeath = mod;
-    area.startTime = level.time;
-    area.lastDamageTime = 0;
-    VectorCopy (origin, area.origin);
-    
-	DebuffPlayer (targ, &area, damage, mod);		//note: DebuffPlayer calls G_Damage() for both debuffs and regular damage
+
+	area.context.ignoreEnt = NULL;
+	area.context.attacker = attacker;
+	area.context.damageFlags = dflags;
+	area.context.inflictor = inflictor;
+	area.context.methodOfDeath = mod;
+	area.startTime = level.time;
+	area.lastDamageTime = 0;
+	VectorCopy(origin, area.origin);
+
+	DamageEntityAndDebuffPlayer(targ, &area, dir, damage);
 }
 
-//=========================================================
-// JKG_DoSplashDamage
-//---------------------------------------------------------
-// Description: This is a _replacement_ function for
-// G_RadiusDamage. It does all the same things, in addition
-// to the debuffs.
-//=========================================================
-void JKG_DoSplashDamage ( damageSettings_t* data, const vec3_t origin, gentity_t *inflictor, gentity_t *attacker, gentity_t *ignoreEnt, int mod )
+void JKG_DoDirectDamage(weaponFireModeStats_t* fireMode, gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t origin, int dflags, int mod, const damageDecay_t *decay)
 {
-	bool bDoDamageOverride = false;
-
-	if (inflictor != attacker) {
-		bDoDamageOverride = true;
+	JKG_DoDirectDamage(&fireMode->primary, targ, inflictor, attacker, dir, origin, dflags, mod, decay);
+	if (fireMode->secondaryDmgPresent) {
+		JKG_DoDirectDamage(&fireMode->secondary, targ, inflictor, attacker, dir, origin, dflags, mod, decay);
 	}
+}
 
+// This is a _replacement_ function for G_RadiusDamage. It does all the same
+// things, in addition to the debuffs.
+void JKG_DoSplashDamage( damageSettings_t* data, const vec3_t origin, gentity_t *inflictor, gentity_t *attacker, gentity_t *ignoreEnt, int mod )
+{
     if ( !data->radial )
     {
         return;
     }
     
+	const bool bDoDamageOverride = (inflictor != attacker); 
     if ( data->lifetime )
     {
         damageArea_t *area = GetFreeDamageArea();
@@ -760,8 +953,7 @@ void JKG_DoSplashDamage ( damageSettings_t* data, const vec3_t origin, gentity_t
     else
     {
         // This is similar to the old style splash damage
-        damageArea_t a;
-        memset (&a, 0, sizeof (a));
+        damageArea_t a = {};
         a.data = data;
         a.lastDamageTime = 0;
         VectorCopy (origin, a.origin);
@@ -786,66 +978,8 @@ void JKG_DoSplashDamage ( damageSettings_t* data, const vec3_t origin, gentity_t
 			a.context.damageOverride = a.data->damage;
 		}
         
-        DamagePlayersInArea (&a);
+        DamageEntitiesInArea(&a);
     }
-}
-
-
-// ========================================================
-//JKG_DoObjectDamage
-//---------------------------------------------------------
-// Description: This handles damage to non client
-// such as trip mines or map objects.
-//=========================================================
-void JKG_DoObjectDamage(damageSettings_t* data, gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t origin, int dflags, int mod)
-{
-	damageArea_t area;
-	int damage;
-
-	if (!targ->takedamage)
-	{
-		return;
-	}
-
-	if (targ->health <= 0)
-	{
-		return;
-	}
-
-	//this is for damaging things, not people
-	if (targ->client)
-	{
-		return;
-	}
-
-	memset(&area, 0, sizeof(area));
-
-	area.data = data;
-
-	// The firing mode's base damage can lie! It doesn't account for dynamic damage amounts (ie weapon charging)
-	area.context.damageOverride = JKG_ChargeDamageOverride(inflictor, inflictor == attacker);
-	if (area.context.damageOverride != 0 && area.data->damage != area.context.damageOverride)
-	{
-		damage = area.context.damageOverride;
-	}
-	else
-	{
-		damage = data->damage;
-	}
-
-	VectorCopy(dir, area.context.direction);
-	if (attacker->client && attacker->client->ps.ammoType)
-	{
-		area.context.ammoType = attacker->client->ps.ammoType;
-		JKG_ApplyAmmoOverride(damage, ammoTable[area.context.ammoType].overrides.damage);
-	}
-	else
-	{
-		area.context.ammoType = -1;
-	}
-
-	G_Damage(targ, inflictor, attacker, dir, origin, damage, dflags, mod);
-
 }
 
 //=========================================================
@@ -856,20 +990,39 @@ void JKG_DoObjectDamage(damageSettings_t* data, gentity_t *targ, gentity_t *infl
 // create a damage area instead, if the handle does
 // splash damage.
 //=========================================================
-void JKG_DoDamage ( damageSettings_t* data, gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t origin, int dflags, int mod )
+static void JKG_DoDamage(
+	damageSettings_t* data,
+	gentity_t *targ,
+	gentity_t *inflictor,
+	gentity_t *attacker,
+	vec3_t dir,
+	vec3_t origin,
+	int dflags,
+	int mod,
+	const damageDecay_t* decay)
 {
-    if ( data->radial )
-    {
-        JKG_DoSplashDamage (data, origin, inflictor, attacker, NULL, mod);
-    }
+	if (data->radial) {
+		JKG_DoSplashDamage(data, origin, inflictor, attacker, NULL, mod);
+	}
 
-	//targetting a player/npcs
-	if (targ->client)
-		JKG_DoDirectDamage(data, targ, inflictor, attacker, dir, origin, dflags, mod);
+	JKG_DoDirectDamage(data, targ, inflictor, attacker, dir, origin, dflags, mod, decay);
+}
 
-	//targetting an object
-	else
-		JKG_DoObjectDamage(data, targ, inflictor, attacker, dir, origin, dflags, mod);
+void JKG_DoDamage(
+	weaponFireModeStats_t *fireMode,
+	gentity_t *targ,
+	gentity_t *inflictor,
+	gentity_t *attacker,
+	vec3_t dir,
+	vec3_t origin,
+	int dflags,
+	int mod,
+	const damageDecay_t *decay)
+{
+	JKG_DoDamage(&fireMode->primary, targ, inflictor, attacker, dir, origin, dflags, mod, decay);
+	if (fireMode->secondaryDmgPresent) {
+		JKG_DoDamage(&fireMode->secondary, targ, inflictor, attacker, dir, origin, dflags, mod, decay);
+	}
 }
 
 //=========================================================
@@ -879,10 +1032,74 @@ void JKG_DoDamage ( damageSettings_t* data, gentity_t *targ, gentity_t *inflicto
 // This goes through all active areas and deals damage to
 // players within those areas.
 //=========================================================
-void JKG_DamagePlayers ( void )
-{
-	for (auto it = damageAreas.begin(); it != damageAreas.end(); ++it)
-	{
-		DamagePlayersInArea(&(*it));
+void JKG_DamagePlayers(void) {
+	for (auto &area : damageAreas) {
+		DamageEntitiesInArea(&area);
 	}
+}
+
+/**************************************************
+* WP_CalculateDamageDecay
+*
+* Calculates how much damage to do if a shot exceeds
+* the weapons maximum range (exponetial decay).
+* Note that if the distance exceeds 10x the range
+* we don't bother with the decay function and just
+* reduce the damage to 0 nothing.  Can also handle
+* negative (healing) damage.
+**************************************************/
+
+//how much damage a shot should do if it exceeds its range
+int JKG_CalculateDamageDecay(int damage, float distance, float range, float decayRate)
+{
+	if (damage == 0)
+		return damage;
+
+	//flip dmg for heals
+	bool heal = false;
+	if (damage < 0)
+	{
+		heal = true;
+		damage = -damage; //flip
+	}
+
+	if (distance <= range)
+		return damage;
+
+	if (decayRate <= 0.0)
+		return 0;
+
+	//decay does not effect this weapon warn devs they probably did something dumb
+	if (decayRate >= 1.0)
+	{
+#ifdef _DEBUG
+		Com_Printf("WARNING: Weapon damage not affected over distance! Invalid decayRate?");
+#endif
+		return damage;
+	}
+
+	//clamp extreme values
+	if (distance >= range * MAX_RANGE_MULTIPLIER)  //if we're firing this weapon 10x its range, we've gone too far
+		return 0;
+
+	if (decayRate < 0.0001)
+		decayRate = 0.0001;
+
+	/*Okay we're good to engage*/
+	float relDistance = static_cast<float>((distance - range) / range);  //determine how far, percentage wise the projectile has travelled.
+	if (relDistance < 0.0001)
+		relDistance = 0.0001;   //clamp
+
+	damage = static_cast<int>(damage * std::pow(decayRate, relDistance));  //eg y = 5*(0.25)^1 == 1.25dmg
+
+	//clamp
+	if (damage > 999)
+		damage = 999;
+
+	//flip damage
+	if (heal)
+		return -damage;
+
+	else
+		return damage;
 }

@@ -12,5 +12,7 @@
 	"rechargeSoundEffect":	"sound/shield/shield_recharge3",
 	"brokenSoundEffect":	"sound/shield/shield_broken5",
 	"equippedSoundEffect":	"sound/shield/shield_equipped",
-	"chargedSoundEffect":	"sound/shield/shield_charged6"
+	"chargedSoundEffect":	"sound/shield/shield_charged6",
+	
+	"itemDescription": "This highly specialized shield is designed to protect its wearer from slugthrowers and other projectile based weapons, rather than from blaster fire."
 }

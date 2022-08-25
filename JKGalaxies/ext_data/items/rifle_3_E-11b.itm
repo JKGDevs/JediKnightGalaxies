@@ -5,7 +5,8 @@
 	"weapon":		"WP_DISRUPTOR",
 	"variation":		"2",
 	"weight":		"7",
-	"cost":		"1200",
+	"cost":		"1400",
 	"xml":			"",
-	"itemIcon":		"models/weapons/E-11b_Rifle/icon_default"
+	"itemIcon":		"models/weapons/E-11b_Rifle/icon_default",
+	"itemDescription": "This variant of the famous E-11, is currently undergoing test trials by various Imperial forces and will likely replace the standard issue E-11s. While its clip size is reduced, it has improved cooling efficiency and automatic capabilities."
 }

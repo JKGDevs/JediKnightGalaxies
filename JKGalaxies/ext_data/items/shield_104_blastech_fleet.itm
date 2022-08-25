@@ -12,5 +12,7 @@
 	"brokenSoundEffect":	"sound/shield/shield_broken5",
 	"equippedSoundEffect":	"sound/shield/shield_equipped",
 	"rechargeSoundEffect":	"sound/shield/shield_recharge6",
-	"chargedSoundEffect":	"sound/shield/shield_charged4"
+	"chargedSoundEffect":	"sound/shield/shield_charged4",
+	
+	"itemDescription": "An extremely potent personal shield, it is one of the strongest shields manufactured by BlasTech Industries. It constantly regenerates, and has a very high capacity and can completely protect its user from even heavy blaster fire. Very expensive."
 }

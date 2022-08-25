@@ -16,7 +16,7 @@
             "ammo":     [ "models/weapons/dc-15a_rifle/antiarmor_glow" ]
         },
         
-        "gunposition":      "3.0 -3.0 -6.6",
+        "gunposition":      "10.0 -4.0 -8.0",
         "ironsightsposition": "3.0 0.5 -6.0",
         "ironsightsfov": "20",
 		"barrelCount": "3",

@@ -1,6 +1,6 @@
 # JEDI KNIGHT GALAXIES: ext_data
 
-Jedi Knight Galaxies is easily the most moddable mod for Jedi Academy in existence. Part of this is due to the new systems we implemented with the ext_data files. Almost of them follow JSON syntax.
+Jedi Knight Galaxies is easily the most moddable mod for Jedi Academy in existence. Part of this is due to the new systems we implemented with the ext_data files. Almost all of them follow JSON-like syntax (you can use c-style comments).
 
 ## TABLE OF CONTENTS
 
@@ -86,6 +86,8 @@ Each object, whose name is the buff linkage (example, "standard-fire": {} can be
   - noCategoryStack (boolean): If true, this buff will not stack against another buff in the same category. It will remove all buffs in the same category who have lower priority.
   - waterRemoval (boolean): If true, swimming in water will remove the buff.
   - rollRemoval (boolean): If true, rolling removes this buff.
+  - shieldRemoval (boolean): If true, if an active shield is equipped (with at least 1 charge) will remove this buff.
+  - filterRemoval (boolean): If true, if armor with the filter property is equipped will remove this buff.
   - cancelOther (array of objects): Cancels out buffs in other categories when this buff is applied. Each object in this array contains the following data:
    - category (string): The category to cancel out.
    - priority (integer): Won't cancel anything in this category unless this priority number is >= that buff's priority number.
@@ -95,17 +97,22 @@ Each object, whose name is the buff linkage (example, "standard-fire": {} can be
   - means (string/special): The means of damage/damage type of the damage to do.
   - damageRate (integer): How many milliseconds between damage applications.
  - passive (object): Defines data about passive stat bonuses that this buff provides. Contains the following fields:
+  - maxstacks(unsigned int): If greater than 0, the movemodifier can be changed.  eg: setting it to 3, would allow the movemodifier to be stackable up to 3x.  Setting to 1 allows the effect to apply only once.  Default is 0.
+  - movemodifier(float): How much the debuff should modifiy overall movement speed by.  eg: 0.8 slows down by 20%, while 1.5 increaes speed by 50%.  Default is 1.0.  maxstacks must be greater than 0, for movemodifier to be applied. 
+  - knockdown(boolean): If true, when the debuff is first applied, the player will be knocked down and fall on their face (only applies once).  Default: false.
+  - empstaggered(boolean): If true, your electronics are disabled/shorting out.  eg: Jetpacks are shut off.  Default: false.
+  - resistant(boolean): If true, incoming damage is reduced by 50%.  Default: false.
   - pmove (string/special): Overrides the movement type while this buff is applied. Can be one of the following:
    * PM_NORMAL - Regular movement
    * PM_JETPACK - Jetpack movement
-   * PM_FLOAT - Zero gravity movement
+   * PM_FLOAT - Zero gravity movement (eg: grip)
    * PM_NOCLIP - Noclipping
    * PM_SPECTATOR - Spectator movement
    * PM_DEAD - Dead movement
    * PM_FREEZE - Frozen movement
    * PM_INTERMISSION - Intermission movement
-   * PM_LOCK - Identical to PM_FREEZE (?)
-   * PM_NOMOVE - Identical to PM_FREEZE (?)
+   * PM_LOCK - Fully stop all motion whatsoever, including turning, nearly identical to PM_FREEZE
+   * PM_NOMOVE - Player cannot move or fire weapons, but can still move camera, torso twist, aim etc.
  - visuals (object): Contains visual data about the buff. Contains the following fields:
   - efx (object): Contains information about fullbody effects on the player. Contains the following fields:
    - effect (string): The EFX file to play
@@ -201,10 +208,15 @@ Each .itm file contains one item, which can have the following fields:
  - internal (string): The internal code reference of this item, used in treasure classes and scripting.
  - id (integer): Assigns a specific internal item ID number to this item. Not recommended to use this except in special circumstances.
  - itemIcon (string): The item icon shader as it appears in the inventory
- - itemtype (special): The type of the item. Can be the following: armor, weapon, clothing, consumable, shield, jetpack, ammo.
- - weight (float): Not used.
- - cost (integer): How much the item costs from the vendor.
+ - itemtype (special): The type of the item. Can be the following: armor, weapon, clothing, consumable, shield, jetpack, ammo, tool.
+ - tier (integer): Which tier of item the item is (0 - scrap, 1 - common, 2 - refined, 3 - elite, 4 - superior, 5 - legendary). Default: Common
+ - weight (float): Unused, cannot be less than 0.    Default: 1.0
+ - cost (integer): How much the item costs from the vendor.  Default: 100
  - maxStack (integer): How many of this item can be carried in a stack.
+ - tradeable (boolean): If true, the item can be traded/sold/etc.  Not yet fully implemented.  Default: true. (Note: defaults to true if tier is 5)
+ - segregated (boolean): If true, the item does not show up/take up space in the normal inventory (for things like quest items etc).  Default: false.
+ - droppable (boolean): If true, the item can be dropped/destroyed.  Not yet fully implemented.  Default: true ((Note: defaults to true if tier is 5)
+ - itemDescription (string): A description of the item up to 250 characters in length.  Longer descriptions are forcibly truncated.
 
 The following contains information specific to WEAPON items:
 
@@ -224,6 +236,8 @@ The following contains information specific to CONSUMABLE items:
 
  - consumeScript (string): The name of the Lua script to run when this item gets consumed.
  - consumeAmount (string): The number to consume when consuming.
+ - partHealthReq (boolean, default false): if set to true, the item can only be consumed if hp < maxhealth
+ - partStaminaReq (boolean, default false): if set to true, the item only be consumed if stamina < maxstamina
 
 The following contains information specific to SHIELD items:
 
@@ -247,6 +261,8 @@ Each .arm file contains data for one piece of armor. They have the following fie
  - slot (special): Which "slot" this armor belongs to. Can be: head, neck, torso, robe, legs, gloves, boots, shoulder, implant
  - ehp (integer): "Effective Hit Points" for this piece of armor. Example, if the player's base health pool is 100 hit points, and this piece of armor provides 100 ehp, it is equivalent to a 50% reduction in damage. If EHP is 200, it's equivalent to a 66% reduction in damage.
  - hp (integer): How much to increase the player's total health pool by when this piece of armor is equipped.
+ - stamina (interger): How much to increase the player's total stamina/forcePower pool by when this piece of armor is equipped (note this feature is incomplete).
+ - filter (boolean): If true, the armor has a filter that protects the wearer from toxins.
  - movemodifier (float): How much to modify a player's movement speed by with their equipped armor. This is subject to movement modifiers (see constants.json, above)
  - visuals (object): Contains the following fields:
   - equippedSound (string): The sound that is played when the piece of armor is equipped.
@@ -274,6 +290,7 @@ Each .wpn file contains the following fields:
   - flags (array of special): Can contain the following: cookable, knockback, roll, zoom, and togglezoom. Cookable means that the weapon is cookable like a grenade. Knockback means that the weapon does knockback. Roll means that the player can roll while holding this weapon. Zoom means that the ADS uses a scopemask to zoom in continuously, like the base JA disruptor. Togglezoom means that the ADS does not have variable zoom.
   - speed (float): How much to multiply the speed by while this weapon is equipped.
   - reloadmodifier (float): How much to multiply the speed by while this weapon is reloading.
+  - swaptime (integer): How many milliseconds it takes to stow this weapon away while switching weapons.  Default: 300.
   - startzoomfov (float): The beginning FOV of the zoom.
   - endzoomfov (float): The ending FOV of the zoom.
   - zoomtime (integer): If continuous zoom is used, this is how long in milliesconds it takes to go from start to end FOV.
@@ -326,9 +343,10 @@ The .wpn file contains one field for each firing mode, starting with 0.
   - range (float): How long the projectile shot by the weapon goes (or the hitscan line traces for), in map units.
   - splashrange (float): For non-complex damage areas, this details how far to spread the damage.
   - recoil (float): How much to tilt the camera when a player shoots this firing mode.
-  - heatGenerated (float, default: 0): How much heat is generated when this weapon fires. When your "heat" value exceeds maxHeat, you cannot fire this weapon anymore.
-  - maxHeat (integer, default: 100): If your heat exceeds this value, you cannot fire any more.
+  - heatGenerated (float, default 0): How much heat is generated when this weapon fires. When your "heat" value exceeds maxHeat, you cannot fire this weapon anymore.
+  - maxHeat (integer, default 100): If your heat exceeds this value, you cannot fire any more.
   - heatThreshold (interger, default: 75% of maxHeat): Once your maxHeat is hit, you cannot fire until the weapon has cooled to a value less than this threshold.
+  - reloadClearHeat (integer, default 50, range 0-100): Represents how much heat (percentage) should be cleared if you reload the weapon.  eg: 75 = 75% of the heat is cleared.
   - accuracy (object): Contains the following fields:
    - accuracyRating (float, default 32): How far apart each shot can be (maximum) at roughly 100 map units distance. This is the base value.
    - crouchModifier (float, default 0.8): How much to multiply the overall accuracy rating while crouching.
@@ -342,6 +360,7 @@ The .wpn file contains one field for each firing mode, starting with 0.
   - projectilespeed (float): How fast the projectile moves
   - projectileclass (string): What the spawned projectile's classname is
   - meansofdeath (special): The damage type of this weapon. Connects to a field in meansOfDamage.json
+  - ACPRatio (float, default 0.5): If meansofdeath is MOD_ACP this option is also available.  It determines which portion of the ACP damage impacts on the shield/vs what bypasses it. eg: 0.4 == 40% direct dmg, 60% shield damage. Range: 0.0 - 1.0.
   - splashmeansofdeath (special): The damage type of this weapon, when splash damage is applied. Connects to a field in meansOfDamage.json
   - useQuantity (boolean): If true, this fire mode deducts one from the item stack quantity when shooting. Used for grenades mostly.
   - ammoBase (string): Points to an ammo type. This firemode can use anything that is based on this ammo type.
@@ -511,8 +530,9 @@ Each object in the ammo file is the linkage name for it, and they can contain th
     - runSound (string): Overrides the sound effect that plays on the projectile
     - lightIntensity (complexAmmoFloat): Overrides the size of the dynamic light that shows up on the projectile.
     - lightColor (array of float): Overrides the color of the light that shows on the projectile.
+    - deathfx (string): Overrides the effect that plays when the projectile impacts on something that's not a player/entity (such as a wall).
     - miss (string): Overrides the effect that plays when the projectile falls out of range.
-    - hit (string): Overrides the effect that plays when the projectile hits something.
+    - hit (string): Overrides the effect that plays when the projectile hits someone.
     - deflect (string): Overrides the effect that plays when the projectile is deflected by a lightsaber.
 
 Buff Field:

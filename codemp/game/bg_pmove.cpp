@@ -33,7 +33,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h" //ahahahahhahahaha@$!$!
 #else
 #include "../cgame/cg_local.h"
-//#define SUPER_FUTUZA_TEST 1
 #endif
 
 #define MAX_WEAPON_CHARGE_TIME 5000
@@ -326,6 +325,15 @@ void PM_ApplySpeedConstants()
 		}
 	}
 
+	//check active buffs on player
+	for (int i = 0; i < PLAYERBUFF_BITS; i++)
+	{
+		if (ps->buffsActive & (1 << i))
+		{
+			jkgBuff_t* pOtherBuff = &buffTable[ps->buffs[i].buffID];
+			speedModifier -= (1.0f - pOtherBuff->passive.movemodifier_cur);
+		}
+	}
 
 	if (cmd->forwardmove < 0 && !(cmd->buttons&BUTTON_WALKING) && pm->ps->groundEntityNum != ENTITYNUM_NONE)
 	{//running backwards is slower than running forwards (like SP)
@@ -454,6 +462,11 @@ void PM_ApplySpeedConstants()
 			ps->speed = 600;
 		}
 		//Automatically slow down as the roll ends.
+
+		if (ps->weaponstate == WEAPON_FIRING)
+		{
+			ps->weaponstate = WEAPON_ROLLFIRING;	//if we're trying to fire while rolling set our weapon state to spray and pray
+		}
 	}
 
 	saber = BG_MySaber(ps->clientNum, 0);
@@ -2399,6 +2412,8 @@ static void PM_JetpackMove(void) {
 		wishvel[i] = scale * pml.forward[i] * pm->cmd.forwardmove + scale * pml.right[i] * pm->cmd.rightmove;
 
 		// Modify the wishvel based on the values in the .jet files
+
+		//are we thrusting?
 		if (forwardThrust) {
 			wishvel[i] *= jet->move.fwdThrustAmt;
 		}
@@ -2415,24 +2430,31 @@ static void PM_JetpackMove(void) {
 				wishvel[i] *= jet->move.thrustSide;
 			}
 		}
-		else if (i) {
-			if (pm->cmd.forwardmove > 0) {
+		else //no special movement?  Regular movement then.
+		{
+			if (pm->cmd.forwardmove > 0) 
+			{
 				wishvel[i] *= jet->move.forwardMove;
 			}
-			else {
+			else 
+			{
 				wishvel[i] *= jet->move.backMove;
 			}
-		}
-		else {
-			wishvel[i] *= jet->move.sideMove;
+
+			if (pm->cmd.rightmove > 0)
+			{
+				wishvel[i] *= jet->move.sideMove;
+			}
 		}
 	}
 
 	if (!forwardThrust) {
 		if (pm->ps->eFlags & EF_JETPACK_FLAMING)
 			wishvel[2] = JETPACK_FLOAT_SPEED * jet->move.thrustUp;
+
 		else if (pm->cmd.upmove < 0)
 			wishvel[2] = -JETPACK_SINK_SPEED * jet->move.downMove;
+
 		else
 			wishvel[2] = jet->move.hoverGravity;
 	}
@@ -3055,6 +3077,9 @@ static void PM_CrashLand( void ) {
 				if (pm->ps->forcePower < 0) {
 					pm->ps->forcePower = 0;
 				}
+
+				// Check to see if we should remove roll related debuffs.
+				JKG_CheckRollRemoval(pm->ps);
 			}
 		}
 	}
@@ -3491,26 +3516,11 @@ static void PM_CheckDuck (void)
 
 	if (pm->ps->clientNum < MAX_CLIENTS)
 	{
+		pm->mins[0] = -15;
+		pm->mins[1] = -15;
 
-		//
-		// UQ1: More realistic hitboxes for players/bots...
-		//
-		if (pm->ps->pm_flags & PMF_DUCKED)
-		{
-			pm->maxs[2] = pm->ps->crouchheight;
-			pm->maxs[1] = 8;
-			pm->maxs[0] = 8;
-			pm->mins[1] = -8;
-			pm->mins[0] = -8;
-		}
-		else if (!(pm->ps->pm_flags & PMF_DUCKED))
-		{
-			pm->maxs[2] = pm->ps->standheight-8;
-			pm->maxs[1] = 8;
-			pm->maxs[0] = 8;
-			pm->mins[1] = -8;
-			pm->mins[0] = -8;
-		}
+		pm->maxs[0] = 15;
+		pm->maxs[1] = 15;
 	}
 
 	if ( pm->ps->legsAnim == BOTH_JUMPATTACK6 )
@@ -4467,11 +4477,11 @@ PM_BeginWeaponChange
 void G_PM_SwitchWeaponClip(playerState_t *ps, int newweapon, int newvariation, usercmd_t& cmd);
 void G_PM_SwitchWeaponFiringMode(playerState_t *ps, int newweapon, int newvariation);
 #endif
-void PM_BeginWeaponChange( int weaponId ) {
+void PM_BeginWeaponChange( int weaponId, const weaponData_t* weaponData) {
     int weapon, variation;
 	if(!BG_GetWeaponByIndex(pm->cmd.weapon, &weapon, &variation))
 		return;
-	
+
 	/*if( pm->ps->clientNum >= MAX_CLIENTS )
 	{
 		if ( weaponId > 0 && pm->ps->clientNum, weaponId)
@@ -4504,6 +4514,26 @@ void PM_BeginWeaponChange( int weaponId ) {
 		pm->ps->zoomTime = pm->ps->commandTime;
 	}
 
+	//no switching while overheated
+	if (pm->ps->overheated)
+	{
+		return;
+	}
+
+	// Is our weapon hot? (50%+ heat)
+	if (pm->ps->heat > pm->ps->maxHeat / 2.0f)
+	{
+		PM_AddEvent(EV_OVERHEATED);
+
+		//add weaponTime wait if weapon is hot
+		pm->ps->weaponTime += (10 * (pm->ps->heat / pm->ps->maxHeat*100));
+
+		if (pm->ps->heat > pm->ps->heatThreshold)
+			pm->ps->weaponTime += 400; //extra penalty for switching while beyond threshold
+
+		//In the future allow, but apply damage if we switch while overheated? possibly as a skill?
+	}
+
     // Change of weapon
     PM_AddEventWithParm( EV_CHANGE_WEAPON, weaponId);
     
@@ -4512,7 +4542,7 @@ void PM_BeginWeaponChange( int weaponId ) {
 	{
 		if( pm->ps->saberHolstered == 2 && weapon == WP_SABER )
 		{
-			pm->ps->weaponTime += 150;
+			pm->ps->weaponTime += (weaponData->swapTime / 2); //150 by default
 		}
 		else if( pm->ps->saberHolstered == 2 && weapon == WP_MELEE )
 		{
@@ -4521,17 +4551,31 @@ void PM_BeginWeaponChange( int weaponId ) {
 		}
 		else if( pm->ps->saberHolstered == 2 && weapon != WP_SABER )
 		{
-			pm->ps->weaponTime += 300;
+			pm->ps->weaponTime += weaponData->swapTime; //300 by default
 		}
 		else
 		{
-			pm->ps->weaponTime += 600;
+			pm->ps->weaponTime += (weaponData->swapTime * 2); //600 by default
 			PM_SetAnim(SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_OVERRIDE);
 		}
 	}
+
+	//if switching from a pistol or grenade, move faster
+	else if (pm->ps->weapon == WP_BRYAR_PISTOL || pm->ps->weapon == WP_THERMAL)
+	{
+		pm->ps->weaponTime += (0.75 * weaponData->swapTime); //25% faster (225 default)
+		PM_SetAnim(SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_OVERRIDE);
+
+	}
+
 	else
 	{
-		pm->ps->weaponTime += 300;
+		pm->ps->weaponTime += weaponData->swapTime;
+		
+		if (weapon == WP_MELEE || weapon == WP_BRYAR_PISTOL || weapon == WP_THERMAL) //if switching to melee, a pistol, or grenade reduce switch time
+		{
+			pm->ps->weaponTime -= (0.25 * weaponData->swapTime); //25% (-75 default)
+		}
 		PM_SetAnim(SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_OVERRIDE);
 	}
 }
@@ -4609,6 +4653,17 @@ void PM_FinishWeaponChange( void ) {
 	weaponData = GetWeaponData(pm->ps->weapon, pm->ps->weaponVariation);
 	pm->ps->maxHeat = weaponData->firemodes[pm->ps->firingMode].maxHeat; //set maxHeat to new weapon value
 	pm->ps->heatThreshold = weaponData->firemodes[pm->ps->firingMode].heatThreshold;
+
+	
+	if (weapon == WP_SABER) //set saber crystal color
+	{
+		const saberCrystalData_t* crystal = JKG_GetSaberCrystal(weaponData->sab.defaultcrystal);
+		if (crystal)
+		{
+			pm->ps->saberCrystal[0] = crystal->crystalID;
+			//pm->ps->saberCrystal[1] = crystal->crystalID; //--futuza: additional sabers?  not sure how to handle that yet...
+		}
+	}
 }
 
 /*
@@ -4731,6 +4786,7 @@ static void PM_Weapon(void)
 	static qboolean jkg_didGrenadeCook[MAX_GENTITIES];
 	const weaponData_t* weaponData;
 
+
 #ifdef _GAME
 	if (pm->ps->clientNum >= MAX_CLIENTS &&
 		pm->ps->weapon == WP_NONE &&
@@ -4781,9 +4837,12 @@ static void PM_Weapon(void)
 		BG_InRoll(pm->ps, pm->ps->legsAnim) ||
 		PM_InRollComplete(pm->ps, pm->ps->legsAnim))
 	{
-		if (pm->ps->weaponTime < pm->ps->legsTimer)
+		if (pm->ps->weaponstate != WEAPON_ROLLFIRING)
 		{
-			pm->ps->weaponTime = pm->ps->legsTimer;
+			if (pm->ps->weaponTime < pm->ps->legsTimer)
+			{
+				pm->ps->weaponTime = pm->ps->legsTimer;
+			}
 		}
 	}
 
@@ -4860,7 +4919,7 @@ static void PM_Weapon(void)
 	}
 
 	amount = GetWeaponData(pm->ps->weapon, pm->ps->weaponVariation)->firemodes[pm->ps->firingMode].cost;
-
+	weaponData = GetWeaponData(pm->ps->weapon, pm->ps->weaponVariation);
 	// take an ammo away if not infinite
 
 	// Jedi Knight Galaxies - Dont bitch about ammo unless we try to fire our weapon
@@ -4876,11 +4935,12 @@ static void PM_Weapon(void)
 			if (jkg_didGrenadeCook[pm->ps->clientNum]) //needs a better way to check if we're currently cooking a nade on server, this doesn't really work. --futuza
 				;
 			else
-				PM_BeginWeaponChange(pm->cmd.weapon);
+			{
+				PM_BeginWeaponChange(pm->cmd.weapon, weaponData);
+			}
 		}
 	}
 
-	weaponData = GetWeaponData(pm->ps->weapon, pm->ps->weaponVariation);
 
 	if (pm->ps->weaponstate == WEAPON_FIRING && pm->ps->weapon >= WP_BRYAR_PISTOL && pm->ps->weapon <= WP_ROCKET_LAUNCHER) {
 		// Ultra super duper special case - we are changing from a firing animation to transition into sights
@@ -5025,6 +5085,7 @@ static void PM_Weapon(void)
 			PM_AddEvent(EV_OVERHEATED);  //do a sound event
 
 		pm->ps->overheated = true;
+		pm->ps->shotsRemaining = 0;
 		return;
 	}
 
@@ -5447,6 +5508,7 @@ void PM_AdjustAttackStates( pmove_t *pmove )
 //-------------------------------------------
 {
 	int amount = 0;
+	qboolean overheated = qfalse;
 	weaponData_t *weapon = GetWeaponData (pmove->ps->weapon, pmove->ps->weaponVariation);
 	qboolean primFireDown;// = (pmove->cmd.buttons & BUTTON_ATTACK);
 	
@@ -5518,7 +5580,8 @@ void PM_AdjustAttackStates( pmove_t *pmove )
 	{
 		weaponData_t *wp = GetWeaponData( pmove->ps->weapon, pmove->ps->weaponVariation );
 		if ( pmove->ps->weaponstate == WEAPON_READY || pmove->ps->weaponstate == WEAPON_FIRING ||
-			pmove->ps->weaponstate == WEAPON_IDLE || pmove->ps->weaponstate == WEAPON_CHARGING) // fix ADS charging bug --eez
+			pmove->ps->weaponstate == WEAPON_IDLE || pmove->ps->weaponstate == WEAPON_CHARGING || // fix ADS charging bug --eez
+			pmove->ps->weaponstate == WEAPON_ROLLFIRING) //you can now fire while rolling (good luck hitting anything)
 	    	{
 			if ( (pmove->cmd.buttons & BUTTON_IRONSIGHTS || pmove->ps->isInSights) &&
 		            (pmove->ps->ironsightsTime & IRONSIGHTS_MSB) &&
@@ -5590,14 +5653,31 @@ void PM_AdjustAttackStates( pmove_t *pmove )
 	    if ( pmove->ps->weaponTime <= 0 )
 	    {
 	    	if ( weapon->firemodes[pmove->ps->firingMode].firingType == FT_BURST )
-            	{
-			pmove->ps->shotsRemaining = weapon->firemodes[pmove->ps->firingMode].shotsPerBurst & ~SHOTS_TOGGLEBIT;
-            	}
+            {
+				//if we overheat/are overheated
+				if (pmove->ps->heat >= weapon->firemodes[pmove->ps->firingMode].maxHeat || pm->ps->overheated)
+				{
+					// Overheated, we can't fire
+					if (!pm->ps->overheated)
+						PM_AddEvent(EV_OVERHEATED);  //do a sound event
+
+					pm->ps->overheated = true;
+
+					pmove->ps->eFlags &= ~EF_FIRING;
+					pm->cmd.buttons &= ~BUTTON_ATTACK;
+					primFireDown = qfalse;
+				}
+
+				else
+				{
+					pmove->ps->shotsRemaining = weapon->firemodes[pmove->ps->firingMode].shotsPerBurst & ~SHOTS_TOGGLEBIT;
+				}
+            }
         }
         else
         {
-		pm->cmd.buttons &= ~BUTTON_ATTACK;
-            	primFireDown = qfalse;
+			pm->cmd.buttons &= ~BUTTON_ATTACK;
+			primFireDown = qfalse;
         }
 	}
 	// set the firing flag for continuous beam weapons, saber will fire even if out of ammo
@@ -5606,7 +5686,9 @@ void PM_AdjustAttackStates( pmove_t *pmove )
 			primFireDown && 
 			( amount >= 0 || pmove->ps->weapon == WP_SABER ) &&
 			// JKG: No firing while sprinting
-			!BG_IsSprinting (pmove->ps, &pm->cmd, qtrue) )
+			!BG_IsSprinting (pmove->ps, &pm->cmd, qtrue) &&
+			!(pmove->ps->heat >= weapon->firemodes[pmove->ps->firingMode].maxHeat || pm->ps->overheated)
+		)
 	{
 		pmove->ps->eFlags &= ~EF_ALT_FIRING;
 
@@ -5976,6 +6058,12 @@ qboolean BG_IsSprinting(const playerState_t *ps, const usercmd_t *cmd, qboolean 
 
 	if ((ps->ironsightsTime & IRONSIGHTS_MSB) && ps->weapon != WP_THERMAL && ps->weapon != WP_TRIP_MINE && ps->weapon != WP_DET_PACK)
 	{	// Can't be sprinting while using iron sights (grenades do not count!)
+		return qfalse;
+	}
+
+	//Can't sprint while cooking grenade
+	if ((ps->weapon == WP_THERMAL || ps->weapon == WP_TRIP_MINE || ps->weapon == WP_DET_PACK) && (cmd->buttons & BUTTON_ATTACK))
+	{
 		return qfalse;
 	}
 
@@ -6546,11 +6634,6 @@ void Pmove (pmove_t *pmove) {
 	if ( finalTime > pmove->ps->commandTime + 1000 ) {
 		pmove->ps->commandTime = finalTime - 1000;
 	}
-
-#ifdef SUPER_FUTUZA_TEST
-	if (cg.crouchToggled)
-		pmove->cmd.upmove = -128;
-#endif
 
 	if (pmove->ps->fallingToDeath)
 	{

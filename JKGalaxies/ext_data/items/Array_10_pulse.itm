@@ -7,5 +7,6 @@
 	"weight":		"8",
 	"cost":		"1900",
 	"xml":			"xml/items/aa35cpulse.xml",
-	"itemIcon":		"models/weapons/DoubleBarrel_ArrayGun/icon_default"
+	"itemIcon":		"models/weapons/DoubleBarrel_ArrayGun/icon_default",
+	"itemDescription": "The AA-35c Pulse Array fired a spread of concentrated bursts of plasma used to take out fast moving targets or clear hallways. It was destructive to the environment so most jurisdictions restricted its use. A cousin of the PB10 Pulse Cannon."
 }

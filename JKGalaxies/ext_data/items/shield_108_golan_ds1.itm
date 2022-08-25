@@ -12,5 +12,7 @@
 	"rechargeSoundEffect":	"sound/shield/shield_recharge4",
 	"brokenSoundEffect":	"sound/shield/shield_broken4",
 	"equippedSoundEffect":	"sound/shield/shield_equipped2",
-	"chargedSoundEffect":	"sound/shield/shield_charged4"
+	"chargedSoundEffect":	"sound/shield/shield_charged4",
+	
+	"itemDescription": "This Golan Arms manufactured shield while lacking a strong power source resulting in a low capacity, was highly efficient and offered a very fast regeneration rate and was suited by those involved in lengthy exchanges of blaster fire."
 }

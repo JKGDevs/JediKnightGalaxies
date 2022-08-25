@@ -109,6 +109,7 @@ stringID_table_t ClassTable[] =
 	ENUM2STRING(CLASS_WEAPONS_VENDOR),
 	ENUM2STRING(CLASS_ARMOR_VENDOR),
 	ENUM2STRING(CLASS_SUPPLIES_VENDOR),
+	ENUM2STRING(CLASS_EQUIPMENT_VENDOR),
 	ENUM2STRING(CLASS_FOOD_VENDOR),
 	ENUM2STRING(CLASS_MEDICAL_VENDOR),
 	ENUM2STRING(CLASS_GAMBLER_VENDOR),
@@ -2383,7 +2384,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					SkipRestOfLine( &p );
 					continue;
 				}
-				NPC->client->ps.fd.forcePowerMax = n;
+				NPC->client->ps.stats[STAT_MAX_STAMINA] = n;
 				continue;
 			}
 
@@ -3377,7 +3378,7 @@ Ghoul2 Insert End
 
 		//if (stats->runSpeed < 300)
 		//	stats->runSpeed		= 300;
-			stats->runSpeed		= 220;
+		stats->runSpeed		= 220;
 
 		if (stats->acceleration < 160)
 			stats->acceleration	= 160;//Increase/descrease speed this much per frame (20fps)

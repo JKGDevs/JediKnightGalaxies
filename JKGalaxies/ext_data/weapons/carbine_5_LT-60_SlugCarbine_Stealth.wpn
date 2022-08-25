@@ -17,8 +17,8 @@
             "firemode":     "models/weapons/lt-60_slugcarbine_stealth/firemode"
         },
                 
-        "gunposition":      "12.0 -4.0 -6.4",
-        "ironsightsposition": "13.0 -0.1 -5.5",
+        "gunposition":      "12.0 -4.0 -8.0",
+        "ironsightsposition": "13.0 0.0 -5.5",
         "ironsightsfov": "70",
         "barrelCount": "3",
     

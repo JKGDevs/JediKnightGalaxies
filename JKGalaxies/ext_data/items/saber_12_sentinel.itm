@@ -5,6 +5,7 @@
 	"weapon":		"WP_SABER",
 	"variation":		"12",
 	"weight":		"14",
+	"tier":			4,
 	"cost":		"1800",
 	"xml":			"",
 	"itemIcon":		"models/weapons/lightsabers/icons/sentinel.tga"

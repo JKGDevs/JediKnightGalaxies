@@ -13,8 +13,8 @@
         "selectsound":      "sound/weapons/select_pistol.wav",
 	"barrelCount":	    "1",
         
-        "gunposition":      "8.0 -4.0 -5.0",
-        "ironsightsposition": "7.0 0 -4.0",
+        "gunposition":      "12.0 -4.0 -7.0",
+        "ironsightsposition": "7.0 0 -3.9",
         "ironsightsfov": "70",
     
         "firemode0": {
@@ -56,19 +56,19 @@
     
     "stats": {
         "slot":         2,
-        "reloadtime":   950,
+        "reloadtime":   825,
         "flags":        [ "roll" ],
         "reloadmodifier": 0.7
     },
     
     "firemode0": {
-        "damage":       30,
+        "damage":       34,
         "ammocost":     1,
-        "firedelay":    480,
+        "firedelay":    425,
         "firingtype":   "semi",
-        "range":	2500.0,
-        "recoil":       4.2,
-        "spread":       0.3,
+        "range":	1300.0,
+        "recoil":       4.5,
+        "spread":       0.35,
         "projectilespeed": 3000.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
@@ -77,7 +77,7 @@
 	"ammodefault": "AMMO_AA_POWERPAK",
         "clipSize":              10,
             "accuracy": {
-        "accuracyRating": 40,
+        "accuracyRating": 43,
         "accuracyRatingPerShot": 6,
         "msToDrainAccuracy": 55,
         "maxAccuracyAdd": 80

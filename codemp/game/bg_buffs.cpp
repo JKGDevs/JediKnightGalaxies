@@ -19,6 +19,9 @@ static int	nLastUsedBuff = 0;
 // Determines if this entityState has a freezing buff associated with it
 qboolean JKG_HasFreezingBuff(entityState_t* es)
 {
+	if (!es->buffsActive)
+		return qfalse;
+
 	for (int i = 0; i < PLAYERBUFF_BITS; i++)
 	{
 		if (es->buffsActive & (1 << i))
@@ -34,21 +37,88 @@ qboolean JKG_HasFreezingBuff(entityState_t* es)
 			}
 		}
 	}
+	return qfalse;
+}
 
+qboolean JKG_HasFreezingBuff(playerState_t* ps) //ps version
+{
+	if (!ps->buffsActive)
+		return qfalse;
+
+	for (int i = 0; i < PLAYERBUFF_BITS; i++)
+	{
+		if (ps->buffsActive & (1 << i))
+		{
+			jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
+			if (pBuff->passive.overridePmoveType.first)
+			{
+				if (pBuff->passive.overridePmoveType.second == PM_FREEZE ||
+					pBuff->passive.overridePmoveType.second == PM_LOCK)
+				{
+					return qtrue;
+				}
+			}
+		}
+	}
+	return qfalse;
+}
+
+qboolean JKG_HasFreezingBuff(playerState_t &ps) //ps ref version
+{
+	if (!ps.buffsActive)
+		return qfalse;
+
+	for (int i = 0; i < PLAYERBUFF_BITS; i++)
+	{
+		if (ps.buffsActive & (1 << i))
+		{
+			jkgBuff_t* pBuff = &buffTable[ps.buffs[i].buffID];
+			if (pBuff->passive.overridePmoveType.first)
+			{
+				if (pBuff->passive.overridePmoveType.second == PM_FREEZE ||
+					pBuff->passive.overridePmoveType.second == PM_LOCK)
+				{
+					return qtrue;
+				}
+			}
+		}
+	}
+	return qfalse;
+}
+
+qboolean JKG_HasResistanceBuff(playerState_t* ps)
+{
+	if (!ps->buffsActive)
+		return qfalse;
+
+	for (int i = 0; i < PLAYERBUFF_BITS; i++)
+	{
+		if (ps->buffsActive & (1 << i))
+		{
+			jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
+			if (pBuff->passive.resistant)
+			{
+				return qtrue;
+			}
+		}
+	}
 	return qfalse;
 }
 
 // Removes all buffs of a certain category on a playerstate
 void JKG_RemoveBuffCategory(const char* buffCategory, playerState_t* ps)
 {
-	for (int i = 0; i < PLAYERBUFF_BITS; i++)
+	if (ps->buffsActive)
 	{
-		if (ps->buffsActive & (1 << i))
+		for (int i = 0; i < PLAYERBUFF_BITS; i++)
 		{
-			jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
-			if (!Q_stricmp(pBuff->category, buffCategory))
+			if (ps->buffsActive & (1 << i))
 			{
-				ps->buffsActive &= ~(1 << i); // remove this buff
+				jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
+				if (!Q_stricmp(pBuff->category, buffCategory))
+				{
+					pBuff->remove_f = true;
+				}
 			}
 		}
 	}
@@ -57,14 +127,17 @@ void JKG_RemoveBuffCategory(const char* buffCategory, playerState_t* ps)
 // Removes all buffs that have the waterRemoval flag set
 void JKG_CheckWaterRemoval(playerState_t* ps)
 {
-	for (int i = 0; i < PLAYERBUFF_BITS; i++)
+	if (ps->buffsActive)
 	{
-		if (ps->buffsActive & (1 << i))
+		for (int i = 0; i < PLAYERBUFF_BITS; i++)
 		{
-			jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
-			if (pBuff->cancel.waterRemoval)
+			if (ps->buffsActive & (1 << i))
 			{
-				ps->buffsActive &= ~(1 << i); // remove this buff
+				jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
+				if (pBuff->cancel.waterRemoval)
+				{
+					pBuff->remove_f = true;
+				}
 			}
 		}
 	}
@@ -73,14 +146,39 @@ void JKG_CheckWaterRemoval(playerState_t* ps)
 // Removes all buffs that have the rollRemoval flag set
 void JKG_CheckRollRemoval(playerState_t* ps)
 {
+	if (ps->buffsActive)
+	{
+		for (int i = 0; i < PLAYERBUFF_BITS; i++)
+		{
+			if (ps->buffsActive & (1 << i))
+			{
+				jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
+				if (pBuff->cancel.rollRemoval)
+				{
+					pBuff->remove_f = true;
+				}
+			}
+		}
+	}
+}
+
+//Removes all buffs that have the filterRemoval flag set
+void JKG_CheckFilterRemoval(playerState_t* ps)
+{
+	if (!ps->buffsActive)
+		return;
+
 	for (int i = 0; i < PLAYERBUFF_BITS; i++)
 	{
 		if (ps->buffsActive & (1 << i))
 		{
 			jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
-			if (pBuff->cancel.rollRemoval)
+			if (pBuff->cancel.filterRemoval)
 			{
-				ps->buffsActive &= ~(1 << i); // remove this buff
+				pBuff->remove_f = true;
+				//ps->buffsActive &= ~(1 << i); //--futuza: Old unsafe way of removing buff, it could have unintended consequences.
+												//Instead set remove_f to true to flag it for safe removal.
+				return;
 			}
 		}
 	}
@@ -167,6 +265,12 @@ static qboolean JKG_ParseBuffCanceling(cJSON* json, jkgBuff_t* pBuff)
 	child = cJSON_GetObjectItem(json, "rollRemoval");
 	pBuff->cancel.rollRemoval = cJSON_ToBooleanOpt(child, false);
 
+	child = cJSON_GetObjectItem(json, "shieldRemoval");
+	pBuff->cancel.shieldRemoval = cJSON_ToBooleanOpt(child, false);
+
+	child = cJSON_GetObjectItem(json, "filterRemoval");
+	pBuff->cancel.filterRemoval = cJSON_ToBooleanOpt(child, false);
+
 	child = cJSON_GetObjectItem(json, "cancelOther");
 	if (child)
 	{
@@ -221,6 +325,28 @@ static qboolean JKG_ParseBuffPassiveData(cJSON* json, jkgBuff_t* pBuff)
 	{
 		pBuff->passive.overridePmoveType.first = qfalse;
 	}
+
+	child = cJSON_GetObjectItem(json, "maxstacks");
+	pBuff->passive.maxstacks = cJSON_ToIntegerOpt(child, 0);  //0 == disable passive modifier, 1== stacks once, etc.
+	pBuff->passive.stacks = 0; //initialize stacks
+	pBuff->passive.movemodifier_cur = 1.0; //initialize movement modifier
+
+	child = cJSON_GetObjectItem(json, "movemodifier");
+	pBuff->passive.movemodifier = cJSON_ToNumberOpt(child, 1.0);  //--futuza: todo aid more movement type modifiers here, this one only effects overall total speed
+	if (pBuff->passive.movemodifier < 0)
+		pBuff->passive.movemodifier = 0.0;
+
+	pBuff->passive.movemodifier_cur = pBuff->passive.movemodifier;  //set initial movemodifier
+
+	child = cJSON_GetObjectItem(json, "knockdown");					//does this debuff apply a knockback? (just one)
+	pBuff->passive.knockdown = cJSON_ToBooleanOpt(child, false);
+
+	child = cJSON_GetObjectItem(json, "empstaggered");
+	pBuff->passive.empstaggered = cJSON_ToBooleanOpt(child, false);
+
+	child = cJSON_GetObjectItem(json, "resistant");
+	pBuff->passive.resistant = cJSON_ToBooleanOpt(child, false);
+
 	return qtrue;
 }
 
@@ -324,6 +450,7 @@ static qboolean JKG_ParseBuff(const char* buffName, cJSON* json)
 	}
 #endif
 
+	pBuff->remove_f = false;	//set flag
 	return qtrue;
 }
 

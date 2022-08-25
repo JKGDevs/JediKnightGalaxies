@@ -7,5 +7,6 @@
 	"weight":		"3",
 	"cost":		"1450",
 	"xml":			"xml/items/e11carbine.xml",
-	"itemIcon":		"models/weapons/E-11_Carbine/icon_default"
+	"itemIcon":		"models/weapons/E-11_Carbine/icon_default",
+	"itemDescription": "A standard-issue blaster rifle for Imperial Stormtroopers. Ancestor of the DC-15 series once used in the Clone Wars, this BlasTech weapon features a low profile and powerful blast. The carbine sacrifices power for a faster firing rate."
 }

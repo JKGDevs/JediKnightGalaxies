@@ -18,7 +18,7 @@
             "firemode":     "models/weapons/KYD-21_Pistol/bar"
         },
         
-        "gunposition":      "8.0 -3.0 -4.0",
+        "gunposition":      "12.0 -5.0 -6.0",
         "ironsightsposition": "10.0 0.0 -3.6",
         "ironsightsfov": "75",
 		"barrelCount": "1",
@@ -43,18 +43,18 @@
         "firemode1": {
             "type":         "blaster",
             
-            "muzzlefx":     "blasters/muzzleflash_White_small",
+            "muzzlefx":     "blasters/muzzleflash_stingbeam",
             "firesound":    [
-                "sound/weapons/blasters/flaregun1.mp3",
-                "sound/weapons/blasters/flaregun2.mp3",
-                "sound/weapons/blasters/flaregun3.mp3",
-                "sound/weapons/blasters/flaregun4.mp3"
+                "sound/weapons/blasters/stingbeam1.mp3",
+                "sound/weapons/blasters/stingbeam2.mp3",
+                "sound/weapons/blasters/stingbeam3.mp3",
+                "sound/weapons/blasters/stingbeam4.mp3"
             ],
             "projectilefx": "blasters/shot_White_Flare_small",
             "miss":         { "impactfx": "blasters/blue_impacttiny" },
             "hit":          { "impactfx": "blasters/blue_impacttiny" },
             "deathfx": "blasters/shot_White_vaporize",
-	    "displayName":  "PEP Laser"
+	    "displayName":  "Sting Blast"
         }
     },
     
@@ -82,7 +82,15 @@
     },
     
     "firemode1": {
-        "damage":       10,
+        "damage": {
+			"damage": 10,
+			"buffs": [
+			{
+				"buff": "standard-sting",
+				"duration": 7000
+			}
+			]
+		},
         "ammocost":     1,
         "firedelay":    300,
         "firingtype":   "semi",

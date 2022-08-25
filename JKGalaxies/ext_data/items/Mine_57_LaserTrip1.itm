@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"75",
 	"maxStack":		5,
-	"itemIcon":		"models/weapons/Mine_LaserTrip/icon_default"
+	"itemIcon":		"models/weapons/Mine_LaserTrip/icon_default",
+	"itemDescription": "A simple trip mine which is activated upon tripping the laser beam that extends from the mine's detector. It is small and easily blends in with many metallic surfaces, it is best used in combination with other mines to create 'arrays' of denial."
 }

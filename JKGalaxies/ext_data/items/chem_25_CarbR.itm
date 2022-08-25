@@ -7,5 +7,6 @@
 	"weight":		"30",
 	"cost":		"3250",
 	"xml":			"xml/items/Carbonite_rifle.xml",
-	"itemIcon":		"models/weapons/CarboniteRifle/icon_default"
+	"itemIcon":		"models/weapons/CarboniteRifle/icon_default",
+	"itemDescription": "Created by scientists from Empress Teta (also known as Cinnagar), it fired a stream of liquid carbonite that solidified shortly after contact with a target, freezing and slowing the target. The weapon was extremely expensive and hard to manufacture."
 }

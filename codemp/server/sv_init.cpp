@@ -944,6 +944,7 @@ void SV_Init (void) {
 	sv_needpass = Cvar_Get ("g_needpass", "0", CVAR_SERVERINFO | CVAR_ROM );
 	Cvar_Get ("sv_keywords", "", CVAR_SERVERINFO);
 	Cvar_Get ("protocol", va("%i", PROTOCOL_VERSION), CVAR_SERVERINFO | CVAR_ROM);
+	Cvar_Get("gameversion", va("%s", JKG_VERSION JKG_VERSION_SUFFIX), CVAR_SERVERINFO | CVAR_ROM);
 	sv_mapname = Cvar_Get ("mapname", "nomap", CVAR_SERVERINFO | CVAR_ROM);
 	sv_privateClients = Cvar_Get ("sv_privateClients", "0", CVAR_SERVERINFO);
 	Cvar_CheckRange( sv_privateClients, 0, MAX_CLIENTS, qtrue );

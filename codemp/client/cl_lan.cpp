@@ -315,6 +315,7 @@ void LAN_GetServerInfo( int source, int n, char *buf, int buflen ) {
 		Info_SetValueForKey( info, "addr", NET_AdrToString(server->adr));
 //		Info_SetValueForKey( info, "sv_allowAnonymous", va("%i", server->allowAnonymous));
 //		Info_SetValueForKey( info, "pure", va("%i", server->pure ) );
+		Info_SetValueForKey(info, "gameversion", server->gameversion);
 		Q_strncpyz(buf, info, buflen);
 	} else {
 		if (buf) {

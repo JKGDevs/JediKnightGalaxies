@@ -72,6 +72,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define WINDOW_BACKCOLORSET			0x00400000	// backcolor was explicitly set
 #define WINDOW_TIMEDVISIBLE			0x00800000	// visibility timing ( NOT implemented )
 #define WINDOW_PLAYERCOLOR			0x01000000	// hack the forecolor to match ui_char_color_*
+#define WINDOW_TEXTCOLOR			0x02000000	// override colors for Item_Text_Paint()
 
 #define WINDOW_NOFOCUSSOUND			0x02000000	// no sound when this item gets focus
 

@@ -1,0 +1,38 @@
+{
+	"ref":		"bhhelmet",
+	"slot":		"head",
+	"armor":		100,
+	"movemodifier":	1.0,
+
+	"visuals": {
+		"model":	"models/players/bounty_hunter/model.glm*default",
+		"modelGroup":	"bounty_hunter",
+
+		"armorOnSurfaces": [
+			"head"
+		],
+
+		"bodyOffSurfaces": [
+			"head",
+			"head_face",
+			"head_eyes",
+			"head_eyes_mouth",
+			"head_helmet",
+			"head_haira",
+			"head_hairb",
+			"head_l_hairback",
+			"heada",
+			"headb",
+			"heada_mouth",
+			"headb_mouth",
+			"heada_teeth",
+			"headb_teeth",
+			"heada_face",
+			"headb_face",
+			"head_com",
+			"head_left",
+			"head_right",
+			"head_fins"
+		]
+	}
+}

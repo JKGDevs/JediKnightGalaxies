@@ -7,5 +7,6 @@
 	"weight":		"6",
 	"cost":		"1475",
 	"xml":			"xml/items/Imperial_ARC_Caster.xml",
-	"itemIcon":		"models/weapons/ARC_CasterImperial/icon_default"
+	"itemIcon":		"models/weapons/ARC_CasterImperial/icon_default",
+	"itemDescription": "The Imperial ARC Caster was used by the experimental Dark Troopers, to great effect in the Jedi Purge the few times it was deployed. The weapon was an attempt to reproduce the devastating Mk 1 prototype developed by a now dead Rebel sympathizer."
 }

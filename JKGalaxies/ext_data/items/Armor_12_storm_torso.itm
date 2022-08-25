@@ -1,9 +1,10 @@
 {
-	"name":             "Stormtrooper Body Armor",
+	"name":             "Stormtrooper Torso Body Armor",
 	"internal":             "torso_stormtrooper",
 	"itemtype":             "armor",
 	"armor":		"sttorso",
 	"weight":		"2",
 	"cost":			"500",
-	"itemIcon":		"gfx/item_icons/stormtrooper_helmet.tga"
+	"itemIcon":		"gfx/item_icons/stormtrooper_torso.tga",
+	"itemDescription": "Standard issue torso armor part of the Imperial Stormtrooper protective outfit set. An evolution of earlier Phase II clone trooper armor used in the Clone Wars. Made of white plastoid alloys it protects the wearers torso."
 }

@@ -68,16 +68,17 @@
         "firingtype":   "burst",
         "range":        4500.0,
         "recoil":       0.5,
-//        "splashrange":  8.0,
 		"shotsperburst": 3,
         "spread":       0.5,
         "projectilespeed": 5000.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
         "splashmeansofdeath": "MOD_BLASTER",
-		"ammobase": "AMMO_POWERPACK_L",
-		"ammodefault": "AMMO_POWERPACK_M",
-        "clipSize":              30
+		"ammobase": "AMMO_POWERPACK_S",
+		"ammodefault": "AMMO_POWERPACK_S",
+        "clipSize":              30,
+        "heatGenerated": 4.5,
+        "maxHeat": 40
     },
 	
     "firemode1": {
@@ -92,9 +93,11 @@
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
         "splashmeansofdeath": "MOD_BLASTER",
-		"ammobase": "AMMO_POWERPACK_L",
-		"ammodefault": "AMMO_POWERPACK_M",
-        "clipSize":              30
+		"ammobase": "AMMO_POWERPACK_S",
+		"ammodefault": "AMMO_POWERPACK_S",
+        "clipSize":              30,
+        "heatGenerated": 3,
+        "maxHeat": 40
     },
     
 	"playeranims": {

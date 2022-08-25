@@ -7,5 +7,6 @@
 	"weight":		"15",
 	"cost":		"1150",
 	"xml":			"xml/items/DLT-19.xml",
-	"itemIcon":		"models/weapons/DLT-19_HeavyBlaster/icon_default"
+	"itemIcon":		"models/weapons/DLT-19_HeavyBlaster/icon_default",
+	"itemDescription": "The DLT-19 is not as well-known as the E-11 blaster rifle, partially due to its awkward weight distribution and fragile construction. However, the DLT-19 is much more powerful and has a much greater range than the E-11 making it suitable for sniping."
 }

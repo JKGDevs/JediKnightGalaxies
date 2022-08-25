@@ -6,8 +6,8 @@
     "description":      "@JKG_ITEMS_Grenade_Bacta_Antidote-e",
     
     "visual": {
-        "viewmodel":        "models/weapons/Grenade_Stun/viewmodel.md3",
-        "worldmodel":       "models/weapons/Grenade_Stun/model.glm",
+        "viewmodel":        "models/weapons/Grenade_Bacta/viewmodel.md3",
+        "worldmodel":       "models/weapons/Grenade_Bacta/model.glm",
         "hudicon":          "gfx/Item_Icons/default",
         "hudnaicon":        "gfx/Item_Icons/default",
         "selectsound":      "sound/weapons/select_grenade.wav",
@@ -27,17 +27,18 @@
                 "sound/weapons/melee/swing4.mp3"
             ],
             "chargingsound": "sound/weapons/grenade_cook.wav",
-            "projectilemodel": "models/weapons/Grenade_Stun/projectile.md3",
-            "miss": {
-                "impactfx": "weapons/watergun_impact_big",
-                "shockwavefx": "weapons/watergun_impact_small"
-            },
-            "hit": {
-                "impactfx": "weapons/watergun_impact_big",
-                "shockwavefx": "weapons/watergun_impact_small"
-            },
-            "bouncesound":  [ "sound/weapons/grenade_bounce1.wav", "sound/weapons/grenade_bounce2.wav" ],
-	    "displayName":  "Throw"
+            "projectilemodel": "models/weapons/Grenade_Bacta/projectile.md3",
+			"runsound": "sound/weapons/helpfulnade_loop.wav",
+			"miss": {
+				"impactfx": "weapons/watergun_impact_big",
+				"shockwavefx": "weapons/watergun_impact_small"
+			},
+			"hit": {
+				"impactfx": "weapons/watergun_impact_big",
+				"shockwavefx": "weapons/watergun_impact_small"
+			},
+			"bouncesound": ["sound/weapons/grenade_bounce1.wav", "sound/weapons/grenade_bounce2.wav"],
+			"displayName":  "Throw"
         },
         
         "firemode1": {
@@ -50,7 +51,8 @@
                 "sound/weapons/melee/swing4.mp3"
             ],
             "chargingsound": "sound/weapons/grenade_cook.wav",
-            "projectilemodel": "models/weapons/Grenade_Stun/projectile.md3",
+            "projectilemodel": "models/weapons/Grenade_Bacta/projectile.md3",
+			"runsound": "sound/weapons/helpfulnade_loop.wav",
             "miss": {
                 "impactfx": "weapons/watergun_impact_big",
                 "shockwavefx": "weapons/watergun_impact_small"
@@ -60,7 +62,7 @@
                 "shockwavefx": "weapons/watergun_impact_small"
            },
             "bouncesound":  [ "sound/weapons/grenade_bounce1.wav", "sound/weapons/grenade_bounce2.wav" ],
-	    "displayName":  "Roll"
+			"displayName":  "Roll"
         }
     },
     
@@ -79,19 +81,19 @@
             "damageradius": 
 			{ 
 				"start": 0,
-				"end": 128,
+				"end": 150,
                 "function": "clamp",
                 "parm": 30,
                 "falloff": "constant" 
 			},
             "duration": 1000,
             "delay": 0,
-            "damage": -40,
+            "damage": -5,
             "damagedelay": 350,
 			"buffs": [
 			{
 				"buff": "standard-antidote",
-				"duration": 10000
+				"duration": 8000
 			}
 			],
 			"flags":	[ "DAMAGE_NO_KNOCKBACK" ]
@@ -105,16 +107,16 @@
                 "falloff": "linear" },
                 "duration": 1500,
                 "delay": 500,
-                "damage": -3,
-                "damagedelay": 250,
+                "damage": -1,
+                "damagedelay": 400,
                 "buffs": [
 				{
 					"buff": "standard-antidote",
-					"duration": 5000
+					"duration": 8000
 				},
                 {
                     "buff": "standard-heal",
-                    "duration": 5000
+					"duration": 3000
                 }
 				],
 			  "flags":	[ "DAMAGE_NO_KNOCKBACK" ]
@@ -127,9 +129,9 @@
         "grenadeBounceDMG": 0,
         "collisionsize":1.7,
         "ammocost":     1,
-        "maxchargetime":1000,
-        "chargedelay":  1000,
-        "firedelay":    5000,
+        "maxchargetime":2000,
+        "chargedelay":  2000,
+        "firedelay":    500,
         "firingtype":   "semi",
         "recoil":       3.0,
         "spread":       1.0,
@@ -147,19 +149,19 @@
             "damageradius": 
 			{ 
 				"start": 0,
-				"end": 128,
+				"end": 150,
                 "function": "clamp",
                 "parm": 30,
                 "falloff": "constant" 
 			},
             "duration": 1000,
             "delay": 0,
-            "damage": -40,
-            "damagedelay": 300,
+            "damage": -5,
+            "damagedelay": 500,
 			"buffs": [
 			{
 				"buff": "standard-antidote",
-				"duration": 10000
+				"duration": 8000
 			}
 			],
 			"flags":	[ "DAMAGE_NO_KNOCKBACK" ]
@@ -173,16 +175,16 @@
                 "falloff": "linear" },
                 "duration": 1500,
                 "delay": 500,
-                "damage": -3,
+                "damage": -1,
                 "damagedelay": 250,
                 "buffs": [
 				{
 					"buff": "standard-antidote",
-					"duration": 5000
+					"duration": 8000
 				},
                 {
                     "buff": "standard-heal",
-                    "duration": 5000
+					"duration": 3000
                 }
 				],
 			  "flags":	[ "DAMAGE_NO_KNOCKBACK" ]
@@ -195,9 +197,9 @@
         "grenadeBounceDMG": 0,
         "collisionsize":1.7,
         "ammocost":     1,
-        "maxchargetime":1000,
-        "chargedelay":  1000,
-        "firedelay":    5000,
+        "maxchargetime":2000,
+        "chargedelay":  2000,
+        "firedelay":    500,
         "firingtype":   "semi",
         "recoil":       3.0,
         "spread":       1.0,

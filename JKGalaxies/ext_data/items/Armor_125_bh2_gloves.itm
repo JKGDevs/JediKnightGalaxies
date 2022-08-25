@@ -1,0 +1,10 @@
+{
+	"name":         "Galinolo Hunting Gloves",
+	"internal":     "gloves_bountyhunter2",
+	"itemtype":     "armor",
+	"armor":		"bh2gloves",
+	"weight":		"1",
+	"cost":			"75",
+	"itemIcon":		"gfx/item_icons/bh1_gloves.tga",
+	"itemDescription": "Initially marketed toward planetary military groups, these durafiber leather blend gloves provide strong protection for the user's hands in combat. Popular among bounty hunters operating in the Outer Rim. Manufactured by Galino Corp."
+}

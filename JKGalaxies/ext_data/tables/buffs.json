@@ -8,6 +8,7 @@
 			"noCategoryStack": true,
 			"waterRemoval": true,
 			"rollRemoval": true,
+			"shieldRemoval": true,
 
 			"cancelOther": [
 				{
@@ -74,7 +75,38 @@
 
 		"canceling": {
 			"noBuffStack": true,
-			"noCategoryStack": true
+			"noCategoryStack": true,
+			"shieldRemoval": true
+		},
+		
+		"damage":
+		{
+			"deadly": false
+		},
+
+		"passive": {
+			"pmove": "PM_NOMOVE",
+			"knockdown": true,
+			"movemodifier" : 0.4,
+			"maxstacks" : 2
+		},
+
+		"visuals": {
+			"shader": {
+				"shader": "gfx/PlayerOverlays/stun",
+				"shaderRGBA": [ 0, 0, 127, 255 ],
+				"shaderLen": 500
+			}
+		}
+	},
+
+	"stasis-stun": {
+		"category": "stun",
+
+		"canceling": {
+			"noBuffStack": false,
+			"noCategoryStack": true,
+			"shieldRemoval": true
 		},
 		
 		"damage":
@@ -94,6 +126,135 @@
 			}
 		}
 	},
+	
+	//for sting beams, adds stacking slows, does no damage
+	"standard-sting":
+	{
+		"category": "slow",
+		
+		"canceling": 
+		{
+			"priority": 50,
+			"noBuffStack": false,
+			"noCategoryStack": false,
+			"shieldRemoval": true,
+
+			"cancelOther": [
+				{
+					"category": "haste",
+					"priority": 100
+				}
+			]
+		},
+		
+		"passive": {
+			"movemodifier" : 0.9,
+			"maxstacks" : 5
+		},
+		
+		"visuals":
+		{
+		
+		}
+	},
+	
+	//stacking movement speed decrease, does no damage
+	"standard-slow":
+	{
+		"category": "slow",
+		
+		"canceling": 
+		{
+			"priority": 75,
+			"noBuffStack": false,
+			"noCategoryStack": false,
+
+			"cancelOther": [
+				{
+					"category": "haste",
+					"priority": 100
+				}
+			]
+		},
+		
+		"passive": {
+			"movemodifier" : 0.8,
+			"maxstacks" : 4
+		},
+		
+		"visuals":
+		{
+		
+		}
+	},
+	
+	//stacking movement speed increase, does no damage
+	"standard-haste":
+	{
+		"category": "haste",
+		
+		"canceling": 
+		{
+			"priority": 50,
+			"noBuffStack": false,
+			"noCategoryStack": false,
+
+			"cancelOther": [
+				{
+					"category": "slow",
+					"priority": 100
+				}
+			]
+		},
+		
+		"passive": {
+			"movemodifier" : 1.15,
+			"maxstacks" : 5
+		},
+		
+		"visuals":
+		{
+		
+		}
+	},
+
+	//emp gear restriction, prevents activation of jetpacks (and more to come later, maybe disable hud?)
+	"standard-emp":
+	{
+		"category": "electric",
+
+		"canceling": {
+			"noBuffStack": true,
+			"noCategoryStack": true
+		},
+
+		"passive": {
+			"empstaggered": true
+		},
+
+		"damage": {
+			"damage": 1,
+			"means": "MOD_EMP",
+			"damageRate": 1000,
+			"deadly": false
+		},
+
+		"visuals": {
+			"efx": 
+			{
+				"effect": "effects/sparks/spark",
+				"bolt": "upper_lumbar",
+				"debounce": 1000
+			},
+			"shader": {
+				"shader": "gfx/PlayerOverlays/electricity",
+				"shaderRGBA": [ 205, 112, 205, 180 ],
+				"shaderLen": 2501
+			}
+			/*put other electronic effects here
+		  	eg: make HUD or radar go fuzzy, short out other equipment/tech, etc.?*/
+		}
+	},
 
 	"standard-carbonite": {
 		"category": "carbonite",
@@ -111,7 +272,8 @@
 		},
 
 		"passive": {
-			"pmove": "PM_FREEZE"
+			"pmove": "PM_FREEZE",
+			"resistant": true
 		},
 
 		"visuals": {
@@ -146,6 +308,7 @@
 
 		"canceling": {
 			"noBuffStack": true,
+			"filterRemoval": true,
 			"noCategoryStack": true
 		},
 
@@ -251,20 +414,6 @@
 			"damagerate": 850,
 			"deadly": false
 		}
-	},
-	
-	//sting beam, adds stacking slows, does no damage
-	"standard-sting":
-	{
-		"category": "slow",
-		"priority": 50,
-		
-		"canceling":
-		{
-			
-		}
-		
-	
 	}
 
 	// movement speed modifier is not implemented yet

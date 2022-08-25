@@ -121,7 +121,6 @@ void DOM_StandardBotAI2(bot_state_t *bs, float thinktime)
 		bot->r.maxs[0] = 8;
 		bot->r.mins[1] = -8;
 		bot->r.mins[0] = -8;
-		trap->LinkEntity((sharedEntity_t *)bot);
 	}
 	else if (!(bot->client->ps.pm_flags & PMF_DUCKED) && bot->r.maxs[2] < bot->client->ps.standheight)
 	{
@@ -130,6 +129,7 @@ void DOM_StandardBotAI2(bot_state_t *bs, float thinktime)
 		bot->r.maxs[0] = 10;
 		bot->r.mins[1] = -10;
 		bot->r.mins[0] = -10;
-		trap->LinkEntity((sharedEntity_t *)bot);
 	}
+
+	trap->LinkEntity((sharedEntity_t *)bot);
 }

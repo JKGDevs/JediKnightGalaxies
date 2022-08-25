@@ -1,0 +1,10 @@
+{
+	"name":         "Boushh's Ubesian Helmet (Legendary)",
+	"internal":     "helmet_bousshh",
+	"itemtype":     "armor",
+	"armor":		"bousshh_helmet",
+	"weight":		"2",
+	"cost":			"2000",
+	"itemIcon":		"gfx/item_icons/bousshh_helmet.tga",
+	"itemDescription": "A customized helmet worn by the bounty hunter Boushh.  It offers light protection, and contains several features such as a breathing filtration system, speech scramblers, an advnanced HUD and vision scanners."
+}

@@ -7,5 +7,6 @@
 	"weight":		"15",
 	"cost":		"1300",
 	"xml":			"xml/items/ACP_Assault_Bowcaster.xml",
-	"itemIcon":		"models/weapons/bowcaster_classic/icon_default"
+	"itemIcon":		"models/weapons/bowcaster_classic/icon_default",
+	"itemDescription": "While based upon traditional Wookie Crossbow designs, this modern weapon allows for a much larger clip size to allow rapid firing of several 'bolts' in quick succession. This configuration is suited for close to medium range."
 }

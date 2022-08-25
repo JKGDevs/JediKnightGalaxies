@@ -706,6 +706,7 @@ cvar_t	*cl_yawspeed;
 cvar_t	*cl_pitchspeed;
 
 cvar_t	*cl_run;
+cvar_t	*cl_crouch;
 
 cvar_t	*cl_anglespeedkey;
 
@@ -812,6 +813,10 @@ void CL_KeyMove( usercmd_t *cmd ) {
 	cmd->forwardmove = ClampChar( forward );
 	cmd->rightmove = ClampChar( side );
 	cmd->upmove = ClampChar( up );
+
+	if (cl_crouch->integer) {
+		cmd->upmove = -128;
+	}
 }
 
 /*

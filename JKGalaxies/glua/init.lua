@@ -11,12 +11,17 @@
 JKG.Running = true
 
 print("Loading main functions...")
-include("admin/accounts.lua") -- Accounts and Admin commands
+include("admin/accounts.lua") 	--Accounts and Admin commands
+include("emotes.lua")	--Emote system
+include("dice.lua") 	--Dice Roller
 print("Loading entity spawning commands...")
 include("entcmds.lua")
 
 print("Loading item functions...")
 include "resources/items/init.lua"
+
+print("Loading quests manager...")
+include ("resources/quests/questManager.lua")
 
 entmanager.Init()
 -- Load the global entities
@@ -51,4 +56,4 @@ else
 end
 
 print("Loading miscellaneous functions")
-include("misc.lua")
+include("misc.lua")  --This includes new test functions including stuff like pzktest and slctest

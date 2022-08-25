@@ -5,5 +5,6 @@
 	"armor":		"gncoat",
 	"weight":		"2",
 	"cost":			"100",
-	"itemIcon":		"gfx/item_icons/default.tga"
+	"itemIcon":		"gfx/item_icons/heavy_coat.tga",
+	"itemDescription": "A heavy coat designed to protect the wearer from extreme cold, it is most often used by Imperial citizens attempting to colonize ice worlds or glacial regions. Its thick nature provides some protection from damage."
 }

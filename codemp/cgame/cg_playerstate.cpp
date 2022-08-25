@@ -338,9 +338,13 @@ void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops ) {
 	}
 
 	// JKG, check for death (for fadeout and chat disruption)
-	if ( ps->stats[STAT_HEALTH] < 1 && cg.deathTime == 0 ) {
+	if ( ps->stats[STAT_HEALTH] < 1 && cg.deathTime == 0) 
+	{
 		cg.deathTime = cg.time;
-		ChatBox_InterruptChat();
+
+		if (ps->clientNum == cg.clientNum) { //if these aren't the same, someone is spectating - and we shouldn't interrupt their chat
+			ChatBox_InterruptChat();
+		}
 	}
 	if ( ps->pm_type == PM_SPECTATOR && cg.deathTime && ps->stats[STAT_HEALTH] == 1) {
 		// We're usin the deathcam, dont do anythin

@@ -5,6 +5,7 @@
 	"weapon":		"WP_SABER",
 	"variation":		"13",
 	"weight":		"18",
+	"tier":			4,
 	"cost":		"1575",
 	"xml":			"",
 	"itemIcon":		"models/weapons/lightsabers/icons/adjudicator.tga"

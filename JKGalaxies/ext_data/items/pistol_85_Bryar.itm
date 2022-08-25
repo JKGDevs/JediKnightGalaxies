@@ -7,5 +7,6 @@
 	"weight":		"6",
 	"cost":		"550",
 	"xml":			"xml/items/ModBryar.xml",
-	"itemIcon":		"models/weapons/bryar_pistol/icon_default"
+	"itemIcon":		"models/weapons/bryar_pistol/icon_default",
+	"itemDescription": "A modified Bryar rifle, with its stock and muzzle sawed down. It is noted for it's high accuracy and ability to charge up blasts by consuming extra ammunition to increase the damage output of the blaster."
 }

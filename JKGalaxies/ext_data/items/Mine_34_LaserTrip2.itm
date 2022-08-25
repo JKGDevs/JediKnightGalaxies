@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"150",
 	"maxStack":		5,
-	"itemIcon":		"models/weapons/Mine_LaserTrip/icon_mk2"
+	"itemIcon":		"models/weapons/Mine_LaserTrip/icon_mk2",
+	"itemDescription": "The Mark II offers a significant advantage over its predecessor for a higher cost. This model features a proximity detection field mode, as well as the traditional trip beam detection. It makes use of a stealth optic camouflage to hide placed mines."
 }

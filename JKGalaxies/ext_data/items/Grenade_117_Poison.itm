@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"70",
 	"maxStack":		6,
-	"itemIcon":		"models/weapons/Grenade_Poison/icon_default"
+	"itemIcon":		"models/weapons/Grenade_Poison/icon_default",
+	"itemDescription": "An illegally modified Nacht-4 smoke grenade which contains a deadly neurotoxin that can kill targets which inhale too much of the contaminated smoke.  Some forms of bacta may act as an antidote for the toxin if applied quickly enough."
 }

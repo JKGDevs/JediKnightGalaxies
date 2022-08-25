@@ -12,5 +12,7 @@
 	"brokenSoundEffect":	"sound/shield/shield_broken3",
 	"equippedSoundEffect":	"sound/shield/shield_equipped4",
 	"rechargeSoundEffect":	"sound/shield/shield_recharge7",
-	"chargedSoundEffect":	"sound/shield/shield_charged"
+	"chargedSoundEffect":	"sound/shield/shield_charged",
+	
+	"itemDescription": "Originally designed to protect Sullustan miners from environmental hazards, this Soru-Suub Corporation shield has gained some reputation among wealthier clients for being very effective for its price. Engineered to operate with reduced radiation."
 }

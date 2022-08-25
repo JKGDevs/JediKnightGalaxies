@@ -1,0 +1,10 @@
+{
+	"name":        "Kessler Mercenary Pants",
+	"internal":     "legs_bountyhunter",
+	"itemtype":     "armor",
+	"armor":		"bhlegs",
+	"weight":		"2",
+	"cost":			"350",
+	"itemIcon":		"gfx/item_icons/bounty_hunter_legs.tga",
+	"itemDescription": "Protective pants manufactured by the Kessler Corp."
+}

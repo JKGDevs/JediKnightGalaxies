@@ -922,9 +922,6 @@ typedef struct cg_s {
 	int			warmup;
 	int			warmupCount;
 
-	qboolean	crouchToggled;
-	int			crouchToggleTime;
-
 	//==========================
 
 	int			itemPickup;
@@ -974,8 +971,6 @@ typedef struct cg_s {
 	refEntity_t		testModelEntity;
 	char			testModelName[MAX_QPATH];
 	qboolean		testGun;
-
-	qboolean		holsterState;
 
 	int			VHUDFlashTime;
 	qboolean	VHUDTurboFlag;
@@ -1428,6 +1423,8 @@ typedef struct cgEffects_s {
 	fxHandle_t	mSparksExplodeNoSound;
 	fxHandle_t	mTripMineLaser;
 	fxHandle_t	mEmplacedMuzzleFlash;
+	fxHandle_t	mHeatSteam;
+	fxHandle_t	mOverheatSteam;
 	fxHandle_t	mHyperspaceStars;
 	fxHandle_t	mBlackSmoke;
 	fxHandle_t	mShipDestDestroyed;

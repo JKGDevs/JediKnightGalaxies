@@ -7,5 +7,6 @@
 	"weight":		"5",
 	"cost":		"1625",
 	"xml":		"",
-	"itemIcon":		"models/weapons/EE-3_Rifle/icon_default"
+	"itemIcon":		"models/weapons/EE-3_Rifle/icon_default",
+	"itemDescription": "Created by BlasTech Industries, this blaster is intended to replace E-11s. It has a slightly smaller clip size, but much greater cooling efficiency, accuracy, and damage potential. The Legendary bounty hunter, Boba Fett, uses a modified EE-3."
 }

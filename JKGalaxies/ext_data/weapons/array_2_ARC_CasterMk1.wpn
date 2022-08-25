@@ -17,7 +17,7 @@
             "firemode":     "models/weapons/ARC_CasterMk1/firemode"
         },
         
-        "gunposition":      "10.0 -2.0 -7.0",
+         "gunposition":      "14.0 -4.0 -8.0",
         "ironsightsposition": "13.0 0.0 -4.6",
         "ironsightsfov": "70",
 		"barrelCount": "4",
@@ -71,7 +71,15 @@
     },
     
     "firemode0": {
-        "damage":       13,
+                "damage": {
+                    "damage":       13,
+            		"buffs": [
+					{
+						"buff": "standard-emp",
+						"duration": 4000
+					}
+				    ]
+        },
         "ammocost":     1,
         "maxchargetime": 1500,
         "chargedamage": 1.5,
@@ -97,7 +105,15 @@
     },
 
     "firemode1": {
-        "damage":       6,
+        "damage": {
+                    "damage":       6,
+            		"buffs": [
+					{
+						"buff": "standard-emp",
+						"duration": 4000
+					}
+				]
+        },
         "ammocost":     1,
         "collisionsize": 5.0,
         "firedelay":    50,

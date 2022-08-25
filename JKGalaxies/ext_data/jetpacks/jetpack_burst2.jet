@@ -32,7 +32,7 @@
 		"thrustBack": 1.0,
 		"thrustSide": 1.5,
 		"thrustUp": 4.5,
-		"loadBearingAllowed": true
+		"loadBearingAllowed": false
 	},
 
 	"visuals": {
@@ -46,10 +46,10 @@
 		// activateSound (S) - sound to play when jetpack is activated
 		// deactivateSound (S) - sound to play when jetpack is deactivated
 
-		"modelName":	"models/weapons2/jetpack/model.glm",
+		"modelName":	"models/weapons2/b_jetpack/model.glm",
 		"effectBolts": [
-			"torso_ljet",
-			"torso_rjet"
+			"*exhaust1",
+			"*exhaust2"
 		],
 		"hoverEffect": "effects/player/jetpack.efx",
 		"thrustEffect": "effects/player/jetpack.efx",

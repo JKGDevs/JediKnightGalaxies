@@ -1,13 +1,13 @@
 // Jedi Knight Galaxies - Custom Ammo Types
 {
-	// Ammo for the ACP Array Gun
+	/*Ammos with inheritance/based on attribute*/
+
 	"AMMO_ACP_ARRAY": {
 		"shortname": "ACP Cartridges",
 		"longname": "Arakyd Industries ACP Array Cartridges",
 		"max": 90,
 		"pricePerUnit": 1.25 //total: 112
 	},
-	
 	"AMMO_ACP_SLUG": {
 		"shortname": "ACP Slugs",
 		"longname": "Arakyd Industries ACP Slug Cartridges",
@@ -23,14 +23,14 @@
 			}
 		}
 	},
-	
-	"AMMO_ACP_DRUM": {
-		"shortname": "Disintegrating ACP Drums",
-		"longname": "Arakyd Industries Disintegrating ACP Belt Drums",
-		"max": 900,
-		"pricePerUnit": 0.5 //total: 450
+
+	"AMMO_ACP_POWERCELL_M": {
+		"shortname": "ACP Power Cells (m)",
+		"longname": "Barrakan Arms ACP Medium Power Cells",
+		"max": 600,
+		"pricePerUnit": 0.4 //total: 240
 	},
-	
+
 	// Small ACP Power Cells - Used for the Trandoshan weapons
 	"AMMO_ACP_POWERCELL_S": {
 		"shortname": "ACP Power Cells (s)",
@@ -38,54 +38,39 @@
 		"max": 500,
 		"pricePerUnit": 0.25 //total: 125
 	},
-	
 	"AMMO_ACP_POWERCELL_OVRCHRG_S": {
 		"shortname": "Ovrchrg ACP Power Cells (s)",
 		"longname": "Trandoshan Overcharged ACP Power Cells",
 		"basedOn": "AMMO_ACP_POWERCELL_S",
 		"max": 250,
 		"pricePerUnit": 1, //total: 250
-		"overrides": 
-		{
-			"damage": 
-			{
+		"overrides": {
+			"damage": {
 				"multiply": 2
 			},
-			"visuals":
-			{
-				"projectile":
-				{
+			"visuals": {
+				"projectile": {
 					"effect": "Slugthrowers/acp_shot_big"
 				},
-				"fire":
-				{
+				"fire": {
 					"muzzleEffect": "Slugthrowers/muzzleflash_big",
-					"firesound":
-					[
-                		"sound/weapons/slugthrowers/acp_rifle1.mp3",
-                		"sound/weapons/slugthrowers/acp_rifle2.mp3",
-                		"sound/weapons/slugthrowers/acp_rifle3.mp3",
-                		"sound/weapons/slugthrowers/acp_rifle4.mp3"
+					"firesound": [
+						"sound/weapons/slugthrowers/acp_rifle1.mp3",
+						"sound/weapons/slugthrowers/acp_rifle2.mp3",
+						"sound/weapons/slugthrowers/acp_rifle3.mp3",
+						"sound/weapons/slugthrowers/acp_rifle4.mp3"
 					]
 				}
 			}
 		}
 	},
-	
-	"AMMO_ACP_POWERCELL_M": {
-		"shortname": "ACP Power Cells (m)",
-		"longname": "Barrakan Arms ACP Medium Power Cells",
-		"max": 600,
-		"pricePerUnit": 0.4 //total: 240
-	},
-	
+
 	"AMMO_ACP_CARTRIDGE": {
 		"shortname": "ACP Anti-Personnel Cartridges",
 		"longname": "Barrakan Arms ACP Anti-Personnel Cartridges",
 		"max": 80,
 		"pricePerUnit": 10 //total: 800
 	},
-	
 	"AMMO_ACP_POWERCELL_L": {
 		"shortname": "ACP Power Cells (l)",
 		"longname": "Barrakan Arms ACP Large Power Cells",
@@ -93,10 +78,10 @@
 		"max": 80,
 		"pricePerUnit": 3, //total: 240
 		"overrides": {
-			"damage": { 
+			"damage": {
 				"set": 45
 			},
-			"recoil": { 
+			"recoil": {
 				"set": 1.0
 			},
 			"fireDelay": {
@@ -104,364 +89,258 @@
 			}
 		}
 	},
-	
-	"AMMO_FLARE": {
-		"shortname": "Flares",
-		"longname": "BlasTech Flares",
-		"max": 18,
-		"pricePerUnit": 5 //total: 90
-	},
-	
-	"AMMO_AA_POWERPAK": {
-		"shortname": "AA810 PowerPaks",
-		"longname": "Adostic Arms PowerPaks",
-		"pricePerUnit": 0.5,
-		"max": 500 //total: 250
-	},
 
 	"AMMO_POWERPACK": {
-		"shortname": "Blaster Power Packs",
+		"shortname": "Blaster PowerPacks",
 		"longname": "Blastech Industries Blaster Power Packs",
 		"pricePerUnit": 0.3,
 		"max": 600 //total: 180
 	},
-	
+
 	"AMMO_POWERPACK_S": {
-		"shortname": "Blaster Power Packs (s)",
+		"shortname": "Blaster PowerPacks (s)",
 		"longname": "BlasTech Industries Blaster Power Packs (small)",
 		"pricePerUnit": 0.25,
 		"basedOn": "AMMO_POWERPACK",
 		"max": 480 //total: 120
 	},
-	
+	"AMMO_ION_POWERPACK_S": {
+		"shortname": "Ion Blaster PowerPacks (s)",
+		"longname": "BlasTech Industries Ionized Blaster Power Packs (small)",
+		"basedOn": "AMMO_POWERPACK_S",
+		"max": 480,
+		"pricePerUnit": 0.8, //total: 384
+		"overrides": {
+			"meansofdeath": "MOD_IONBLASTER",
+			"splashmeansofdeath": "MOD_IONBLASTER",
+			"visuals": {
+				"projectile": {
+					"hit": "Blasters/blue_flesh_impact",
+					"miss": "weapons/blaster_impact_blue_medium",
+					"effect": "Blasters/shot_Blue_small",
+					"deathfx": "blasters/shot_Blue_vaporize"
+				},
+				"fire": {
+					"muzzleEffect": "Blasters/muzzleflash_Blue_small"
+				}
+			}
+		}
+	},
+
 	"AMMO_POWERPACK_M": {
-		"shortname": "Blaster Power Packs (m)",
+		"shortname": "Blaster PowerPacks (m)",
 		"longname": "BlasTech Industries Blaster Power Packs (medium)",
 		"pricePerUnit": 0.3,
 		"basedOn": "AMMO_POWERPACK",
 		"max": 600 //total: 180
 	},
-	
-	"AMMO_POWERPACK_L": {
-		"shortname": "Blaster Power Packs (l)",
-		"longname": "BlasTech Industries Blaster Power Packs (large)",
-		"pricePerUnit": 0.4,
-		"basedOn": "AMMO_POWERPACK",
-		"max": 960 //total: 384
+	"AMMO_ION_POWERPACK_M": {
+		"shortname": "Ion Blaster PowerPacks (m)",
+		"longname": "BlasTech Industries Ionized Blaster Power Packs (medium)",
+		"basedOn": "AMMO_POWERPACK_M",
+		"max": 600,
+		"pricePerUnit": 0.8, //total: 480
+		"overrides": {
+			"meansofdeath": "MOD_IONBLASTER",
+			"splashmeansofdeath": "MOD_IONBLASTER",
+			"visuals": {
+				"projectile": {
+					"hit": "Blasters/blue_flesh_impact",
+					"miss": "weapons/blaster_impact_blue_medium",
+					"effect": "Blasters/shot_Blue_small",
+					"deathfx": "blasters/shot_Blue_vaporize"
+				},
+				"fire": {
+					"muzzleEffect": "Blasters/muzzleflash_Blue_medium"
+				}
+			}
+		}
 	},
 
+	"AMMO_POWERPACK_L": {
+		"shortname": "Blaster PowerPacks (l)",
+		"longname": "BlasTech Industries Blaster Power Packs (large)",
+		"pricePerUnit": 0.4,
+		"basedOn": "AMMO_POWERPACK_M",
+		"max": 960 //total: 384
+	},
+	"AMMO_ION_POWERPACK_L": {
+		"shortname": "Ion Blaster PowerPacks (l)",
+		"longname": "BlasTech Industries Ionized Blaster Power Packs (large)",
+		"basedOn": "AMMO_POWERPACK_M",
+		"max": 900,
+		"pricePerUnit": 0.6, //total: 540
+		"overrides": {
+			"meansofdeath": "MOD_IONBLASTER",
+			"splashmeansofdeath": "MOD_IONBLASTER",
+			"visuals": {
+				"projectile": {
+					"hit": "Blasters/blue_flesh_impact",
+					"miss": "weapons/blaster_impact_blue_medium",
+					"effect": "Blasters/shot_Blue_medium",
+					"deathfx": "blasters/shot_Blue_vaporize"
+				},
+				"fire": {
+					"muzzleEffect": "Blasters/muzzleflash_Blue_medium"
+				}
+			}
+		}
+	},
 	"AMMO_POWERPACK_OVRCHRG": {
-		"shortname": "Ovrchrg Power Packs (l)",
+		"shortname": "Ovrchrg PowerPacks (l)",
 		"longname": "Overcharged Blaster Power Packs (large)",
 		"pricePerUnit": 1,
 		"max": 500, //total: 500
-		"basedOn": "AMMO_POWERPACK_L",
-		"overrides":
-		{
-			"damage": 
-			{
+		"basedOn": "AMMO_POWERPACK_M",
+		"overrides": {
+			"damage": {
 				"multiply": 1.35
 			},
-			"visuals":
-			{
-				"projectile":
-				{
+			"visuals": {
+				"projectile": {
 					"hit": "Blasters/purple_flesh_impact",
-					"miss": "Blasters/purple_impactmedium",
-					"effect": "Blasters/shot_RedPurple_medium"
+					"miss": "weapons/blaster_impact_purple_medium_fire",
+					"effect": "Blasters/shot_RedPurple_medium",
+					"deathfx": "blasters/shot_RedPurple_vaporize"
 				},
-				"fire":
-				{
+				"fire": {
 					"muzzleEffect": "Blasters/muzzleflash_Purple_medium"
 				}
 			}
 		}
 	},
 
-	"AMMO_SS_ION_POWERPACK": {
-		"shortname": "ELG-3A Ion Power Packs",
-		"longname": "SoruSubb Ionized Blaster Power Packs",
-		"basedOn": "AMMO_SS_POWERPACK",
+	//sorusubb powerpak pistol ammo (for elg-3a, q2, westar)
+	"AMMO_SS_POWERPAK": {
+		"shortname": "ELG-3A PowerPaks",
+		"longname": "SoruSubb Blaster Power Paks",
+		"pricePerUnit": 0.5,
+		"max": 360 //total: 150
+	},
+	"AMMO_MS_POWERPAK": {
+		"shortname": "Q2 PowerPaks",
+		"longname": "Merr-Sonn Q2 Blaster Power Paks",
+		"basedOn": "AMMO_SS_POWERPAK",
+		"pricePerUnit": 0.3,
+		"max": 300 //total: 90
+	},
+	"AMMO_SS_ION_POWERPAK": {
+		"shortname": "ELG-3A Ion PowerPaks",
+		"longname": "SoruSubb Ionized Blaster Power Paks",
+		"basedOn": "AMMO_SS_POWERPAK",
 		"max": 360,
 		"pricePerUnit": 0.8, //total: 288
-		"overrides": 
-		{
+		"overrides": {
 			"meansofdeath": "MOD_IONBLASTER",
-        	"splashmeansofdeath": "MOD_IONBLASTER",
-			"visuals": 
-			{
-				"projectile": 
-				{
+			"splashmeansofdeath": "MOD_IONBLASTER",
+			"visuals": {
+				"projectile": {
 					"hit": "Blasters/blue_flesh_impact",
-					"miss": "Blasters/blue_impacttiny",
-					"effect": "Blasters/shot_Blue_small"
+					"miss": "weapons/blaster_impact_blue_medium",
+					"effect": "Blasters/shot_Blue_small",
+					"deathfx": "blasters/shot_Blue_vaporize"
 				},
-				"fire":
-				{
+				"fire": {
 					"muzzleEffect": "Blasters/muzzleflash_Blue_small"
 				}
 			}
 		}
 	},
-	
-	"AMMO_ION_POWERPACK_S": {
-		"shortname": "Ion Blaster Power Packs (s)",
-		"longname": "BlasTech Industries Ionized Blaster Power Packs (small)",
-		"basedOn": "AMMO_POWERPACK_S",
-		"max": 480,
-		"pricePerUnit": 0.8, //total: 384
-		"overrides": 
-		{
-			"meansofdeath": "MOD_IONBLASTER",
-        	"splashmeansofdeath": "MOD_IONBLASTER",
-			"visuals": 
-			{
-				"projectile": 
-				{
-					"hit": "Blasters/blue_flesh_impact",
-					"miss": "Blasters/blue_impacttiny",
-					"effect": "Blasters/shot_Blue_small"
-				},
-				"fire":
-				{
-					"muzzleEffect": "Blasters/muzzleflash_Blue_small"
-				}
-			}
-		}
-	},
-	
-	"AMMO_ION_POWERPACK_M": {
-		"shortname": "Ion Blaster Power Packs (m)",
-		"longname": "BlasTech Industries Ionized Blaster Power Packs (medium)",
-		"basedOn": "AMMO_POWERPACK_M",
-		"max": 600,
-		"pricePerUnit": 0.8, //total: 480
-		"overrides": 
-		{		
-			"meansofdeath": "MOD_IONBLASTER",
-        	"splashmeansofdeath": "MOD_IONBLASTER",
-			"visuals": 
-			{
-				"projectile": 
-				{
-					"hit": "Blasters/blue_flesh_impact",
-					"miss": "Blasters/blue_impactsmall",
-					"effect": "Blasters/shot_Blue_small"
-				},
-				"fire":
-				{
-					"muzzleEffect": "Blasters/muzzleflash_Blue_medium"
-				}
-			}
-		}
-	},
-	
-	"AMMO_ION_POWERPACK_L": {
-		"shortname": "Ion Blaster Power Packs (l)",
-		"longname": "BlasTech Industries Ionized Blaster Power Packs (large)",
-		"basedOn": "AMMO_POWERPACK_L",
-		"max": 900,
-		"pricePerUnit": 0.6, //total: 540
-		"overrides": 
-		{
-			"meansofdeath": "MOD_IONBLASTER",
-        	"splashmeansofdeath": "MOD_IONBLASTER",
-			"visuals": 
-			{
-				"projectile": 
-				{
-					"hit": "Blasters/blue_flesh_impact",
-					"miss": "Blasters/blue_impactmedium",
-					"effect": "Blasters/shot_Blue_medium"
-				},
-				"fire":
-				{
-					"muzzleEffect": "Blasters/muzzleflash_Blue_medium"
-				}
-			}
-		}
-	},
-	
-	"AMMO_ION_POWERPAK_S": {
-		"shortname": "Ion PowerPaks (s)",
-		"longname": "BlasTech Industries Ionized PowerPaks (small)",
-		"basedOn": "AMMO_POWERPAK_S",
-		"max": 400,
-		"pricePerUnit": 0.8, //total: 320
-		"overrides": 
-		{		
-			"meansofdeath": "MOD_IONBLASTER",
-        	"splashmeansofdeath": "MOD_IONBLASTER",
-			"visuals": 
-			{
-				"projectile": 
-				{
-					"hit": "Blasters/blue_flesh_impact",
-					"miss": "Blasters/blue_impacttiny",
-					"effect": "Blasters/shot_Blue_small"
-				},
-				"fire":
-				{
-					"muzzleEffect": "Blasters/muzzleflash_Blue_small"
-				}
-			}
-		}
-	},
-	
-	"AMMO_ION_POWERPAK_L": {
-		"shortname": "Ion PowerPaks (l)",
-		"longname": "BlasTech Industries Ionized PowerPaks (large)",
-		"basedOn": "AMMO_POWERPAK_L",
-		"max": 512,
-		"pricePerUnit": 0.8, //total: 409
-		"overrides": 
-		{
-			"meansofdeath": "MOD_IONBLASTER",
-        	"splashmeansofdeath": "MOD_IONBLASTER",
-			"visuals": 
-			{
-				"projectile": 
-				{
-					"hit": "Blasters/blue_flesh_impact",
-					"miss": "Blasters/blue_impactmedium",
-					"effect": "Blasters/shot_Blue_medium"
-				},
-				"fire":
-				{
-					"muzzleEffect": "Blasters/muzzleflash_Blue_medium"
-				}
-			}
-		}
-},
-	
-	"AMMO_ARC_POWERPACK": {
-		"shortname": "ARC Caster Power Packs",
-		"longname": "ARC Caster Power Packs",
-		"max": 640,
-		"pricePerUnit": 0.2 //total: 128
-	},
-	
-	"AMMO_POWERCELL_S": {
-		"shortname": "Power Cells (s)",
-		"longname": "BlasTech Industries Power Cells (small)",
-		"max": 480,
-		"pricePerUnit": 0.2 //total: 96
-	},
-	
-	"AMMO_POWERCELL_M": {
-		"shortname": "Power Cells (m)",
-		"longname": "BlasTech Industries Power Cells (medium)",
-		"max": 600,
-		"pricePerUnit": 0.3 //total: 180
-	},
-	
-	"AMMO_POWERCELL_L": {
-		"shortname": "Power Cells (l)",
-		"longname": "BlasTech Industries Power Cells (large)",
-		"max": 800,
-		"pricePerUnit": 0.4 //total: 320
-	},
-	
+
+	//powerpaks for most blaster pistols
 	"AMMO_POWERPAK_S": {
 		"shortname": "Std PowerPaks (s)",
 		"longname": "BlasTech Industries PowerPaks (small)",
 		"max": 400,
 		"pricePerUnit": 0.2 //total: 80
 	},
-	
+	"AMMO_ION_POWERPAK_S": {
+		"shortname": "Ion PowerPaks (s)",
+		"longname": "BlasTech Industries Ionized PowerPaks (small)",
+		"basedOn": "AMMO_POWERPAK_S",
+		"max": 400,
+		"pricePerUnit": 0.8, //total: 320
+		"overrides": {
+			"meansofdeath": "MOD_IONBLASTER",
+			"splashmeansofdeath": "MOD_IONBLASTER",
+			"visuals": {
+				"projectile": {
+					"hit": "Blasters/blue_flesh_impact",
+					"miss": "weapons/blaster_impact_blue_medium",
+					"effect": "Blasters/shot_Blue_small",
+					"deathfx": "blasters/shot_Blue_vaporize"
+				},
+				"fire": {
+					"muzzleEffect": "Blasters/muzzleflash_Blue_small"
+				}
+			}
+		}
+	},
+
 	"AMMO_POWERPAK_L": {
 		"shortname": "Std PowerPaks (l)",
 		"longname": "BlasTech Industries PowerPaks (large)",
+		"basedOn": "AMMO_POWERPAK_S",
 		"max": 512,
 		"pricePerUnit": 0.4 //total: 204
 	},
-	
-	"AMMO_KYD-21": {
-		"shortname": "KYD-21 PowerPaks",
-		"longname": "KYD-21 Blaster PowerPaks",
-		"pricePerUnit": 0.4,
-		"max": 400 //total: 160
+	"AMMO_ION_POWERPAK_L": {
+		"shortname": "Ion PowerPaks (l)",
+		"longname": "BlasTech Industries Ionized PowerPaks (large)",
+		"basedOn": "AMMO_POWERPAK_S",
+		"max": 512,
+		"pricePerUnit": 0.8, //total: 409
+		"overrides": {
+			"meansofdeath": "MOD_IONBLASTER",
+			"splashmeansofdeath": "MOD_IONBLASTER",
+			"visuals": {
+				"projectile": {
+					"hit": "Blasters/blue_flesh_impact",
+					"miss": "weapons/blaster_impact_blue_medium",
+					"effect": "Blasters/shot_Blue_medium",
+					"deathfx": "blasters/shot_Blue_vaporize"
+				},
+				"fire": {
+					"muzzleEffect": "Blasters/muzzleflash_Blue_small"
+				}
+			}
+		}
 	},
-	
-	"AMMO_MS_POWERPACK": {
-		"shortname": "Q2 Power Packs",
-		"longname": "Merr-Sonn Q2 Blaster Power Packs",
-		"basedOn": "AMMO_SS_POWERPACK",
-		"pricePerUnit": 0.3,
-		"max": 300 //total: 90
+
+	"AMMO_POWERCELL":{
+		"shortname": "Power Cells (std)",
+		"longname": "Blastech Industries Power Cell Munitions",
+		"max": 600,
+		"pricePerUnit": 0.3
 	},
-	
-	"AMMO_SS_POWERPACK": {
-		"shortname": "ELG-3A Power Packs",
-		"longname": "SoruSubb Blaster Power Packs",
-		"pricePerUnit": 0.5,
-		"max": 360 //total: 150
+	"AMMO_POWERCELL_S": {
+		"shortname": "Power Cells (s)",
+		"longname": "BlasTech Industries Power Cells (small)",
+		"basedOn": "AMMO_POWERCELL",
+		"max": 480,
+		"pricePerUnit": 0.2 //total: 96
 	},
-	
-	"AMMO_CONCUSSION": {
-		"shortname": "Concussion Canisters",
-		"longname": "Concussion Canisters",
-		"max": 20,
-		"pricePerUnit": 22 //total: 440
+	"AMMO_POWERCELL_M": {
+		"shortname": "Power Cells (m)",
+		"longname": "BlasTech Industries Power Cells (medium)",
+		"basedOn": "AMMO_POWERCELL",
+		"max": 600,
+		"pricePerUnit": 0.3 //total: 180
 	},
-	
-	"AMMO_STOUKER": {
-		"shortname": "Stouker Power Cells",
-		"longname": "Stouker Concussion Chamber Power Cells",
-		"max": 20,
-		"pricePerUnit": 25 //total: 500
+	"AMMO_POWERCELL_L": {
+		"shortname": "Power Cells (l)",
+		"longname": "BlasTech Industries Power Cells (large)",
+		"basedOn": "AMMO_POWERCELL",
+		"max": 800,
+		"pricePerUnit": 0.4 //total: 320
 	},
-	
-	"AMMO_ANTIARMOR_CHARGE": {
-		"shortname": "Anti-Armor Charge",
-		"longname": "BlasTech Industries Anti-Armor Charge",
-		"max": 16,
-		"pricePerUnit": 25 //total: 400
+
+	"AMMO_MAUSER_CLIP": {
+		"shortname": "7.92x57mm x 5 Strip Clips",
+		"longname": "7.92x57mm x 5 Mauser Slug Strip Clips",
+		"max": 120,
+		"pricePerUnit": 1.25 //total: 150
 	},
-	
-	"AMMO_FWG-5": {
-		"shortname": "Flechette Missiles",
-		"longname": "Malaxan Firepower Inc. Flechette Missiles",
-		"max": 80,
-		"pricePerUnit": 3.25 //total: 260
-	},
-	
-	//Baktoid Combat Automata no longer exists, absorbed by the empire, BlasTech Industries produces missiles compatible with the E-60R
-	"AMMO_ROCKETS_60R": {
-		"shortname": "Rockets",
-		"longname": "BlasTech Industries Rockets",
-		"max": 25,
-		"pricePerUnit": 19 //total: 475
-	},
-	
-	"AMMO_PACKERED_MORTAR": {
-		"shortname": "Mortar Shells",
-		"longname": "Packered High Explosive Mortar Shells",
-		"max": 24,
-		"pricePerUnit": 21 //total: 504
-	},
-	
-	"AMMO_G36_POWERPACK": {
-		"shortname": "G36 Power Pack",
-		"longname": "Adostic Arms G36 Proton Power Pack",
-		"max": 400,
-		"pricePerUnit": 0.8 //total: 320
-	},
-	
-	"AMMO_AA-35_POWERCELL": {
-		"shortname": "AA-35 Pulse Power Cells",
-		"longname": "Adostic Arms AA-35 Pulse Power Cells",
-		"max": 80,
-		"pricePerUnit": 4 //total: 320
-	},
-	
-	"AMMO_PB10_POWERCELL": {
-		"shortname": "PB10 Pulse Power Cells",
-		"longname": "Adostic Arms PB10 Pulse Power Cells",
-		"max": 550,
-		"pricePerUnit": 0.8 //total: 440
-	},
-	
 	"AMMO_MAUSER": {
 		"shortname": "7.92X57mm Slugs",
 		"longname": "7.92x57mm Mauser Slug Cartridges",
@@ -469,28 +348,126 @@
 		"max": 120,
 		"pricePerUnit": 1.5 //total: 180
 	},
-	
-	"AMMO_MAUSER_CLIP": {
-		"shortname": "7.92x57mm x 5 Strip Clips",
-		"longname": "7.92x57mm x 5 Mauser Slug Strip Clips",
-		"max": 120,
-		"pricePerUnit": 1.25 //total: 150
+
+
+
+
+	/*Single Instance ammos (may be inherited elsewhere)*/
+
+	// Ammo for the ACP Array Gun
+	"AMMO_ACP_DRUM": {
+		"shortname": "Disintegrating ACP Drums",
+		"longname": "Arakyd Industries Disintegrating ACP Belt Drums",
+		"max": 900,
+		"pricePerUnit": 0.5 //total: 450
 	},
-	
+
+	"AMMO_FLARE": {
+		"shortname": "Flares",
+		"longname": "BlasTech Flares",
+		"max": 18,
+		"pricePerUnit": 5 //total: 90
+	},
+
+	"AMMO_AA_POWERPAK": {
+		"shortname": "AA810 PowerPaks",
+		"longname": "Adostic Arms PowerPaks",
+		"pricePerUnit": 0.5,
+		"max": 500 //total: 250
+	},
+
+	"AMMO_AA-35_POWERCELL": {
+		"shortname": "AA-35 Pulse Power Cells",
+		"longname": "Adostic Arms AA-35 Pulse Power Cells",
+		"max": 80,
+		"pricePerUnit": 4 //total: 320
+	},
+
+	"AMMO_PB10_POWERCELL": {
+		"shortname": "PB10 Pulse Power Cells",
+		"longname": "Adostic Arms PB10 Pulse Power Cells",
+		"max": 550,
+		"pricePerUnit": 0.8 //total: 440
+	},
+
+	"AMMO_G36_POWERPACK": {
+		"shortname": "G36 Power Pack",
+		"longname": "Adostic Arms G36 Proton Power Pack",
+		"max": 400,
+		"pricePerUnit": 0.8 //total: 320
+	},
+
+	"AMMO_ARC_POWERPACK": {
+		"shortname": "ARC Caster Power Packs",
+		"longname": "ARC Caster Power Packs",
+		"max": 640,
+		"pricePerUnit": 0.2 //total: 128
+	},
+
+	"AMMO_KYD-21": {
+		"shortname": "KYD-21 PowerPaks",
+		"longname": "KYD-21 Blaster PowerPaks",
+		"pricePerUnit": 0.4,
+		"max": 400 //total: 160
+	},
+
+	"AMMO_CONCUSSION": {
+		"shortname": "Concussion Canisters",
+		"longname": "Concussion Canisters",
+		"max": 20,
+		"pricePerUnit": 22 //total: 440
+	},
+
+	"AMMO_STOUKER": {
+		"shortname": "Stouker Power Cells",
+		"longname": "Stouker Concussion Chamber Power Cells",
+		"max": 20,
+		"pricePerUnit": 25 //total: 500
+	},
+
+	"AMMO_ANTIARMOR_CHARGE": {
+		"shortname": "Anti-Armor Charge",
+		"longname": "BlasTech Industries Anti-Armor Charge",
+		"max": 16,
+		"pricePerUnit": 25 //total: 400
+	},
+
+	"AMMO_FWG-5": {
+		"shortname": "Flechette Missiles",
+		"longname": "Malaxan Firepower Inc. Flechette Missiles",
+		"max": 80,
+		"pricePerUnit": 3.25 //total: 260
+	},
+
+	//Baktoid Combat Automata no longer exists, absorbed by the empire, BlasTech Industries produces missiles compatible with the E-60R
+	"AMMO_ROCKETS_60R": {
+		"shortname": "Rockets",
+		"longname": "BlasTech Industries Rockets",
+		"max": 25,
+		"pricePerUnit": 19 //total: 475
+	},
+
+	"AMMO_PACKERED_MORTAR": {
+		"shortname": "Mortar Shells",
+		"longname": "Packered High Explosive Mortar Shells",
+		"max": 24,
+		"pricePerUnit": 21 //total: 504
+	},
+
 	"AMMO_SLUGS": {
 		"shortname": "Small Caliber Slugs",
 		"longname": "Arakyd Industries Slug Cartridges",
 		"max": 600,
 		"pricePerUnit": 0.25 //total: 150
 	},
-	
+
 	"AMMO_GAS": {
 		"shortname": "Gas Fuel Canister",
 		"longname": "Merr-Sonn Munitions Gas Fuel Canisters",
 		"max": 198,
 		"pricePerUnit": 1.5 //total: 297
 	},
-	
+
 	"AMMO_CARBONITE": {
 		"shortname": "Carbonite Canisters",
 		"longname": "Zann Consortium Carbonite Canisters",

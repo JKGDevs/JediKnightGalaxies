@@ -1,0 +1,12 @@
+//for carbines/rifles
+{
+	"name":		"75 BlasTech Overcharged Pwr Pack (lg)",
+	"internal":	"ammo_overchargedPwrPackLg_75",
+	"itemtype":	"ammo",
+	"weight":		"0",
+	"cost":		"195",
+	"ammoclass":	"AMMO_POWERPACK_OVRCHRG",
+	"ammoquantity":	"75",
+	"itemIcon": "gfx/item_icons/ammo_power_cell.tga",	//needs icon!
+	"itemDescription": "Illegally modified blaster bolt munitions that are more destructive, these munitions are much more volatile and generate more heat than normal standard power packs."
+}

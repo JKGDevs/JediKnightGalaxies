@@ -7,5 +7,6 @@
 	"weight":		"30",
 	"cost":		"1825",
 	"xml":			"xml/items/LS-180.xml",
-	"itemIcon":		"models/weapons/LS-180_ACP_HeavyRepeater/icon_default"
+	"itemIcon":		"models/weapons/LS-180_ACP_HeavyRepeater/icon_default",
+	"itemDescription": "The latest in the LS-100 Heavy Accelerated Charged Particle Repeater line, this Trandoshan favorite features an extremely high rate of fire that can tear through organics very quickly. It is extremely bulky and requires considerable strength to use."
 }

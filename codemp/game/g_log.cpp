@@ -194,8 +194,8 @@ void G_LogWeaponOutput(void)
 	int totalpickups[WP_NUM_WEAPONS];
 	int totaltime[WP_NUM_WEAPONS];
 	int totaldeaths[WP_NUM_WEAPONS];
-	int totaldamage;
-	int totalkills;
+	int totaldamage = 0;
+	int totalkills = 0;
 	int totalshots[WP_NUM_WEAPONS];
 	int percharacter[WP_NUM_WEAPONS];
 	char info[1024];

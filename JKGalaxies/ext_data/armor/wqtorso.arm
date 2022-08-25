@@ -1,0 +1,37 @@
+{
+	/////////////////////////////////////////
+	// 
+	// Jedi Knight Galaxies - Armor File
+	// Template (Stormtrooper Body Armor)
+	//
+	/////////////////////////////////////////
+
+	"ref":		"wqtorso",		// The reference that links this to the .itm file
+	"slot":		"torso",		// Which slot this goes in
+	"armor":		40,			// Effective hit points - "Armor" in the GUI
+	"movemodifier":	0.9,			// How much to modify the movement speed by
+
+	// Visuals - all done on the client
+	"visuals": {
+		// To specify a skin, use a * and the skin name. Here, it uses model_default.skin.
+		// modelGroup specifies which model group this armor belongs to - it won't load the same model twice.
+		"model":	"models/players/JKGalaxiesArmor/model.glm*default",
+		"modelGroup":	"JKGalaxiesArmor",
+
+		// armorOnSurfaces tells which surfaces we should -only- show on the armor.
+		"armorOnSurfaces": [
+			"torso_armor",
+			"hips_weeq_belt"
+		],
+
+		// bodyOffSurfaces says which surfaces to turn off on the player.
+		"bodyOffSurfaces": [
+			"torso_holster",
+			"torso_strap",
+			"torso_bandolier",
+			"torso_vest",
+			"torso_armor",
+			"torso_cowelbase"
+		]
+	}
+}

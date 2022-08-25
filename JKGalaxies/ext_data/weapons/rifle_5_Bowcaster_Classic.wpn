@@ -17,7 +17,7 @@
             "firemode":     "models/weapons/bowcaster_classic/firemode"
         },
         
-        "gunposition":      "8.0 -4.0 -5.0",
+        "gunposition":      "10.0 -5.0 -7.0",
         "ironsightsposition": "7.5 -0.3 -4.3",
         "ironsightsfov": "20",
         

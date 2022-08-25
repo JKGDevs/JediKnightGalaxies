@@ -12,5 +12,7 @@
 	"rechargeSoundEffect":	"sound/shield/shield_recharge",
 	"brokenSoundEffect":	"sound/shield/shield_broken6",
 	"equippedSoundEffect":	"sound/shield/shield_equipped3",
-	"chargedSoundEffect":	"sound/shield/shield_recharge8"
+	"chargedSoundEffect":	"sound/shield/shield_recharge8",
+	
+	"itemDescription": "A successor to the Merr-Sonn PSX-1 Portable Shield first used during the Clone Wars era, this shield offers a much improved capacity and recharge rate, while maintaining some modesty to keep prices low unlike the Merr-Sonn PSX-2B model."
 }

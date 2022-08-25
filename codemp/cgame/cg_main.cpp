@@ -148,7 +148,6 @@ static int	C_PointContents(void);
 static void C_GetLerpOrigin(void);
 static void C_GetLerpData(void);
 static int	CG_RagCallback(int callType);
-static void C_ImpactMark(void);
 
 extern autoMapInput_t cg_autoMapInput; //cg_view.c
 extern int cg_autoMapInputTime;
@@ -358,16 +357,6 @@ static int CG_RagCallback(int callType)
 	}
 
 	return 0;
-}
-
-static void C_ImpactMark( void ) {
-	TCGImpactMark *data = &cg.sharedBuffer.impactMark;
-
-//	CG_ImpactMark( (int)arg0, (const float *)arg1, (const float *)arg2, (float)arg3, (float)arg4, (float)arg5, (float)arg6,
-//		(float)arg7, qtrue, (float)arg8, qfalse );
-
-	CG_ImpactMark( data->mHandle, data->mPoint, data->mAngle, data->mRotation, data->mRed, data->mGreen, data->mBlue,
-		data->mAlphaStart, qtrue, data->mSizeStart, qfalse );
 }
 
 void CG_MiscEnt( void ) {
@@ -1234,13 +1223,15 @@ static void CG_RegisterGraphics( void ) {
 	cgs.effects.mSparksExplodeNoSound = trap->FX_RegisterEffect("sparks/spark_exp_nosnd");
 	cgs.effects.mTripMineLaser = trap->FX_RegisterEffect("tripMine/laser.efx");
 	cgs.effects.mEmplacedMuzzleFlash = trap->FX_RegisterEffect( "effects/emplaced/muzzle_flash" );
+	cgs.effects.mHeatSteam = trap->FX_RegisterEffect("effects/blaster/barrelsmoke_small.efx");
+	cgs.effects.mOverheatSteam = trap->FX_RegisterEffect("effects/blaster/barrelsmoke_big.efx");
 
 	cgs.effects.mHyperspaceStars = trap->FX_RegisterEffect("ships/hyperspace_stars");
 	cgs.effects.mBlackSmoke = trap->FX_RegisterEffect( "volumetric/black_smoke" );
 	cgs.effects.mShipDestDestroyed = trap->FX_RegisterEffect("effects/ships/dest_destroyed.efx");
 	cgs.effects.mShipDestBurning = trap->FX_RegisterEffect("effects/ships/dest_burning.efx");
 	
-	cgs.effects.mJetpack = trap->FX_RegisterEffect("effects/player/jetpack.efx"); //("effects/rockettrooper/flamenew.efx");
+	cgs.effects.mJetpack = trap->FX_RegisterEffect("effects/player/jetpack.efx"); //("effects/rockettrooper/flamenew.efx");  
 
 
 	cgs.effects.itemCone = trap->FX_RegisterEffect("mp/itemcone.efx");
@@ -1253,7 +1244,7 @@ static void CG_RegisterGraphics( void ) {
 	cgs.effects.mSaberBloodSparksMid = trap->FX_RegisterEffect("saber/blood_sparks_50_mp.efx");
 	cgs.effects.mBlasterDeflect = trap->FX_RegisterEffect("blaster/deflect.efx");
 	cgs.effects.mBlasterSmoke = trap->FX_RegisterEffect("blaster/smoke_bolton");
-	cgs.effects.mForceConfusionOld = trap->FX_RegisterEffect("force/confusion_old.efx");
+	cgs.effects.mForceConfusionOld = trap->FX_RegisterEffect("effects/force/confusion_old.efx");
 
 	cgs.effects.forceLightning		= trap->FX_RegisterEffect( "effects/force/lightning.efx" );
 	cgs.effects.forceLightningWide	= trap->FX_RegisterEffect( "effects/force/lightningwide.efx" );
@@ -1261,7 +1252,7 @@ static void CG_RegisterGraphics( void ) {
 	cgs.effects.forceDrainWide	= trap->FX_RegisterEffect( "effects/mp/drainwide.efx" );
 	cgs.effects.forceDrained	= trap->FX_RegisterEffect( "effects/mp/drainhit.efx");
 
-	cgs.effects.mDisruptorDeathSmoke = trap->FX_RegisterEffect("disruptor/death_smoke");
+	cgs.effects.mDisruptorDeathSmoke = trap->FX_RegisterEffect("effects/disruptor/death_smoke.efx");
 
 	for ( i = 0 ; i < NUM_CROSSHAIRS ; i++ ) {
 		cgs.media.crosshairShader[i] = trap->R_RegisterShaderNoMip( va("gfx/2d/crosshair%c", 'a'+i) );

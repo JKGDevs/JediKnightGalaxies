@@ -7,5 +7,6 @@
 	"weight":		"20",
 	"cost":		"3250",
 	"xml":			"",
-	"itemIcon":		"models/weapons/w-90_concussion/icon_upgrade"
+	"itemIcon":		"models/weapons/w-90_concussion/icon_upgrade",
+	"itemDescription": "This BlasTech concussion rifle was originally based on the 'Stouker' but combined advanced blaster rifle technologies to make a hybrid concussion rifle that was effective at far greater ranges. This model includes a scope."
 }

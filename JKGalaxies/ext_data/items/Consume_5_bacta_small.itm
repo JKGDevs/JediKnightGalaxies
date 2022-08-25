@@ -1,0 +1,12 @@
+{
+	"name":             "BioTech Minor Bacta Canister",
+	"internal":             "bacta_small",
+	"cost":		"10",
+	"itemtype":             "consumable",
+	"maxStack":		5,
+	"consumeScript":	"item_bacta_small",
+	"partHealthReq": true,
+	"weight":		"1",
+	"itemIcon":		"gfx/item_icons/bacta.tga",
+	"itemDescription": "A small capsule containing an emergency injection of bacta used to regenerate damaged tissue and promote healing."
+}

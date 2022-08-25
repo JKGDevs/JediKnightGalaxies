@@ -7,5 +7,6 @@
 	"weight":		"7",
 	"cost":		"1025",
 	"xml":			"",
-	"itemIcon":		"models/weapons/Drsln_SlugRifle/icon_default"
+	"itemIcon":		"models/weapons/Drsln_SlugRifle/icon_default",
+	"itemDescription": "While considered a crude and primitive weapon by many, it remains nonetheless a deadly weapon capable of piercing Stormtrooper armor. It fires high velocity ballistic slugs which bypass most shields."
 }

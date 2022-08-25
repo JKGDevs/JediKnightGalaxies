@@ -5,5 +5,6 @@
 	"weapon":		"WP_THERMAL",
 	"variation":		"11",
 	"xml":			"",
-	"itemIcon":		"models/weapons/Grenade_Stun/icon_lemon"
+	"itemIcon":		"models/weapons/Grenade_Stun/icon_lemon",
+	"itemDescription": "Make life rue the day it thought it could give Cave Johnson lemons! Do you know who I am? I'm the man who's gonna burn your house down... with the lemons! I'm gonna get my engineers to invent a combustible lemon that burns your house down!"
 }

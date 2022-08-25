@@ -1,0 +1,10 @@
+{
+	"name":         "Galinolo Pauldrons",
+	"internal":     "shoulderpads_bountyhunter2",
+	"itemtype":     "armor",
+	"armor":		"bh2shoulderpads",
+	"weight":		"2",
+	"cost":			"300",
+	"itemIcon":		"gfx/item_icons/bh1_shoulderpads.tga",
+	"itemDescription": "Initially marketed toward planetary military groups, these durasteel leather blend pauldrons have become popular among bounty hunters operating in the Outer Rim. Manufactured by Galinolo Corp."
+}

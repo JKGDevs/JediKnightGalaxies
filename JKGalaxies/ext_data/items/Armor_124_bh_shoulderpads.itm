@@ -1,0 +1,10 @@
+{
+	"name":         "Ivax Shoulderpads",
+	"internal":     "shoulderpads_bountyhunter",
+	"itemtype":     "armor",
+	"armor":		"bhshoulderpads",
+	"weight":		"1",
+	"cost":			"250",
+	"itemIcon":		"gfx/item_icons/bounty_hunter_shoulders.tga",
+	"itemDescription": "Armored shoulder pieces made of durasteel and worn by ranking members of the Ivax Syndicate, a criminal enterprise operating within the Anoat sector."
+}

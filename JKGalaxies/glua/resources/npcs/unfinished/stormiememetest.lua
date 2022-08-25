@@ -9,8 +9,8 @@ function NPC:OnSpawn()
 	-- Prevent the AI from messing things up
 	self:SetBehaviorState("BS_CINEMATIC") 
 	-- No weapon for this guy
-	self:GiveWeapon(WP_MELEE)
-	self:SetWeapon(WP_MELEE)
+	--self:GiveWeapon(WP_MELEE)  --futuza: these no longer work, investigate why
+	--self:SetWeapon(WP_MELEE)
 	-- Godmode it, so they dont get killed
 		self.GodMode = true
 	-- No knockback
@@ -39,9 +39,9 @@ function NPC:OnUse(other, activator)
 	
 	local ply = activator:ToPlayer()
 	
-	local dlg = dialogue.CreateDialogueObject("stormie_meme_dlg")
+	local dlg = dialogue.CreateDialogueObject("apathetic_stormie")
 	if not dlg then
-		print("ERROR: Cannot find dialogue 'stormie_meme_dlg'")
+		print("ERROR: Cannot find dialogue 'apathetic_stormie'")
 		return
 	end
 	dlg:RunDialogue(self, ply)

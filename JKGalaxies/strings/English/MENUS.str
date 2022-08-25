@@ -1051,6 +1051,14 @@ REFERENCE           SORT_BY_GAME_TYPE
 NOTES               "Used in MP Find Server screen."
 LANG_ENGLISH        "Sort by game type."
 
+REFERENCE           GAMEVERSION
+NOTES               "Used in MP Find Server screen, to view jkg game version.\n"
+LANG_ENGLISH        "Version"
+
+REFERENCE           SORT_BY_GAMEVERSION
+NOTES               "Description of GAMEVERSION COLUMN\nUsed in MP Find Server screen.\n"
+LANG_ENGLISH        "Sort by game version."
+
 REFERENCE           PING
 NOTES               "Used in MP Find Server screen."
 LANG_ENGLISH        "Ping"
@@ -4355,7 +4363,7 @@ NOTES               "This should be the native language name, eg francais, deuts
 LANG_ENGLISH        "English"
 
 REFERENCE           LANG_FRENCH
-LANG_ENGLISH        "Français"
+LANG_ENGLISH        "FranÃ§ais"
 
 REFERENCE           BACKTORULES
 LANG_ENGLISH        "Back to Rules Menu"

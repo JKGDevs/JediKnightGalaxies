@@ -26,6 +26,7 @@
 	"walkSpeedModifier": "-0.2",	// setting this modifier to 0 may get rid of walking + blocking
 	"minimumSpeedModifier": "0.5",	// if the modifier level drops below this, it is enforced to be this --eez
 	"sprintSpeedModifier": "1.3",	// this doesn't get added to the other modifiers, because of acceleration --eez
+	"consumableTime": 3000,			//how many ms we have to wait between using consumables (defaults to 5 secs)  --futuza 
 
 
 	"stamina" : {

@@ -7,5 +7,6 @@
 	"weight":		"5",
 	"cost":		"650",
 	"xml":			"xml/items/DE-10.xml",
-	"itemIcon":		"models/weapons/DE-10_pistol/icon_default"
+	"itemIcon":		"models/weapons/DE-10_pistol/icon_default",
+	"itemDescription": "The DE-10 was based on stolen Antrech Arms blueprints, and produced by the terrorist organization known as Death Watch. This revolver-like blaster packs features a long nosed barrel and scope to give it a larger effective range than most pistols."
 }

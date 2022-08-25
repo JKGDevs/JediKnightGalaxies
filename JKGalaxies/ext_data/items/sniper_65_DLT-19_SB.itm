@@ -7,5 +7,6 @@
 	"weight":		"18",
 	"cost":		"1475",
 	"xml":			"",
-	"itemIcon":		"models/weapons/DLT-19_HeavyBlaster/icon_scopeb"
+	"itemIcon":		"models/weapons/DLT-19_HeavyBlaster/icon_scopeb",
+	"itemDescription": "A variant of the DLT-19 Heavy Blaster Rifle with additional attachments suitable for sniping. A common Imperial Stormtrooper sniper configuration."
 }

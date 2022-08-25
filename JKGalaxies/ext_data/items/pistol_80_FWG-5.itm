@@ -7,5 +7,6 @@
 	"weight":		"6",
 	"cost":		"815",
 	"xml":			"xml/items/FWG-5.xml",
-	"itemIcon":		"models/weapons/fwg-5_flechettepistol/icon_default"
+	"itemIcon":		"models/weapons/fwg-5_flechettepistol/icon_default",
+	"itemDescription": "Manufactured by Malaxan Firepower Inc, this small handheld flechette weapon fires a slow moving pellet which upon impact explodes with a hail of micro flechettes that damage everything in the impact area with enough force to pierce most armor."
 }

@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"50",
 	"maxStack":		5,
-	"itemIcon":		"models/weapons/Charge_Sequencer/icon_default"
+	"itemIcon":		"models/weapons/Charge_Sequencer/icon_default",
+	"itemDescription": "A common explosive device, the Sequencer Charge is remotely detonated via remote. The charges were sensitive and could easily be chained together to create much larger explosions. Popularly used by construction crews to demolish structures safely."
 }

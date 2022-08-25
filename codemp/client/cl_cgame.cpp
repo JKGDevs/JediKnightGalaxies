@@ -292,7 +292,7 @@ void CL_ConfigstringModified( void ) {
 
 }
 #ifndef MAX_STRINGED_SV_STRING
-	#define MAX_STRINGED_SV_STRING 1024
+	#define MAX_STRINGED_SV_STRING MAX_STRING_CHARS
 #endif
 // just copied it from CG_CheckSVStringEdRef(
 void CL_CheckSVStringEdRef(char *buf, const char *str)

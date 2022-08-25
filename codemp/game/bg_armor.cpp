@@ -214,6 +214,12 @@ static qboolean JKG_ParseArmorFile(char* buffer, const char* fileName, armorData
 	jsonNode = cJSON_GetObjectItem(json, "hp");
 	armorData.hp = cJSON_ToIntegerOpt(jsonNode, 0);
 
+	jsonNode = cJSON_GetObjectItem(json, "stamina");
+	armorData.stamina = cJSON_ToIntegerOpt(jsonNode, 0);
+
+	jsonNode = cJSON_GetObjectItem(json, "filter");
+	armorData.filter = cJSON_ToBooleanOpt(jsonNode, false);
+
 	jsonNode = cJSON_GetObjectItem(json, "movemodifier");
 	armorData.movemodifier = cJSON_ToNumberOpt(jsonNode, 1.0);
 
@@ -275,7 +281,7 @@ void JKG_LoadArmor() {
 	int failed = 0;
 	int numFiles;
 
-	numFiles = trap->FS_GetFileList(armorDir, ".arm", armorFiles, sizeof(armorFiles));
+	numFiles = Q_FSGetFileListSorted(armorDir, ".arm", armorFiles, sizeof(armorFiles));
 	armor = armorFiles;
 
 	Com_Printf("------- Armor -------\n");

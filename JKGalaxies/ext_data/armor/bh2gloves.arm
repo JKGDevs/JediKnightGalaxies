@@ -1,0 +1,31 @@
+{
+	"ref":		"bh2gloves",
+	"slot":		"gloves",
+	"armor":		50,
+	"movemodifier":	1.0,
+
+	"visuals": {
+		"model":	"models/players/bounty_hunter2/model.glm*default",
+		"modelGroup":	"bounty_hunter2",
+
+		"armorOnSurfaces": [
+			"l_hand",
+			"r_hand",
+			"l_hand_wrist",
+			"r_hand_wrist"
+		],
+
+		"bodyOffSurfaces": [
+			"l_hand",
+			"l_hand_plate",
+			"r_hand",
+			"r_hand_plate",
+			"r_hand_inner_glove",
+			"l_hand_inner_glove",
+			"r_arm_sleeve",
+			"l_arm_sleeve",
+			"r_hand_wrist",
+			"l_hand_wrist"
+		]
+	}
+}

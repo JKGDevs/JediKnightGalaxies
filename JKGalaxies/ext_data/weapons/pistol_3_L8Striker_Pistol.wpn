@@ -18,7 +18,7 @@
             "firemode":     "models/weapons/l8striker_pistol/firemode"
         },
         
-        "gunposition":      "11.0 -3.0 -4.8",
+        "gunposition":      "14.0 -5.0 -7.0",
         "ironsightsposition": "11.0 0.0 -4.0",
         "ironsightsfov": "72",
     
@@ -85,13 +85,13 @@
     
     "firemode1": {
         "damage": {
-		"damage": 20//15,
-//		"buffs": [
-//			{
-//				"buff": "standard-slow",
-//				"duration": 1000
-//			}
-//		]
+		"damage": 20, //15
+		"buffs": [
+			{
+				"buff": "standard-sting",
+				"duration": 5000
+			}
+		]
 	},
         "ammocost":     1,
         "firedelay":    200,

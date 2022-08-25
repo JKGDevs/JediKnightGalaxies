@@ -5,5 +5,6 @@
 	"armor":		"iwhelmet",
 	"weight":		"2",
 	"cost":			"120",
-	"itemIcon":		"gfx/item_icons/default.tga"
+	"itemIcon":		"gfx/item_icons/mining_helmet.tga",
+	"itemDescription": "A helmet worn by the Galactic Empire's engineer corps. It is required to be worn in hazardous working conditions to help reduce personnel accidents, but was designed to protect from industrial and environmental hazards rather than blaster fire."
 }

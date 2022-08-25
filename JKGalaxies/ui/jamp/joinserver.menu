@@ -302,7 +302,7 @@
 			type				ITEM_TYPE_BUTTON
 			textscale			0.5
 			style				WINDOW_STYLE_EMPTY
-			rect				10 88 265 26 
+			rect				10 88 185 26 
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			4					// center
 			textaligny			4
@@ -340,7 +340,7 @@
 			descText			@MENUS_SORT_BY_MAP_NAME
 			textscale			0.5
 			style				WINDOW_STYLE_EMPTY
-			rect				275 88 145 26
+			rect				195 88 145 26
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			4					// center
 			textaligny			4
@@ -378,7 +378,7 @@
 			textscale			0.5
 			style				WINDOW_STYLE_EMPTY
 			background			"gfx/menus/menu_blendbox3"	// Frame around button
-			rect				399 88 60 26
+			rect				319 88 60 26
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			4					// center
 			textaligny			4
@@ -416,7 +416,7 @@
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
 			background			"gfx/menus/menu_blendbox3"	// Frame around button
-			rect				459 88 36 26
+			rect				379 88 36 26
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			4					// center
 			textaligny			4
@@ -444,6 +444,43 @@
 			}	  	  
 		}
 
+		itemDef 
+        {
+            name                Version
+            group               grpTabs
+            text                @MENUS_GAMEVERSION
+            descText            @MENUS_SORT_BY_GAMEVERSION
+            type                ITEM_TYPE_BUTTON
+            textscale           0.5
+            style               WINDOW_STYLE_EMPTY
+            background          "gfx/menus/menu_blendbox3"    // Frame around button
+            rect                480 88 78 26
+            textalign           ITEM_ALIGN_LEFT
+            textalignx          4                    // center
+            textaligny          4
+            forecolor           1 1 1 .8
+            font                5
+            visible             1 
+            action 
+            { 
+                play           "sound/interface/button1.wav"
+                uiScript        ServerSort 4
+                setitemcolor        grpTabs backcolor 0.6 0.6 0.6 1
+                setitemcolor        Version backcolor 1 1 1 1
+                setitemcolor        grpTabs forecolor 1 1 1 .8
+                setitemcolor        Version forecolor 0.75 0.85 1 0.8
+                setitemcolor        grpColumn backcolor 0 0 0 0
+                setitemcolor        versionColumn backcolor 0 0.2 0.35 .4
+            }
+            mouseEnter 
+            { 
+                setitemcolor        versionColumn bordercolor .79 .64 .22 1
+            }
+            mouseExit 
+            { 
+                setitemcolor        versionColumn bordercolor 0.2 0.3 0.5 0.5 
+            }        
+        }
 
 		itemDef 
 		{
@@ -465,7 +502,7 @@
 			action 
 			{ 
 				play			"sound/interface/button1.wav"
-				uiScript		ServerSort 4
+				uiScript		ServerSort 5
 				setitemcolor		grpTabs backcolor 0.6 0.6 0.6 1
 				setitemcolor		Ping backcolor 1 1 1 1 
 				setitemcolor		grpTabs forecolor 1 1 1 .8
@@ -683,7 +720,7 @@
 		{
 			name				serverColumn
 			group				grpColumn
-			rect				9 115 265 260
+			rect				9 115 185 260
 			style				WINDOW_STYLE_FILLED
 			border			1
 			backcolor			0 0 0 0
@@ -697,7 +734,7 @@
 		{
 			name				mapColumn
 			group				grpColumn
-			rect				276 115 120 260
+			rect				196 115 120 260
 			style				WINDOW_STYLE_FILLED
 			border			1
 			backcolor			0 0 0 0
@@ -711,7 +748,7 @@
 		{
 			name				playerColumn
 			group				grpColumn
-			rect				398 115 59 260
+			rect				318 115 59 260
 			style				WINDOW_STYLE_FILLED
 			border			1
 			backcolor			0 0 0 0
@@ -725,7 +762,21 @@
 		{
 			name				typeColumn
 			group				grpColumn
-			rect				459 115 99 260
+			rect				379 115 99 260
+			style				WINDOW_STYLE_FILLED
+			border			1
+			backcolor			0 0 0 0
+			bordersize			1
+			bordercolor			0.2 0.2 0.5 0.5
+			visible			1
+			decoration
+		}
+
+		itemDef
+		{
+			name				versionColumn
+			group				grpColumn
+			rect				480 115 78 260
 			style				WINDOW_STYLE_FILLED
 			border			1
 			backcolor			0 0 0 0
@@ -767,7 +818,7 @@
 			feeder				FEEDER_SERVERS
 			outlinecolor			1 1 1 .25			//Highlight when item is selected.
 			visible				1
-			columns				5 2 40 258   270 40 104  388 5 64  450 20 100  560 20 47
+			columns				6 0 40 180   185 40 104  318 5 64   379 20 100  480 20 78  560 20 47
 			mouseenter 
 			{ 
 				setitemcolor	serverlist bordercolor .79 .64 .22 1

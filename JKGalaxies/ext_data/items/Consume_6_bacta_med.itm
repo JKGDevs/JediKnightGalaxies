@@ -1,0 +1,12 @@
+{
+	"name":             "BioTech Medium Bacta Canister",
+	"internal":             "bacta_medium",
+	"cost":		"30",
+	"itemtype":             "consumable",
+	"maxStack":		3,
+	"consumeScript":	"item_bacta_medium",
+	"partHealthReq": true,
+	"weight":		"2",
+	"itemIcon":		"gfx/item_icons/bacta_big.tga",
+	"itemDescription": "A canister containing a treatment of bacta which when injected can regenerate damaged tissue and promote healing."
+}

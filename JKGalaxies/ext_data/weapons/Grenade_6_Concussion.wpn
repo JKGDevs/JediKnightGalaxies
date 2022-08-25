@@ -84,7 +84,11 @@
 					{
 						"buff": "standard-stun",
 						"duration": 1000
-					}
+					},
+                    {
+                        "buff": "standard-emp",
+                        "duration": 3000
+                    }
 				],
 			    "flags":	[ "DAMAGE_NO_KNOCKBACK" ]
             },

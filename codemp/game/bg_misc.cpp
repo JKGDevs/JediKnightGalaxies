@@ -3454,3 +3454,10 @@ void Q_FSWriteString( fileHandle_t f, const char *msg ) {
 		trap->FS_Write( msg, strlen( msg ), f );
 	}
 }
+
+int Q_FSGetFileListSorted( const char *path, const char *extension, char *listbuf, int bufsize )
+{
+	int numFiles = trap->FS_GetFileList( path, extension, listbuf, bufsize );
+	sortStrings( &numFiles, listbuf, bufsize );
+	return numFiles;
+}

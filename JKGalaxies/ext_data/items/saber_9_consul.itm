@@ -5,6 +5,7 @@
 	"weapon":		"WP_SABER",
 	"variation":		"9",
 	"weight":		"14",
+	"tier":			4,
 	"cost":		"1375",
 	"xml":			"",
 	"itemIcon":		"models/weapons/lightsabers/icons/consult.tga"

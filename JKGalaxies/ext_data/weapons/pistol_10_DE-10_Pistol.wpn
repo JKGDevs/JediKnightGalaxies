@@ -13,7 +13,7 @@
         "selectsound":      "sound/weapons/select_pistol.wav",
 		"barrelCount":	    "1",
         
-        "gunposition":      "8.0 -3.6 -5.0",
+        "gunposition":      "12.0 -4.0 -7.0",
         "ironsightsposition": "6.0 0.0 -4.5",
         "ironsightsfov": "20",
     
@@ -67,7 +67,7 @@
         "ammocost":     1,
         "firedelay":    500,
         "firingtype":   "semi",
-        "range":	4500.0,
+        "range":	4000.0,
         "recoil":       3.5,
         "spread":       0.1,
         "projectilespeed": 4000.0,

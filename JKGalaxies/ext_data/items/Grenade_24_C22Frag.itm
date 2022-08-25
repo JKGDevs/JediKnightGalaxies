@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"50",
 	"maxStack":		5,
-	"itemIcon":		"models/weapons/grenade_c22frag/icon_default"
+	"itemIcon":		"models/weapons/grenade_c22frag/icon_default",
+	"itemDescription": "This Merr-Sonn grenade uses an encased detonite charge to explosively fragment a chromium shell. The resulting shrapnel is propelled at deadly velocities resulting in laceration and shock wave damage. Victims often succumb to blood loss."
 }

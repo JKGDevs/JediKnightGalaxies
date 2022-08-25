@@ -1,0 +1,10 @@
+{
+	"name":         "Kessler Dress Boots",
+	"internal":		"boots_bountyhunter",
+	"itemtype":		"armor",
+	"armor":		"bhboots",
+	"weight":		"2",
+	"cost":			"350",
+	"itemIcon":		"gfx/item_icons/bounty_hunter_boots.tga",
+	"itemDescription": "Fashionable plasteel plated boots famously used by bounty hunters and senior members of the Ivax Syndicate, a criminal enterprise operating within the Anoat sector. Produced by Kessler Corporation."
+}

@@ -34,6 +34,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // Jedi Knight Galaxies
 #include "jkg_hud.h"
 #include "jkg_chatbox.h"
+#include "qcommon/q_shared.h"
 
 extern float CG_RadiusForCent( centity_t *cent );
 qboolean CG_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y);
@@ -422,8 +423,6 @@ float RADAR_RADIUS	=		30;
 #define RADAR_X					(580 - RADAR_RADIUS)
 //#define RADAR_Y					10 //dynamic based on passed Y val
 #define RADAR_CHAT_DURATION		6000
-static int radarLockSoundDebounceTime = 0;
-static int impactSoundDebounceTime = 0;
 #define	RADAR_MISSILE_RANGE					3000.0f
 #define	RADAR_ASTEROID_RANGE				10000.0f
 #define	RADAR_MIN_ASTEROID_SURF_WARN_DIST	1200.0f
@@ -2467,8 +2466,6 @@ qboolean CG_CheckClientVisibility ( centity_t *cent )
 	return qfalse;
 }
 
-#define clamp(x, low, high) (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
-
 /*
 =====================================
 
@@ -2479,27 +2476,18 @@ NPC NAMEPLATES
 
 #include "game/bg_npcnames.h"
 
+// Float a NPC name above their head!
 void CG_DrawNPCNames( void )
-{// Float a NPC name above their head!
+{
 	// FIXME: localize strings within .str files --eez
-	int				i;
 
 	// Load the list on first check...
 	BG_Load_NPC_Names();
 
-	for (i = MAX_CLIENTS; i < MAX_GENTITIES; i++)
-	{// Cycle through them...
-		vec3_t			origin;
-		centity_t		*cent = &cg_entities[i];
-		char			*str1, *str2;
-		int				w, w2;
-		float			size, x, y, x2, y2, dist;
-		vec4_t			tclr =	{ 0.325f,	0.325f,	1.0f,	1.0f	};
-		vec4_t			tclr2 = { 0.325f,	0.325f,	1.0f,	1.0f	};
-		float			multiplier = 1.0f;
-
-		if (!cent)
-			continue;
+	for (int i = 0; i < cg.snap->numEntities; ++i)
+	{
+		const entityState_t* es = cg.snap->entities + i;
+		centity_t *cent = &cg_entities[es->number];
 
 		if (cent->currentState.eType != ET_NPC)
 			continue;
@@ -2513,31 +2501,29 @@ void CG_DrawNPCNames( void )
 		if (cent->cloaked)
 			continue;
 
+		if (cent->currentState.eFlags & (EF_DEAD | EF_NODRAW))
+			continue;
+
+		static const float MAX_DISTANCE = 1024.0f;
+		const float distance = Distance(cg.snap->ps.origin, cent->lerpOrigin);
+		if (distance > MAX_DISTANCE)
+			continue;
+
+		if (!CG_CheckClientVisibility(cent))
+			continue;
+
+		vec4_t textColor = {0.325f, 0.325f, 1.0f, 1.0f};
+		const char *npcName;
+		const char *classText;
 		switch( cent->currentState.NPC_class )
 		{// UQ1: Supported Class Types...
 		case CLASS_CIVILIAN:
-			str2 = "< Civilian >";
-			tclr[0] = 0.125f;
-			tclr[1] = 0.125f;
-			tclr[2] = 0.7f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.125f;
-			tclr2[1] = 0.125f;
-			tclr2[2] = 0.7f;
-			tclr2[3] = 1.0f;
+			classText = "Civilian";
+			VectorSet4(textColor, 0.125f, 0.125f, 0.7f, 1.0f);
 			break;
 		case CLASS_REBEL:
-			str2 = "< Rebel >";
-			tclr[0] = 0.125f;
-			tclr[1] = 0.125f;
-			tclr[2] = 0.7f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.125f;
-			tclr2[1] = 0.125f;
-			tclr2[2] = 0.7f;
-			tclr2[3] = 1.0f;
+			classText = "Rebel";
+			VectorSet4(textColor, 0.125f, 0.125f, 0.7f, 1.0f);
 			break;
 		case CLASS_JEDI:
 		case CLASS_KYLE:
@@ -2545,324 +2531,121 @@ void CG_DrawNPCNames( void )
 		case CLASS_JAN:
 		case CLASS_MONMOTHA:
 		case CLASS_MORGANKATARN:
-			str2 = "< Jedi >";
-			tclr[0] = 0.125f;
-			tclr[1] = 0.325f;
-			tclr[2] = 0.7f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.125f;
-			tclr2[1] = 0.325f;
-			tclr2[2] = 0.7f;
-			tclr2[3] = 1.0f;
+			classText = "Jedi";
+			VectorSet4(textColor, 0.125f, 0.325f, 0.7f, 1.0f);
 			break;
 		case CLASS_GENERAL_VENDOR:
-			str2 = "< General Vendor >";
-			tclr[0] = 0.525f;
-			tclr[1] = 0.525f;
-			tclr[2] = 1.0f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.525f;
-			tclr2[1] = 0.525f;
-			tclr2[2] = 1.0f;
-			tclr2[3] = 1.0f;
+			classText = "General Vendor";
+			VectorSet4(textColor, 0.525f, 0.525f, 1.0f, 1.0f);
 			break;
 		case CLASS_WEAPONS_VENDOR:
-			str2 = "< Weapons Vendor >";
-			tclr[0] = 0.525f;
-			tclr[1] = 0.525f;
-			tclr[2] = 1.0f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.525f;
-			tclr2[1] = 0.525f;
-			tclr2[2] = 1.0f;
-			tclr2[3] = 1.0f;
+			classText = "Weapons Vendor";
+			VectorSet4(textColor, 0.525f, 0.525f, 1.0f, 1.0f);
 			break;
 		case CLASS_ARMOR_VENDOR:
-			str2 = "< Armor Vendor >";
-			tclr[0] = 0.525f;
-			tclr[1] = 0.525f;
-			tclr[2] = 1.0f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.525f;
-			tclr2[1] = 0.525f;
-			tclr2[2] = 1.0f;
-			tclr2[3] = 1.0f;
+			classText = "Armor Vendor";
+			VectorSet4(textColor, 0.525f, 0.525f, 1.0f, 1.0f);
 			break;
 		case CLASS_SUPPLIES_VENDOR:
-			str2 = "< Supplies Vendor >";
-			tclr[0] = 0.525f;
-			tclr[1] = 0.525f;
-			tclr[2] = 1.0f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.525f;
-			tclr2[1] = 0.525f;
-			tclr2[2] = 1.0f;
-			tclr2[3] = 1.0f;
+			classText = "Supplies Vendor";
+			VectorSet4(textColor, 0.525f, 0.525f, 1.0f, 1.0f);
+			break;
+		case CLASS_EQUIPMENT_VENDOR:
+			classText = "Equipment Vendor";
+			VectorSet4(textColor, 0.525f, 0.525f, 1.0f, 1.0f);
 			break;
 		case CLASS_FOOD_VENDOR:
-			str2 = "< Food Vendor >";
-			tclr[0] = 0.525f;
-			tclr[1] = 0.525f;
-			tclr[2] = 1.0f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.525f;
-			tclr2[1] = 0.525f;
-			tclr2[2] = 1.0f;
-			tclr2[3] = 1.0f;
+			classText = "Food Vendor";
+			VectorSet4(textColor, 0.525f, 0.525f, 1.0f, 1.0f);
 			break;
 		case CLASS_MEDICAL_VENDOR:
-			str2 = "< Medical Vendor >";
-			tclr[0] = 0.525f;
-			tclr[1] = 0.525f;
-			tclr[2] = 1.0f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.525f;
-			tclr2[1] = 0.525f;
-			tclr2[2] = 1.0f;
-			tclr2[3] = 1.0f;
+			classText = "Medical Vendor";
+			VectorSet4(textColor, 0.525f, 0.525f, 1.0f, 1.0f);
 			break;
 		case CLASS_GAMBLER_VENDOR:
-			str2 = "< Gambling Vendor >";
-			tclr[0] = 0.525f;
-			tclr[1] = 0.525f;
-			tclr[2] = 1.0f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.525f;
-			tclr2[1] = 0.525f;
-			tclr2[2] = 1.0f;
-			tclr2[3] = 1.0f;
+			classText = "Gambling Vendor";
+			VectorSet4(textColor, 0.525f, 0.525f, 1.0f, 1.0f);
 			break;
 		case CLASS_TRADE_VENDOR:
-			str2 = "< Trade Vendor >";
-			tclr[0] = 0.525f;
-			tclr[1] = 0.525f;
-			tclr[2] = 1.0f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.525f;
-			tclr2[1] = 0.525f;
-			tclr2[2] = 1.0f;
-			tclr2[3] = 1.0f;
+			classText = "Trade Vendor";
+			VectorSet4(textColor, 0.525f, 0.525f, 1.0f, 1.0f);
 			break;
 		case CLASS_ODDITIES_VENDOR:
-			str2 = "< Oddities Vendor >";
-			tclr[0] = 0.525f;
-			tclr[1] = 0.525f;
-			tclr[2] = 1.0f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.525f;
-			tclr2[1] = 0.525f;
-			tclr2[2] = 1.0f;
-			tclr2[3] = 1.0f;
+			classText = "Oddities Vendor";
+			VectorSet4(textColor, 0.525f, 0.525f, 1.0f, 1.0f);
 			break;
 		case CLASS_DRUG_VENDOR:
-			str2 = "< Drug Vendor >";
-			tclr[0] = 0.525f;
-			tclr[1] = 0.525f;
-			tclr[2] = 1.0f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.525f;
-			tclr2[1] = 0.525f;
-			tclr2[2] = 1.0f;
-			tclr2[3] = 1.0f;
+			classText = "Drug Vendor";
+			VectorSet4(textColor, 0.525f, 0.525f, 1.0f, 1.0f);
 			break;
 		case CLASS_TRAVELLING_VENDOR:
-			str2 = "< Travelling Vendor >";
-			tclr[0] = 0.525f;
-			tclr[1] = 0.525f;
-			tclr[2] = 1.0f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.525f;
-			tclr2[1] = 0.525f;
-			tclr2[2] = 1.0f;
-			tclr2[3] = 1.0f;
-			break;
-			//Stoiss add: Faq coler names for npcs in this class
-			case CLASS_JKG_FAQ_IMP_DROID:
-			str2 = "< Imperial FAQ Droid >";//red coler
-			tclr[0] = 1.0f;
-			tclr[1] = 0.125f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 1.0f;
-			tclr2[1] = 0.125f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
-			break;
-			case CLASS_JKG_FAQ_ALLIANCE_DROID:
-			str2 = "< Alliance FAQ Droid >";//Dark Blue coler
-			tclr[0] = 0.125f;
-			tclr[1] = 0.125f;
-			tclr[2] = 0.7f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.125f;
-			tclr2[1] = 0.125f;
-			tclr2[2] = 0.7f;
-			tclr2[3] = 1.0f;
-			break;
-			case CLASS_JKG_FAQ_SPY_DROID:
-			str2 = "< Faq Spy Droid >";//Yellow colder
-			tclr[0] = 0.7f;
-			tclr[1] = 0.7f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.7f;
-			tclr2[1] = 0.7f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
+			classText = "Travelling Vendor";
+			VectorSet4(textColor, 0.525f, 0.525f, 1.0f, 1.0f);
 			break;
 
-			case CLASS_JKG_FAQ_CRAFTER_DROID:
-			str2 = "< Master Crafter >";//Yellow colder
-			tclr[0] = 0.7f;
-			tclr[1] = 0.7f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.7f;
-			tclr2[1] = 0.7f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
+		//Stoiss add: Faq coler names for npcs in this class
+		case CLASS_JKG_FAQ_IMP_DROID:
+			classText = "Imperial FAQ Droid";//red coler
+			VectorSet4(textColor, 1.0f, 0.125f, 0.125f, 1.0f);
 			break;
-			case CLASS_JKG_FAQ_MERC_DROID:
-			str2 = "< Merc FAQ Droid >";//Yellow colder. fixme: need a better coler for mercs
-			tclr[0] = 1.0f;
-			tclr[1] = 0.225f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
 
-			tclr2[0] = 1.0f;
-			tclr2[1] = 0.225f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
+		case CLASS_JKG_FAQ_ALLIANCE_DROID:
+			classText = "Alliance FAQ Droid";//Dark Blue coler
+			VectorSet4(textColor, 0.125f, 0.125f, 0.7f, 1.0f);
 			break;
-			case CLASS_JKG_FAQ_JEDI_MENTOR:
-			str2 = "< Jedi Mentor >";// Blue coler
-			tclr[0] = 0.125f;
-			tclr[1] = 0.325f;
-			tclr[2] = 0.7f;
-			tclr[3] = 1.0f;
 
-			tclr2[0] = 0.125f;
-			tclr2[1] = 0.325f;
-			tclr2[2] = 0.7f;
-			tclr2[3] = 1.0f;
+		case CLASS_JKG_FAQ_SPY_DROID:
+			classText = "Faq Spy Droid";//Yellow colder
+			VectorSet4(textColor, 0.7f, 0.7f, 0.125f, 1.0f);
 			break;
-			case CLASS_JKG_FAQ_SITH_MENTOR:
-			str2 = "< Sith Mentor >";//oriange coler
-			tclr[0] = 1.0f;
-			tclr[1] = 0.225f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 1.0f;
-			tclr2[1] = 0.225f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
-			break;//Stoiss end
+		case CLASS_JKG_FAQ_CRAFTER_DROID:
+			classText = "Master Crafter";//Yellow colder
+			VectorSet4(textColor, 0.7f, 0.7f, 0.125f, 1.0f);
+			break;
+		case CLASS_JKG_FAQ_MERC_DROID:
+			classText = "Merc FAQ Droid";//Yellow colder. fixme: need a better coler for mercs
+			VectorSet4(textColor, 1.0f, 0.225f, 0.125f, 1.0f);
+			break;
+		case CLASS_JKG_FAQ_JEDI_MENTOR:
+			classText = "Jedi Mentor";// Blue coler
+			VectorSet4(textColor, 0.125f, 0.325f, 0.7f, 1.0f);
+			break;
+		case CLASS_JKG_FAQ_SITH_MENTOR:
+			classText = "Sith Mentor";//oriange coler
+			VectorSet4(textColor, 1.0f, 0.225f, 0.125f, 1.0f);
+			break;
 		case CLASS_STORMTROOPER:
 		case CLASS_SWAMPTROOPER:
 		case CLASS_IMPWORKER:
 		case CLASS_IMPERIAL:
 		case CLASS_SHADOWTROOPER:
 		case CLASS_COMMANDO:
-			str2 = "< Imperial >";
-			tclr[0] = 1.0f;
-			tclr[1] = 0.125f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 1.0f;
-			tclr2[1] = 0.125f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
+			classText = "Imperial";
+			VectorSet4(textColor, 1.0f, 0.125f, 0.125f, 1.0f);
 			break;
-			case CLASS_MERC://Stoiss add merc class
-			str2 = "< Merc >";
-			tclr[0] = 1.0f;
-			tclr[1] = 0.125f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 1.0f;
-			tclr2[1] = 0.125f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
+		case CLASS_MERC://Stoiss add merc class
+			classText = "Merc";
+			VectorSet4(textColor, 1.0f, 0.125f, 0.125f, 1.0f);
 			break;
 		case CLASS_TAVION:
 		case CLASS_DESANN:
-			str2 = "< Sith Boss>";
-			tclr[0] = 1.0f;
-			tclr[1] = 0.325f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 1.0f;
-			tclr2[1] = 0.325f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
+			classText = "Sith Boss";
+			VectorSet4(textColor, 1.0f, 0.325f, 0.125f, 1.0f);
 			break;
-			case CLASS_REBORN:
-			str2 = "< Sith >";
-			tclr[0] = 1.0f;
-			tclr[1] = 0.325f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 1.0f;
-			tclr2[1] = 0.325f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
+		case CLASS_REBORN:
+			classText = "Sith";
+			VectorSet4(textColor, 1.0f, 0.325f, 0.125f, 1.0f);
 			break;
-			case CLASS_REBORN_CULTIST:
-			str2 = "< Sith Fighters >";
-			tclr[0] = 1.0f;
-			tclr[1] = 0.325f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 1.0f;
-			tclr2[1] = 0.325f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
-			break;
+		case CLASS_REBORN_CULTIST:
+			classText = "Sith Fighters";
+			VectorSet4(textColor, 1.0f, 0.325f, 0.125f, 1.0f);
 		case CLASS_BOBAFETT:
-			str2 = "< Bounty Hunter >";
-			tclr[0] = 1.0f;
-			tclr[1] = 0.225f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 1.0f;
-			tclr2[1] = 0.225f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
+			classText = "Bounty Hunter";
+			VectorSet4(textColor, 1.0f, 0.225f, 0.125f, 1.0f);
 			break;
 		case CLASS_ATST:
-			str2 = "< Vehicle >";
-			tclr[0] = 1.0f;
-			tclr[1] = 0.225f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 1.0f;
-			tclr2[1] = 0.225f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
+			classText = "Vehicle";
+			VectorSet4(textColor, 1.0f, 0.225f, 0.125f, 1.0f);
 			break;
 		case CLASS_CLAW:
 		case CLASS_FISH:
@@ -2875,42 +2658,18 @@ void CG_DrawNPCNames( void )
 		case CLASS_RANCOR:
 		case CLASS_WAMPA:
 		case CLASS_TUSKEN:
-			str2 = "< Animal >";
-			tclr[0] = 1.0f;
-			tclr[1] = 0.125f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 1.0f;
-			tclr2[1] = 0.125f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
+			classText = "Animal";
+			VectorSet4(textColor, 1.0f, 0.125f, 0.125f, 1.0f);
 			break;
 		case CLASS_VEHICLE:
-			str2 = "< Vehicle >";
-			tclr[0] = 1.0f;
-			tclr[1] = 0.125f;
-			tclr[2] = 0.125f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 1.0f;
-			tclr2[1] = 0.125f;
-			tclr2[2] = 0.125f;
-			tclr2[3] = 1.0f;
+			classText = "Vehicle";
+			VectorSet4(textColor, 1.0f, 0.125f, 0.125f, 1.0f);
 			break;
 		case CLASS_BESPIN_COP:
 		case CLASS_LANDO:
 		case CLASS_PRISONER:
-			str2 = "< Rebel >";
-			tclr[0] = 0.125f;
-			tclr[1] = 0.125f;
-			tclr[2] = 0.7f;
-			tclr[3] = 1.0f;
-
-			tclr2[0] = 0.125f;
-			tclr2[1] = 0.125f;
-			tclr2[2] = 0.7f;
-			tclr2[3] = 1.0f;
+			classText = "Rebel";
+			VectorSet4(textColor, 0.125f, 0.125f, 0.7f, 1.0f);
 			break;
 		case CLASS_GALAK:
 		case CLASS_GRAN:
@@ -2924,53 +2683,28 @@ void CG_DrawNPCNames( void )
 		case CLASS_JAWA:
 			if (cent->playerState->persistant[PERS_TEAM] == NPCTEAM_ENEMY)
 			{
-				str2 = "< Thug >";
-				tclr[0] = 0.5f;
-				tclr[1] = 0.5f;
-				tclr[2] = 0.125f;
-				tclr[3] = 1.0f;
-
-				tclr2[0] = 0.5f;
-				tclr2[1] = 0.5f;
-				tclr2[2] = 0.125f;
-				tclr2[3] = 1.0f;
+				classText = "Thug";
+				VectorSet4(textColor, 0.5f, 0.5f, 0.125f, 1.0f);
 			}
 			else if (cent->playerState->persistant[PERS_TEAM] == NPCTEAM_PLAYER)
 			{
-				str2 = "< Rebel >";
-				tclr[0] = 0.125f;
-				tclr[1] = 0.125f;
-				tclr[2] = 0.7f;
-				tclr[3] = 1.0f;
-
-				tclr2[0] = 0.125f;
-				tclr2[1] = 0.125f;
-				tclr2[2] = 0.7f;
-				tclr2[3] = 1.0f;
+				classText = "Rebel";
+				VectorSet4(textColor, 0.125f, 0.125f, 0.7f, 1.0f);
 			}
 			else
 			{
-				str2 = "< Civilian >";
-				tclr[0] = 0.7f;
-				tclr[1] = 0.7f;
-				tclr[2] = 0.125f;
-				tclr[3] = 1.0f;
-
-				tclr2[0] = 0.7f;
-				tclr2[1] = 0.7f;
-				tclr2[2] = 0.125f;
-				tclr2[3] = 1.0f;
+				classText = "Civilian";
+				VectorSet4(textColor, 0.7f, 0.7f, 0.125f, 1.0f);
 			}
 			break;
 		
 		default:
-			//CG_Printf("NPC %i is not a civilian or vendor (class %i).\n", cent->currentState.number, cent->currentState.NPC_class);
 			continue; // Unsupported...
-			break;
 		}
 
 		if (cent->currentState.generic1 > 0)
-		{// Was assigned a full name already! Yay!
+		{
+			// Was assigned a full name already! Yay!
 			switch( cent->currentState.NPC_class )
 			{// UQ1: Supported Class Types...
 			case CLASS_CIVILIAN:
@@ -2978,6 +2712,7 @@ void CG_DrawNPCNames( void )
 			case CLASS_WEAPONS_VENDOR:
 			case CLASS_ARMOR_VENDOR:
 			case CLASS_SUPPLIES_VENDOR:
+			case CLASS_EQUIPMENT_VENDOR:
 			case CLASS_FOOD_VENDOR:
 			case CLASS_MEDICAL_VENDOR:
 			case CLASS_GAMBLER_VENDOR:
@@ -2996,7 +2731,7 @@ void CG_DrawNPCNames( void )
 			case CLASS_JEDI:
 			case CLASS_KYLE:
 			case CLASS_JAN:
-			case CLASS_MONMOTHA:			
+			case CLASS_MONMOTHA:
 			case CLASS_MORGANKATARN:
 			case CLASS_TAVION:
 			case CLASS_REBORN:
@@ -3020,55 +2755,53 @@ void CG_DrawNPCNames( void )
 			case CLASS_TUSKEN:
 			case CLASS_UGNAUGHT:
 			case CLASS_JAWA:
-				str1 = va("%s", BG_Get_NPC_Name(cent->currentState.generic1));
+				npcName = va("%s", BG_Get_NPC_Name(cent->currentState.generic1));
 				break;
 			case CLASS_STORMTROOPER:
 			case CLASS_SWAMPTROOPER:
 			case CLASS_IMPWORKER:
 			case CLASS_IMPERIAL:
 			case CLASS_SHADOWTROOPER:
-				str1 = va("TK-%i", cent->currentState.generic1);	// EVIL. for a number of reasons --eez
+				npcName = va("TK-%i", cent->currentState.generic1);	// EVIL. for a number of reasons --eez
 				break;
 			case CLASS_ATST:				// technically droid...
-				str1 = "AT-ST";
+				npcName = "AT-ST";
 				break;
 			case CLASS_CLAW:
-				str1 = "Claw";
+				npcName = "Claw";
 				break;
 			case CLASS_FISH:
-				str1 = "Sea Creature";
+				npcName = "Sea Creature";
 				break;
 			case CLASS_FLIER2:
-				str1 = "Flier";
+				npcName = "Flier";
 				break;
 			case CLASS_GLIDER:
-				str1 = "Glider";
+				npcName = "Glider";
 				break;
 			case CLASS_HOWLER:
-				str1 = "Howler";
+				npcName = "Howler";
 				break;
 			case CLASS_LIZARD:
-				str1 = "Lizard";
+				npcName = "Lizard";
 				break;
 			case CLASS_MINEMONSTER:
-				str1 = "Mine Monster";
+				npcName = "Mine Monster";
 				break;
 			case CLASS_SWAMP:
-				str1 = "Swamp Monster";
+				npcName = "Swamp Monster";
 				break;
 			case CLASS_RANCOR:
-				str1 = "Rancor";
+				npcName = "Rancor";
 				break;
 			case CLASS_WAMPA:
-				str1 = "Wampa";
+				npcName = "Wampa";
 				break;
 			case CLASS_VEHICLE:
-				str1 = "";
+				npcName = "";
 				break;
 			default:
-				//CG_Printf("NPC %i is not a civilian or vendor (class %i).\n", cent->currentState.number, cent->currentState.NPC_class);
 				continue; // Unsupported...
-				break;
 			}
 		}
 		else
@@ -3076,96 +2809,59 @@ void CG_DrawNPCNames( void )
 			continue;
 		}
 
-		if (cent->currentState.eFlags & EF_DEAD)
-		{
-			//CG_Printf("NPC is dead.\n");
-			continue;
-		}
-
-		if (cent->currentState.eFlags & EF_NODRAW)
-		{
-			//CG_Printf("NPC is NODRAW.\n");
-			continue;
-		}
-
+		vec3_t origin;
 		VectorCopy( cent->lerpOrigin, origin );
-		origin[2] += 30;//60;
+		origin[2] += 30;
 
-		// Account for ducking
 		if ( cent->playerState->pm_flags & PMF_DUCKED )
 			origin[2] -= 18;
 	
 		// Draw the NPC name!
+		float x;
+		float y;
 		if (!CG_WorldCoordToScreenCoordFloat(origin, &x, &y))
-		{
-			//CG_Printf("FAILED %i screen coords are %fx%f. (%f %f %f)\n", cent->currentState.number, x, y, origin[0], origin[1], origin[2]);
 			continue;
-		}
 
-		if (x < 0 || x > 640 || y < 0 || y > 480)
-		{
-			//CG_Printf("FAILED2 %i screen coords are %fx%f. (%f %f %f)\n", cent->currentState.number, x, y, origin[0], origin[1], origin[2]);
+		if (x < 0 || x > SCREEN_WIDTH || y < 0 || y > SCREEN_HEIGHT)
 			continue;
-		}
 
 		VectorCopy( cent->lerpOrigin, origin );
-		origin[2] += 25;//50;
+		origin[2] += 25;
 
-		// Account for ducking
 		if ( cent->playerState->pm_flags & PMF_DUCKED )
 			origin[2] -= 18;
 
-		dist = Distance(cg.snap->ps.origin, origin);
-		
-		if (dist > 1024.0f/*2500.0f*/) continue; // Too far...
-		if (dist < 192.0f/*d_roff.value*//*350.0f*/) multiplier = 200.0f/*d_poff.value*//dist; // Cap short ranges...
+		float multiplier = 1.0f;
+		if (distance < 192.0f)
+			multiplier = 200.0f /distance;
 
+		float x2;
+		float y2;
 		if (!CG_WorldCoordToScreenCoordFloat(origin, &x2, &y2))
-		{
-			//CG_Printf("FAILED %i screen coords are %fx%f. (%f %f %f)\n", cent->currentState.number, x, y, origin[0], origin[1], origin[2]);
 			continue;
-		}
 
-		if (x2 < 0 || x2 > 640 || y2 < 0 || y2 > 480)
-		{
-			//CG_Printf("FAILED2 %i screen coords are %fx%f. (%f %f %f)\n", cent->currentState.number, x, y, origin[0], origin[1], origin[2]);
+		if (x2 < 0 || x2 > SCREEN_WIDTH || y2 < 0 || y2 > SCREEN_HEIGHT)
 			continue;
-		}
 
-		//CG_Printf("%i screen coords are %fx%f. (%f %f %f)\n", cent->currentState.number, x, y, origin[0], origin[1], origin[2]);
+		float size = Com_Clamp(distance * 0.0002, 0.01f, 0.99f);
+		size = 0.3f * (1.0f - size);
 
-		if (!CG_CheckClientVisibility(cent))
-		{
-			//CG_Printf("NPC is NOT visible.\n");
-			continue;
-		}
+		const float nameTextSize = size * 2.0f;
+		const float classTextSize = size * 1.5f;
 
-		//CG_Printf("%i screen coords are %fx%f. (%f %f %f)\n", cent->currentState.number, x, y, origin[0], origin[1], origin[2]);
+		char bracketedName[64];
+		Com_sprintf(bracketedName, sizeof(bracketedName), "< %s >", npcName);
 
-		Q_StripColor(str1);
-		Q_StripColor(str2);
+		const float h = CG_Text_Height(bracketedName, nameTextSize, FONT_SMALL);
+		y += h;
+		y = (y*(1-size))+((30*(1-size))*(1-size))+sqrt(sqrt((1-size)*30))+((1-multiplier)*30);
+		x -= 0.5f * CG_Text_Width(bracketedName, nameTextSize, FONT_SMALL);
 		
-		size = dist * 0.0002;
-		
-		if (size > 0.99f) size = 0.99f;
-		if (size < 0.01f) size = 0.01f;
+		x2 -= 0.5f * CG_Text_Width(classText, classTextSize, FONT_SMALL3);
+		y2 = y + h + 6.0f;
 
-		size = 1 - size;
-
-		size *= 0.3;
-
-		w = CG_Text_Width(str1, size*2, FONT_SMALL);
-		y = y + CG_Text_Height(str1, size*2, FONT_SMALL);
-		x -= (w * 0.5f);
-		
-		w2 = CG_Text_Width(str2, size*1.5, FONT_SMALL3);
-		x2 -= (w2 * 0.5f);
-		y2 = y + 6 + CG_Text_Height(str1, size*2, FONT_SMALL);
-
-		CG_Text_Paint( x, (y*(1-size))+((30*(1-size))*(1-size))+sqrt(sqrt((1-size)*30))+((1-multiplier)*30), size*2, tclr, str1, 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_SMALL);
-		CG_Text_Paint( x2, (y2*(1-size))+((30*(1-size))*(1-size))+sqrt(sqrt((1-size)*30))+((1-multiplier)*30), size*1.5, tclr2, str2, 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_SMALL3);
-
-		//CG_Printf("Draw %s - %s as size %f.\n", sanitized1, sanitized2, size);
+		CG_Text_Paint(x, y, nameTextSize, textColor, bracketedName, 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_SMALL);
+		CG_Text_Paint(x2, y2, classTextSize, textColor, classText, 0, 0, ITEM_TEXTSTYLE_SHADOWED, FONT_SMALL3);
 	}
 }
 
@@ -3202,10 +2898,16 @@ static void CG_DrawCrosshairNames( void ) {
     //[USE_ITEMS]
     if ( cg_entities[cg.crosshairClientNum].currentState.eType == ET_ITEM )
     {
-        UI_DrawProportionalString (320, 170, "Press E to pick up weapon", UI_CENTER, colorTable[CT_WHITE], FONT_MEDIUM);
+        //UI_DrawProportionalString (320, 170, "Press E to pick up weapon", UI_CENTER, colorTable[CT_WHITE], FONT_MEDIUM);
         return;
     }
     //[/USE_ITEMS]
+
+	if (cg_entities[cg.crosshairClientNum].currentState.eType == ET_BODY)
+	{
+		UI_DrawProportionalString(320, 170, "Press E to loot body", UI_CENTER, colorTable[CT_WHITE], FONT_MEDIUM);
+		return;
+	}
 
 	if (cg.crosshairClientNum >= MAX_CLIENTS)
 	{
@@ -4613,7 +4315,6 @@ void CG_PerformanceAnalysis()
 void ChatBox_CloseChat();
 static void CG_Draw2D( void ) {
 	float			fallTime; 
-	int				drawSelect = 0;
 	int				drawHUD	= cg_drawHUD.integer;
 
 	// if we are taking a levelshot for the menu, don't draw anything
@@ -4682,7 +4383,6 @@ static void CG_Draw2D( void ) {
 	CG_PerformanceAnalysis();
 	CinBuild_Visualize2D();
 
-
 	if ( cg.snap->ps.pm_type == PM_INTERMISSION ) {
 		CG_DrawIntermission();
 		return;
@@ -4728,7 +4428,8 @@ static void CG_Draw2D( void ) {
 			CG_DrawChatbox();	// Only show the chatbox when we're alive (JKG)
 		} else {
 			// don't draw any status if dead or the scoreboard is being explicitly shown
-			if ( cg.snap->ps.stats[STAT_HEALTH] > 0 && !cg.deathcamFadeStart ) { //!cg.showScores && to bring back scoreboard on tab press.
+			if ( cg.snap->ps.stats[STAT_HEALTH] > 0 && !cg.deathcamFadeStart) 
+			{ //!cg.showScores && to bring back scoreboard on tab press.
 
 				if ( /*cg_drawStatus.integer*/0 ) {
 					//Reenable if stats are drawn with menu system again
@@ -4755,9 +4456,22 @@ static void CG_Draw2D( void ) {
 				CG_DrawGrenade();
 
 				CG_DrawChatbox();	// Only show the chatbox when we're alive (JKG)
-			} else {
-				if (cg.isChatting) {
-					ChatBox_CloseChat();
+			}
+			else 
+			{
+				CG_DrawMessageNotifications();	//continue drawing message notifications
+
+				//if we die and we are chatting interrupt it
+				if (cg.isChatting) 
+				{
+					if(cg.snap->ps.clientNum == cg.clientNum) { 
+						ChatBox_CloseChat();
+					}
+
+					//(except on spectators)
+					else { 
+						CG_DrawChatbox();
+					}
 				}
 			}
 	    

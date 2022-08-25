@@ -7,5 +7,6 @@
 	"weight":		"6",
 	"cost":		"650",
 	"xml":			"xml/items/LT-60.xml",
-	"itemIcon":		"models/weapons/lt-60_slugcarbine/icon_default"
+	"itemIcon":		"models/weapons/lt-60_slugcarbine/icon_default",
+	"itemDescription": "This ancient weapon was first created and produced by Czerka Arms as a cheaper alternative to blasters due to blaster gas shortages during the Mandalorian Wars. While no longer common, it can be devastating to those relying on shields for protection. "
 }

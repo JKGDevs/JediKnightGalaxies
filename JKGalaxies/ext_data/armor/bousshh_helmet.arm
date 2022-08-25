@@ -1,0 +1,63 @@
+{
+	"ref":		"bousshh_helmet",
+	"slot":		"head",
+	"armor":	175,
+	"movemodifier":	1.0,
+	"hp": 			50,
+	"filter":		true,
+
+	"visuals": {
+		"model":	"models/players/JKGalaxiesArmor/model.glm*default",
+		"modelGroup":	"JKGalaxiesArmor",
+
+		"armorOnSurfaces": [
+			"head_helmet_bousshh"
+		],
+
+		"bodyOffSurfaces": [
+			"head",
+			"head_face",
+			"head_eyes",
+			"head_eyes_mouth",
+			"head_helmet",
+			"head_l_hairback",
+			"heada",
+			"headb",
+			"heada_mouth",
+			"headb_mouth",
+			"heada_teeth",
+			"headb_teeth",
+			"heada_face",
+			"headb_face",
+			"head_com",
+			"head_left",
+			"head_right",
+			"head_fins",
+			"head_hair",
+			"head_haira",
+			"head_haira_back",
+			"head_haira_band",
+			"head_haira_bangs",
+			"head_haira_front",
+			"head_haira_fine",
+			"head_haira_short",
+			"head_haira_tail",
+			"head_hairb",
+			"head_hairb_back",
+			"head_hairb_band",
+			"head_hairb_bangs",
+			"head_hairb_front",
+			"head_hairb_fine",
+			"head_hairb_short",
+			"head_hairb_tail",
+			"head_hairc",
+			"head_hairc_back",
+			"head_hairc_band",
+			"head_hairc_bangs",
+			"head_hairc_front",
+			"head_hairc_fine",
+			"head_hairc_tail",
+			"head_hairc_short"
+		]
+	}
+}

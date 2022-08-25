@@ -3,6 +3,7 @@
 
 #include "g_local.h"
 #include "bg_public.h"
+#include "game/bg_weapons.h"
 
 typedef struct damageInstance_s
 {
@@ -28,11 +29,51 @@ typedef struct damageArea_s
 	const damageSettings_t *data;
 } damageArea_t;
 
-void JKG_DoDamage ( damageSettings_t* data, gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t origin, int dflags, int mod );
-void JKG_DoSplashDamage ( damageSettings_t* data, const vec3_t origin, gentity_t *inflictor, gentity_t *attacker, gentity_t *ignoreEnt, int mod );
-void JKG_DoDirectDamage ( damageSettings_t* data, gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t origin, int dflags, int mod );
-void JKG_DoObjectDamage(  damageSettings_t* data, gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t origin, int dflags, int mod );
-void JKG_DamagePlayers ( void );
-void G_TickBuffs(gentity_t* ent);
+struct damageDecay_t
+{
+	float recommendedRange;
+	float maxRange;
+	float distanceToDamageOrigin;
+	float decayRate;
+};
+
+void JKG_DoDamage(
+	weaponFireModeStats_t *fireMode,
+	gentity_t *targ,
+	gentity_t *inflictor,
+	gentity_t *attacker,
+	vec3_t dir,
+	vec3_t origin,
+	int dflags,
+	int mod,
+	const damageDecay_t *decay = nullptr);
+
+void JKG_DoSplashDamage(
+	damageSettings_t *data,
+	const vec3_t origin,
+	gentity_t *inflictor,
+	gentity_t *attacker,
+	gentity_t *ignoreEnt,
+	int mod);
+
+void JKG_DoDirectDamage(
+	weaponFireModeStats_t *fireMode,
+	gentity_t *targ,
+	gentity_t *inflictor,
+	gentity_t *attacker,
+	vec3_t dir,
+	vec3_t origin,
+	int dflags,
+	int mod,
+	const damageDecay_t *decay = nullptr);
+
+void JKG_DamagePlayers(void);
+
+void G_TickBuffs(gentity_t *ent);
+
+int JKG_CalculateDamageDecay(int damage, float distance, float range, float decayRate);
+int JKG_AdjustAmbientHeatDamage(bool heat, int damage);	//adjust debuff fire/cold damage based on ambient tempature
+
+constexpr float MAX_RANGE_MULTIPLIER = 10.0;	//how many times should we bother calculating beyond a weapon's range
 
 #endif

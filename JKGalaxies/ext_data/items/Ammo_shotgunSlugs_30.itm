@@ -6,5 +6,6 @@
 	"cost":		"85",
 	"ammoclass":	"AMMO_SLUGS_SPLITTING",
 	"ammoquantity":	"30",
-	"itemIcon": "gfx/item_icons/default.tga"	//needs icon!
+	"itemIcon": "gfx/item_icons/ammo_metallic_bolts.tga",	//needs icon!
+	"itemDescription": "The slugthrower munitions in this pack appear to be modified to cause them to split into several fragments upon being fired from the barrel. They seem to be originally designed to hit fast moving airborne targets, but may have other applications."
 }

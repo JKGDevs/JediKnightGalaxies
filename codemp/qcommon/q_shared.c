@@ -1855,3 +1855,90 @@ void getGalacticTimeStamp(char* outStr)	//to use : char myarray[17]; getBuildTim
 
 	return;
 }
+
+void stringList_addSorted( stringList_t **el, const char *stringIn )
+{ // NOTE: case insensitive
+	stringList_t *newEl;
+
+	// Try to get the memory we need
+	newEl = (stringList_t*)malloc( sizeof(stringList_t) );
+
+	if ( !newEl )
+	{
+		Com_Printf( "stringList_addSorted: failed to get memory for element\n" );
+		return;
+	}
+
+	newEl->string = (char*)malloc( strlen(stringIn) + 1 );
+
+	if ( !newEl->string )
+	{
+		Com_Printf( "stringList_addSorted: failed to get memory for string\n" );
+		free( newEl );
+		return;
+	}
+
+	// Copy over the string
+	strcpy( newEl->string, stringIn );
+
+	// Search for the location
+	while ( *el && Q_stricmp((*el)->string, stringIn) < 0 )
+		el = &((*el)->next);
+
+	// Make the old element our next and put the new element into its position
+	newEl->next = *el;
+	*el = newEl;
+}
+
+void stringList_free( stringList_t **el )
+{
+	stringList_t *toDel;
+
+	while ( *el )
+	{ // Go through all elements and free them until we hit the end
+		toDel = *el;
+		*el = (*el)->next;
+		free( toDel->string );
+		free( toDel );
+	}
+}
+
+int stringList_writeToBuffer( stringList_t *el, char *buffer, int bufferSize )
+{
+	int size = 0;
+	int strLen;
+	int stringCount = 0;
+
+	while ( el )
+	{ // Write each element to the buffer
+		strLen = strlen(el->string) + 1;
+		if ( size + strLen > bufferSize )
+		{ // Make sure it fits
+			Com_Printf( "stringList_writeToBuffer: buffer too small\n" );
+			return stringCount;
+		}
+		strcpy( buffer, el->string );
+		size += strLen;
+		buffer += strLen;
+		stringCount++;
+
+		el = el->next;
+	}
+
+	return stringCount;
+}
+
+void sortStrings( int *numStrings, char *stringList, int bufsize )
+{
+	stringList_t *root = NULL;
+	const char *stringPtr = stringList;
+	int i;
+
+	for ( i = 0; i < *numStrings; i++ )
+	{
+		stringList_addSorted( &root, stringPtr );
+		stringPtr += strlen( stringPtr ) + 1;
+	}
+	*numStrings = stringList_writeToBuffer( root, stringList, bufsize );
+	stringList_free( &root );
+}

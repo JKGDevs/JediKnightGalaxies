@@ -7,18 +7,6 @@
 	Written by BobaFett
 --------------------------------------------------]]
 
-local function givenoclip(ply, argc, argv)
-	
-	if argc < 2 then
-		ply.NoClip = !ply.NoClip
-	else
-		local ply2 = players.GetByID(argv[1])
-		ply2.NoClip = !ply2.NoClip
-	end
-end
-
-cmds.Add("donoclip", givenoclip)
-
 
 local debugmask = ""
 
@@ -67,63 +55,11 @@ end
 
 cmds.AddRcon("signaltest", signaltest)
 
-local function teleport(ply, argc, argv)
-	if not ply.IsAdmin then
-		ply:SendChat("^1Admin ^5- ^7You are not allowed to use this command")
-		return
-	end
-	if argc < 2 then
-		local trace = ply:GetEyeTrace()
-		ply:Teleport(trace.EndPos + trace.HitNormal * 25)
-	else
-		local ply2
-		if (type(argv[1]) == "number") then
-			ply2 = players.GetByID(tonumber(argv[1]))
-		else 
-			ply2 = players.GetByName(argv[1])
-		end
-		if not ply2 then
-			ply:SendPrint("Target player not found")
-			return
-		end
-		local trace = ply:GetEyeTrace()
-		ply2:Teleport(trace.EndPos + trace.HitNormal * 25)
-	end
-end
-
-cmds.Add("teleport", teleport)
-
-local function usetarg(ply, argc, argv)
-	if not ply.IsAdmin then
-		ply:SendChat("^1Admin ^5- ^7You are not allowed to use this command")
-		return
-	end
-	if argc < 2 then
-		ply:SendPrint("Please specify a target")
-	else
-		local target = argv[1]
-		local plyent = ply:GetEntity()
-		local entlist = ents.GetByName(target)
-		local k,v
-		for k,v in pairs(entlist) do
-			v:Use(plyent, plyent)
-		end
-	end
-end
-
-cmds.Add("usetarg", usetarg)
-
 local function ConvoPanic(ply, argc, argv)
 	ply:StopConversation()
 end
 
 cmds.Add("convopanic", ConvoPanic)
-
-local function ChatTestCmd(ply, argc, argv)
-	ply:SendChat("^7System: ^2Testing...")
-end
-
-chatcmds.Add("test", ChatTestCmd)
 
 local function pzkFinish(winner)
 	print("Pazaak winner: ", winner)
@@ -138,6 +74,11 @@ local function PzkTestCmd(ply, argc, argv)
 		opp = nil
 	else
 		opp = opp:ToPlayer()
+		if opp.Busy then
+			ply:SendPrint(opp.Name .. "^7 is busy and cannot respond.  Try later.")
+			opp:SendPrint(ply.Name .. "^7 tried to challenge you to Pazaak.")
+			return
+		end
 	end
 	
 	pzk:SetPlayers(ply, opp)

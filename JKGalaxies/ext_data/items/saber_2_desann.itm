@@ -5,7 +5,9 @@
 	"weapon":		"WP_SABER",
 	"variation":		"2",
 	"weight":		"15",
+	"tier":			5,
 	"cost":		"1300",
 	"xml":			"",
-	"itemIcon":		"models/weapons/lightsabers/icons/retribution.tga"
+	"itemIcon":		"models/weapons/lightsabers/icons/retribution.tga",
+	"itemDescription": "Desann's lightsaber."
 }

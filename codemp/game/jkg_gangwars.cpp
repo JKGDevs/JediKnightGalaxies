@@ -243,7 +243,7 @@ void JKG_BG_LoadGangWarTeams(void)
 	char fileList[4096];
 	char filename[MAX_QPATH];
 	char* fileptr;
-	numFiles = trap->FS_GetFileList("ext_data/gangwars", ".team", fileList, 4096);
+	numFiles = Q_FSGetFileListSorted("ext_data/gangwars", ".team", fileList, 4096);
 	fileptr = fileList;
 	for(i = 0; i < numFiles; i++, fileptr += filelen+1)
 	{

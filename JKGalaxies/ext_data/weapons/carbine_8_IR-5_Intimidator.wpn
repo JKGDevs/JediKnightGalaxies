@@ -55,8 +55,8 @@
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
         "splashmeansofdeath": "MOD_BLASTER",
-	"ammobase": "AMMO_POWERPACK_L",
-	"ammodefault": "AMMO_POWERPACK_S",
+	"ammobase": "AMMO_POWERPACK_M",
+	"ammodefault": "AMMO_POWERPACK_M",
         "clipSize":              50,
         "accuracy": {
 			"accuracyRating": 40,
@@ -65,7 +65,8 @@
 			"maxAccuracyAdd": 80,
 			"sightsModifier": 0.4
         },
-        "heatGenerated": 3,
+        "heatGenerated": 1.5,
+		"reloadClearHeat": 60,
         "maxHeat": 50
     },
 

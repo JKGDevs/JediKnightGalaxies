@@ -7,5 +7,6 @@
 	"weight":		"2",
 	"cost":		"90",
 	"xml":			"",
-	"itemIcon":		"models/weapons/SuppressorPistol/icon_default"
+	"itemIcon":		"models/weapons/SuppressorPistol/icon_default",
+	"itemDescription": "The suppressor pistol is an extremely basic accelerated charged particle weapon, often used in lieu of a stun baton in trandoshan slave trade operations."
 }

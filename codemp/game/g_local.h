@@ -96,6 +96,8 @@ extern vec3_t gPainPoint;
 #define	FL_DONT_SHOOT			0x00040000
 #define FL_SHIELDED				0x00080000
 #define FL_UNDYING				0x00100000	// takes damage down to 1, but never dies
+#define FL_NO_DEBUFF			0x00200000	// target is immune to being debuffed
+#define FL_BUSYMODE				0x00400000	// target is busy with something else (eg: Pazaak, trading, etc.)
 
 //ex-eFlags -rww
 #define	FL_BOUNCE				0x00100000		// for missiles
@@ -196,6 +198,26 @@ typedef struct {
 	int lastDamageTime;
 	gentity_t* buffer;
 } buffInfo_t;
+
+typedef struct Dimension {
+	int dNum { 0 };	//negative: isolated from all, 0: global/default, 1+: isolated instance
+	std::vector<bool> properties{ 0, 0, 0, 0, 0, 0}; //controls which property to isolate
+	/*
+	  0 = damage,
+	  1 = collision (knockback, movement, etc),
+	  2 = interact (pazaak, trading, etc), 
+	  3 = visual (draw, efx, etc),
+	  4 = audio (footsteps, pain etc),
+	  5 = chat (local chat)
+
+	  usage example: 
+
+	  for(int i = 0; i<5; i++)
+		properties.at(i) = 1; //isolates all known properties
+
+	  Note that vector<bool> is bitpacked and not really a vector of 'bools'.
+	*/
+} dimension_t;
 
 #ifdef _GAME
 class TreasureClass;
@@ -454,12 +476,17 @@ struct gentity_s {
 	int			damagePlumTime;
 	int			lastHealTime;
 	buffInfo_t	buffData[PLAYERBUFF_BITS];
+	dimension_t dimension;		// Used by player isolation to determine if player's can interact with each other (see jkg_playerisolation.cpp)
 
 	int			grenadeCookTime;	// For cookable grenades.
 	int			grenadeWeapon;		// The cookable grenade type that has been set (it can explode in your pocket).
 	int			grenadeVariation;	// The cookable grenade variation that has been set (it can explode in your pocket).
 
 	char		treasureclass[MAX_QPATH];
+
+	float		decayRate;			// Helps determine how much dmg should be lost when firing beyond the weapon's range.
+	float		maxRange;			// The weapon's absolute maximum range (weapon does 0 dmg at this range). 0 == no decayRate
+	float		range;				// The weapon's recommended range (firing beyond this reduces damage)
 
 	// For scripted NPCs
 	char		*npcscript;
@@ -627,6 +654,7 @@ typedef struct clientPersistant_s {
 	char		netname_nocolor[MAX_NETNAME];
 	int			netnameTime;				// Last time the name was changed
 	int			maxHealth;			// for handicapping
+	int			maxStamina;
 	int			enterTime;			// level.time the client entered the game
 	playerTeamState_t teamState;	// status in teamplay games
 	int			voteCount;			// to prevent people from constantly calling votes
@@ -1518,6 +1546,7 @@ qboolean	 WP_GetWeaponGravity( gentity_t *ent, int firemode );
 int			 WP_GetWeaponMOD( gentity_t *ent, int firemode );
 int			 WP_GetWeaponSplashMOD( gentity_t *ent, int firemode );
 float		 WP_GetWeaponRange( gentity_t *ent, int firemode );
+float		 WP_GetWeaponDecayRate(gentity_t* ent, int firemode);
 float		 WP_GetWeaponSpeed( gentity_t *ent, int firemode );
 double		 WP_GetWeaponSplashRange( gentity_t *ent, int firemode );
 
@@ -1778,6 +1807,7 @@ void JKG_JetpackEquipped(gentity_t* ent, int jetpackItemNumber);
 void Cmd_JetpackUnequipped(gentity_t* ent);
 void Cmd_JetpackUnequipped(gentity_t* ent, unsigned int index);
 void JKG_ArmorChanged(gentity_t* ent);
+void JKG_EquipItem(gentity_t* ent, int itemNumber);
 
 /**************************************************
 * jkg_team.c
@@ -1818,6 +1848,7 @@ void G_UpdateCvars( void );
 void JKG_SP_target_vendor(gentity_t *ent);
 void JKG_target_vendor_use(gentity_t* self, gentity_t* other, gentity_t* activator);
 void JKG_MakeNPCVendor(gentity_t* ent, char* szTreasureClassName);
+void JKG_UnmakeNPCVendor(gentity_t* ent);
 void JKG_GenericVendorUse(gentity_t* self, gentity_t* other, gentity_t* activator);
 void JKG_RegenerateStock(gentity_t* ent);
 

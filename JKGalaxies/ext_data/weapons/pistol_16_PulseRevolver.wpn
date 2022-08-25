@@ -13,7 +13,7 @@
         "selectsound":      "sound/weapons/select_pistol.wav",
 		"barrelCount":	    "0",
         
-        "gunposition":      	"8.0 -3.6 -5.0",
+        "gunposition":      	"12.0 -6.0 -7.0",
         "ironsightsposition": 	"6.0 0.0 -4.4",
         "ironsightsfov": "72",
     
@@ -49,15 +49,15 @@
     "firemode0": {
         "damage":       45,
         "ammocost":     1,
-        "firedelay":    900,
+        "firedelay":    750,
         "firingtype":   "semi",
         "range":	4500.0,
-        "recoil":       1.2,
+        "recoil":       2.8,
         "spread":       0.1,
         "projectilespeed": 4000.0,
         "projectileclass": "blaster_proj",
-        "meansofdeath": "MOD_BRYAR_PISTOL",
-        "splashmeansofdeath": "MOD_BRYAR_PISTOL",
+        "meansofdeath": "MOD_PULSE",
+        "splashmeansofdeath": "MOD_PULSE",
         "accuracy": {
 			"accuracyRating": 15,
 			"accuracyRatingPerShot": 5,

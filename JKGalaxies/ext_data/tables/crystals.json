@@ -1543,10 +1543,11 @@
 		"rgb": 
 		{
 			"r":	243,
-			"g":	55,
-			"b":	8
+			"g":	49,
+			"b":	7
 		},
 
-		"bladeEffect":	"unstable"
+		"bladeEffect":	"unstable",
+		"trailEffect":	"unstable"
 	}
 }

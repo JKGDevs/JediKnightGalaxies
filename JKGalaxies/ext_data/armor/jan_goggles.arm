@@ -1,0 +1,20 @@
+{
+	"ref":		"jan_goggles",
+	"slot":		"head",
+	"armor":		20,
+	"movemodifier":	1.0,
+
+	"visuals": {
+		"model":	"models/players/JKGalaxiesArmor/model.glm*default",
+		"modelGroup":	"JKGalaxiesArmor",
+
+		"armorOnSurfaces": [
+			"heada_goggles"
+		],
+
+		"bodyOffSurfaces": [
+			"head_helmet",
+			"head_com"
+		]
+	}
+}

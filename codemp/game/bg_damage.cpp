@@ -40,7 +40,7 @@ JKG_ParseSingleMeansOfDamage
 =========================
 */
 static void JKG_ParseSingleMeansOfDamage(const char* name, cJSON* json) {
-	meansOfDamage_t mod = { 0 };
+	meansOfDamage_t mod = {};
 	cJSON* jsonNode;
 	cJSON* child;
 	

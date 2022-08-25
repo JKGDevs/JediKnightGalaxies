@@ -17,7 +17,7 @@
             "firemode":     "models/weapons/LJ-70_ConcRifle/firemode"
         },
         
-        "gunposition":      "6.0 -3.5 -6.0",
+        "gunposition":      "6.0 -4.0 -6.0",
         "ironsightsposition": "6.0 -2.0 -5.0",
         "ironsightsfov": "70",
 		"barrelCount": "3",
@@ -70,33 +70,52 @@
     },
     
     "firemode0": {
-		"damage": {
-			"damageradius": { "start": 420 },
-			"damage": 45,
-			"buffs": [
+		"damage": 
+		{
+            "damage": 5,
+            "buffs": [
 					{
-						"buff": "standard-stun",
-						"duration": 2000
+						"buff": "standard-emp",
+						"duration": 4000
 					}
-				]
+                    ],
+			"damageradius": 
+			{ 
+				"start": 400,
+                "falloff": "linear",
+				"function": "constant"
+			},
+			"duration": 10,
+			"delay": 1000
+        },
+        "secondarydamage":
+		{
+			"damageradius": { 
+                                  "start": 25,
+								  "end": 350,
+								  "function": [ "clamp" ],
+								  "param": 40,
+								   "falloff": "constant"
+							},
+				"duration": 1000,
+				"damage": 50,
+				"damagedelay": 1000,
+				"delay": 1000,
+				"buffs": [
+					{
+						"buff": "standard-emp",
+						"duration": 4000
+					}
+				],
+				"penetration": 2
 		},
-//        "damage": 50,//100,//{
-//                          "damageradius": { "start": 128 },
-//                          "delay": 0,
-//                          "damage": 50
-//                        },
-//        "secondarydamage": {
-//                          "damageradius": { "start": 210 },
-//                          "delay": 1000,
-//                          "damage": 100
-//                        },
         "ballistic":    true,
         "collisionsize":1.0,
-        "ammocost":     1,
-        "firedelay":    1800,
+        "ammocost":     2,
+        "firedelay":    1700,
         "firingtype":   "semi",
-        "range":        40000.0,
-        "recoil":       8.0,
+        "range":        5000.0,
+        "recoil":       7.5,
         "spread":       1.0,
         "splashrange":  420,//210,
         "projectilespeed":9000.0,
@@ -105,30 +124,60 @@
         "splashmeansofdeath": "MOD_SONIC",
 	"ammobase": "AMMO_CONCUSSION",
 	"ammodefault": "AMMO_CONCUSSION",
-        "clipSize":              5,
+        "clipSize":              6,
             "accuracy": {
-        "accuracyRating": 42,
-        "accuracyRatingPerShot": 12,
+        "accuracyRating": 35,
+        "accuracyRatingPerShot": 10,
         "msToDrainAccuracy": 450,
         "maxAccuracyAdd": 120,
-        "crouchModifier": 0.9,
-        "runModifier": 1.4,
+        "crouchModifier": 0.8,
+        "runModifier": 1.9,
         "sightsModifier": 0.7,
-        "walkModifier": 1.1,
-        "inAirModifier": 1.8
+        "walkModifier": 1.2,
+        "inAirModifier": 2.8
         }
     },
     
     "firemode1": {
 //        "hitscan":      true,
-        "damage":       50,//80,
+        "damage":
+        {
+            "damage":       65,//80,
+            "buffs": [
+			{
+			    "buff": "standard-emp",
+			    "duration": 4000
+			}
+            ]
+        },
+        "secondarydamage":
+		{
+			"damageradius": { 
+                                  "start": 25,
+								  "end": 350,
+								  "function": [ "clamp" ],
+								  "param": 40,
+								   "falloff": "constant"
+							},
+				"duration": 700,
+				"damage": 15,
+				"damagedelay": 700,
+				"delay": 700,
+				"buffs": [
+					{
+						"buff": "standard-emp",
+						"duration": 4000
+					}
+				],
+				"penetration": 2
+		},
         "ammocost":     1,
         "maxchargetime":1500,
         "chargedamage": 1.6,
         "chargedelay":  1500,
-        "firedelay":    1800,
+        "firedelay":    1600,
         "firingtype":   "semi",
-        "range":        40000.0,
+        "range":        5000.0,
         "recoil":       8.8,
         "spread":       1.0,
         "splashrange":  60,//30,
@@ -138,7 +187,7 @@
         "splashmeansofdeath": "MOD_SONIC",
 	"ammobase": "AMMO_CONCUSSION",
 	"ammodefault": "AMMO_CONCUSSION",
-        "clipSize":              5,
+        "clipSize":              6,
             "accuracy": {
         "accuracyRating": 24,
         "accuracyRatingPerShot": 20,

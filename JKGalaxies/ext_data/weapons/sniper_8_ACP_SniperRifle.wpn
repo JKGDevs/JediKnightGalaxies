@@ -16,7 +16,7 @@
             "ammo":         [ "models/weapons/acp_sniperrifle/scope_mask" ]
         },
         
-        "gunposition":      "9.0 -3.5 -6.0",
+        "gunposition":      "10.0 -4.0 -7.0",
         "ironsightsposition": "9.0 0 -4.6",
         "ironsightsfov": "10",
 		"barrelCount": "2",
@@ -88,13 +88,13 @@
 	"ammodefault": "AMMO_ACP_CARTRIDGE",
         "clipSize":              2,
             "accuracy": {
-        "accuracyRating": 20,
+        "accuracyRating": 25,
         "accuracyRatingPerShot": 20,
         "msToDrainAccuracy": 180,
         "maxAccuracyAdd": 115,
-        "crouchModifier": 0.9,
+        "crouchModifier": 0.6,
         "runModifier": 2.6,
-        "sightsModifier": 0.4,
+        "sightsModifier": 0.3,
         "walkModifier": 2,
         "inAirModifier": 3.2
         }

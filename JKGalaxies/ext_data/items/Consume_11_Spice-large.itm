@@ -1,9 +1,11 @@
 {
 	"name":             	"Spice - Large Dosage",
 	"internal":             "spice_large",
-	"cost":					"250",
+	"cost":					"550",
 	"itemtype":             "consumable",
 	"maxStack":				5,
+	"weight": 				5,
 	"consumeScript":		"item_spice_large",
-	"itemIcon":				"gfx/item_icons/default.tga"
+	"itemIcon":				"gfx/item_icons/spice.tga",
+	"itemDescription": 		"This powerful, mind altering hallucinogenic drug was primarily mined from Kessel by slaves. Highly illegal, it can be used to boost mental and physical performance of several species, but is highly addictive and toxic. A large dose."
 }

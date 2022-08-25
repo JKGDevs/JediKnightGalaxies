@@ -16,7 +16,7 @@
             "ammo":         [ "models/weapons/ACP_ArrayGun/numbers3", "models/weapons/ACP_ArrayGun/numbers2" ]
         },
         
-        "gunposition":      "2.0 -3.0 -5.5",
+        "gunposition":      "5.0 -3.0 -7.0",
         "ironsightsposition": "3.3 -1.0 -5.0",
         "ironsightsfov": "70",
 		"barrelCount":	"3",
@@ -72,18 +72,19 @@
 			    }
 		    ]
 	    },
+        "collisionsize": 4.0,
         "ammocost":     1,
         "firedelay":    1100,
         "firingtype":   "semi",
         "projectiles":     8,
-        "recoil":       1.5,
+        "recoil":       3.5,
         "range":       2200,
         "spread":       1.7,
         "projectilespeed": 6000.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_ACP",
-	"ammobase": "AMMO_ACP_ARRAY",
-	"ammodefault": "AMMO_ACP_ARRAY",
+	    "ammobase": "AMMO_ACP_ARRAY",
+	    "ammodefault": "AMMO_ACP_ARRAY",
         "clipSize":              8,
         "accuracy": {
         	"accuracyRating": 96,
@@ -108,6 +109,7 @@
 			    }
 		    ]
 	    },
+        "collisionsize": 3.0,
         "ammocost":     1,
         "burstshotdelay": 250,
         "firedelay":    1350,
@@ -120,8 +122,8 @@
         "projectilespeed": 6000.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_ACP",
-	"ammobase": "AMMO_ACP_ARRAY",
-	"ammodefault": "AMMO_ACP_ARRAY",
+	    "ammobase": "AMMO_ACP_ARRAY",
+	    "ammodefault": "AMMO_ACP_ARRAY",
         "clipSize":              8,
         "accuracy": {
         	"accuracyRating": 96,

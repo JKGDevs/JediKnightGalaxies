@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"390",
 	"xml":			"",
-	"itemIcon":		"models/weapons/DL-18_Pistol/icon_default"
+	"itemIcon":		"models/weapons/DL-18_Pistol/icon_default",
+	"itemDescription": "A staple blaster pistol widely used throughout the galaxy designed and manufactured by BlasTech Industries. This latest design features a laser sight and the capability to create a stun blast."
 }

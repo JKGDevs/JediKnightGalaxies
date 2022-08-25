@@ -5,5 +5,6 @@
 	"armor":		"sthelmet",
 	"weight":		"2",
 	"cost":			"315",
-	"itemIcon":		"gfx/item_icons/stormtrooper_helmet.tga"
+	"itemIcon":		"gfx/item_icons/stormtrooper_helmet.tga",
+	"itemDescription": "Standard issue helmet part of the Imperial Stormtrooper protective outfit set. An evolution of earlier Phase II clone trooper armor used in the Clone Wars. Made of white plastoid alloys it protects the wearers head."
 }

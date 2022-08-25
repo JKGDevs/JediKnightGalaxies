@@ -1,0 +1,10 @@
+{
+	"name":         "Rebel Helmet (camo)",
+	"internal":     "helmet_rebel_endor",
+	"itemtype":     "armor",
+	"armor":		"endor_helmet",
+	"weight":		"1",
+	"cost":			"275",
+	"itemIcon":		"gfx/item_icons/endor_helmet.tga",
+	"itemDescription": "A cheap, but effective headgear used by the Rebel Alliance guerilla fighters on forested worlds."
+}

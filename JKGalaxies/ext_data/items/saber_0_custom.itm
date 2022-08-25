@@ -5,6 +5,7 @@
 	"weapon":		"WP_SABER",
 	"variation":		"0",
 	"weight":		"7",
+	"tier":			4,
 	"cost":		"1350",
 	"xml":			"",
 	"itemIcon":		"models/weapons/lightsabers/icons/caelum.tga"

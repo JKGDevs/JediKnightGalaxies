@@ -1,0 +1,10 @@
+{
+	"name":         "Imperial Cap",
+	"internal":     "hat_imp",
+	"itemtype":     "armor",
+	"armor":		"imperial_hat",
+	"weight":		"1",
+	"cost":			"50",
+	"itemIcon":		"gfx/item_icons/imp_hat.tga",
+	"itemDescription": "Part of the standard Imperial Officer's uniform, this comfortable cap represents the authority and power of the Galactic Empire, while also offering protection against papercuts."
+}

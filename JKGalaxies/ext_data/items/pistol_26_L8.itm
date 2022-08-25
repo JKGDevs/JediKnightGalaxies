@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"585",
 	"xml":			"",
-	"itemIcon":		"models/weapons/l8striker_pistol/icon_rusty"
+	"itemIcon":		"models/weapons/l8striker_pistol/icon_rusty",
+	"itemDescription": "An update to the older L7 'liquidsilver' blaster pistol, the L8 Striker, like it's predecessor is popular amongst smugglers despite its increased size making it more difficult to conceal in bulkheads, but still blends almost as well amongst cargo."
 }

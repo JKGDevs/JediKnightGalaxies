@@ -12,8 +12,8 @@
         "hudnaicon":        "models/weapons/Drsln_SlugRifle/icon_default",
         "selectsound":      "sound/weapons/select_carbine.wav",
                 
-        "gunposition":      "6.0 -3.0 -4.0",
-        "ironsightsposition": "4.0 0.0 -2.9",
+        "gunposition":      "9.0 -4.5 -7.0",
+        "ironsightsposition": "4.0 0.0 -2.755",
         "ironsightsfov": "70",
 		"barrelCount": "3",
     

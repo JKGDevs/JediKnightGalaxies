@@ -17,8 +17,8 @@
             "firemode":     "models/weapons/PulseCannon/firemode"
         },
         
-        "gunposition":      "7.0 -3.0 -6.0",
-        "ironsightsposition": "5.0 0.0 -5.8",
+        "gunposition":      "10.0 -5.0 -7.0",
+        "ironsightsposition": "5.0 0.0 -6.0",
         "ironsightsfov": "70",
 		"barrelCount": "3",
         
@@ -101,7 +101,7 @@
         "ammocost":     2,
         "firedelay":    450,
         "firingtype":   "semi",
-        "splashrange":  40,//20,
+        "splashrange":  100,//40,
         "range":        5400.0,
         "recoil":       3.5,
         "spread":       0.8,

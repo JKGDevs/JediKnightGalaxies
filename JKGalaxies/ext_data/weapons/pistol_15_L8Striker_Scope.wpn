@@ -18,7 +18,7 @@
             "firemode":     "models/weapons/l8striker_pistol/firemode"
         },
         
-        "gunposition":      "11.0 -3.0 -4.8",
+        "gunposition":      "14.0 -5.0 -7.0",
         "ironsightsposition": "11.0 0.0 -4.8",
         "ironsightsfov": "20",
     
@@ -49,11 +49,11 @@
                 "sound/weapons/blasters/stingbeam3.mp3",
                 "sound/weapons/blasters/stingbeam4.mp3"
             ],
-            "projectilefx": "blasters/shot_White_Weak_small",
-            "miss":         { "impactfx": "blasters/yellow_impacttiny" },
-            "hit":          { "impactfx": "blasters/yellow_impacttiny" },
+            "projectilefx": "blasters/shot_White_Flare_small",
+            "miss":         { "impactfx": "blasters/blue_impacttiny" },
+            "hit":          { "impactfx": "blasters/blue_impacttiny" },
             "deathfx": "blasters/shot_White_vaporize",
-	    "displayName":  "Sting"
+	    "displayName":  "Sting Blast"
         },
 	
 	        "scope": {
@@ -89,14 +89,14 @@
     
     "firemode1": {
         "damage": {
-		"damage": 20//15,
-//		"buffs": [
-//			{
-//				"buff": "standard-slow",
-//				"duration": 1000
-//			}
-//		]
-	},
+			"damage": 15,
+			"buffs": [
+			{
+				"buff": "standard-sting",
+				"duration": 5000
+			}
+			]
+		},
         "ammocost":     1,
         "firedelay":    200,
         "firingtype":   "semi",

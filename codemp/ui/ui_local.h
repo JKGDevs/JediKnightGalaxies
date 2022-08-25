@@ -174,6 +174,7 @@ typedef struct tierInfo_s {
 typedef struct serverFilter_s {
 	const char *description;
 	const char *basedir;
+	const char* gameversion;
 } serverFilter_t;
 
 typedef struct pinglist_s {

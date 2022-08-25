@@ -697,8 +697,8 @@ PERFORMANCE ANALYSIS
 ===================================================================
 */
 
-static performanceData_t com_performanceData = { 0 };
-static performanceData_t com_prevPerformanceData = { 0 };
+static performanceData_t com_performanceData = {};
+static performanceData_t com_prevPerformanceData = {};
 
 /*
 ================
@@ -1098,7 +1098,7 @@ Com_Diagnostics_f
 Print out diagnostic information about the machine
 =============
 */
-static void NORETURN Com_Diagnostics_f(void)
+static void Com_Diagnostics_f(void)
 {
 	if (Cmd_Argc() != 2) {
 		Com_Printf("usage: diagnostics <category>\n");

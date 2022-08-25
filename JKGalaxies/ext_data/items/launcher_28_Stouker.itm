@@ -7,5 +7,6 @@
 	"weight":		"40",
 	"cost":		"2900",
 	"xml":			"xml/items/Conc_rifle.xml",
-	"itemIcon":		"models/weapons/stouker_concussionrifle/icon_default"
+	"itemIcon":		"models/weapons/stouker_concussionrifle/icon_default",
+	"itemDescription": "Created by the vicious Sissk gangs, this concussion rifle is not well known. It fired a concussive blast, that upon impacting with a solid object or target, would cause an explosion. It excels at close range combat."
 }

@@ -165,6 +165,8 @@ void JKG_target_vendor_use(gentity_t* self, gentity_t* other, gentity_t* activat
 		activator->client->ps.useDelay = level.time + 500;
 		return;
 	}
+
+	activator->flags |= FL_BUSYMODE; //mark activator as busy
 	BG_SendTradePacket(IPT_TRADEOPEN, activator, self, &(*self->inventory)[0], self->inventory->size(), 0);
 
 	if (self->s.eType == ET_NPC)
@@ -225,7 +227,6 @@ Makes an NPC into a vendor (with the designated treasure class)
 void JKG_MakeNPCVendor(gentity_t* ent, char* szTreasureClassName)
 {
 	szTreasureClassName = Q_strlwr(szTreasureClassName);
-
 	Q_strncpyz(ent->treasureclass, szTreasureClassName, sizeof(ent->treasureclass));
 
 	//--Futuza: FIXME spawned vendors, need to add thinking to spawned vendors to get them to refresh - this crashes right now
@@ -245,6 +246,24 @@ void JKG_MakeNPCVendor(gentity_t* ent, char* szTreasureClassName)
 	Com_Printf("Attempting to spawn npc vendor: %s\n", ent->targetname);
 
 	JKG_RegenerateStock(ent);
+}
+
+
+/*
+JKG_UnmakeNPCVendor
+
+Removes the vendor properties of an NPC
+*/
+void JKG_UnmakeNPCVendor(gentity_t* ent)
+{
+	if (!ent)
+	{
+		return;
+	}
+
+	char* empty = "";
+	Q_strncpyz(ent->treasureclass, empty, sizeof(ent->treasureclass));
+	ent->bVendor = false;
 }
 
 /*

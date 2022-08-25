@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"300",
 	"xml":			"xml/items/Q2.xml",
-	"itemIcon":		"models/weapons/Q2_HoldoutPistol/icon_default"
+	"itemIcon":		"models/weapons/Q2_HoldoutPistol/icon_default",
+	"itemDescription": "Illegal in most jurisdictions due to its extremely compact size, this SoroSuub blaster pistol was a variant of the ELG-3A designed to be even more discreet. It had a small firing capacity and range, but was said to be lighter than a datapad."
 }

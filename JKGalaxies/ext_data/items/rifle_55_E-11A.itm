@@ -7,5 +7,6 @@
 	"weight":		"5",
 	"cost":		"1350",
 	"xml":			"xml/items/E-11A_Blaster_Hengstler.xml",
-	"itemIcon":		"models/weapons/E-11A_Rifle/icon_default"
+	"itemIcon":		"models/weapons/E-11A_Rifle/icon_default",
+	"itemDescription": "This E-11 variant, commonly used by Imperial Stormtroopers, came equipped with a computer enhanced electroscope to compensate for dark, hazy or smoky conditions. It had considerable stopping fire and a high rate of fire like unmodified E-11s."
 }

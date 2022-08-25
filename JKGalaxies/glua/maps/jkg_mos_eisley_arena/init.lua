@@ -5,6 +5,11 @@
 	Written by BobaFett
 --------------------------------------------------]]
 
+-- Spawn npcs
+include("npcs.lua")
+
+
+-- arena scoreboard etc
 ArenaControls = ArenaControls or {}
 
 include("scoreboard.lua")

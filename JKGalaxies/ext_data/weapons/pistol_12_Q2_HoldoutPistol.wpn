@@ -17,8 +17,8 @@
             "ammo":         [ "models/weapons/Q2_HoldoutPistol/indicator" ]
         },
         
-        "gunposition":      "7.0 -3.0 -4.0",
-        "ironsightsposition": "7.0 0.0 -2.8",
+        "gunposition":      "12.0 -4.0 -6.0",
+        "ironsightsposition": "7.0 0.0 -2.9",
         "ironsightsfov": "75",
     
         "firemode0": {
@@ -75,15 +75,18 @@
         "projectilespeed": 3000.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
-	"ammobase": "AMMO_SS_POWERPACK",
-	"ammodefault": "AMMO_MS_POWERPACK",
+	"ammobase": "AMMO_SS_POWERPAK",
+	"ammodefault": "AMMO_MS_POWERPAK",
         "clipSize":              6,
         "accuracy": {
         	"accuracyRating": 15,
         	"accuracyRatingPerShot": 1,
         	"msToDrainAccuracy": 35,
         	"maxAccuracyAdd": 35
-        }
+        },
+        "heatGenerated": 3,
+		"reloadClearHeat": 0,
+        "maxHeat": 30
     },
     
     "firemode1": {
@@ -111,8 +114,8 @@
         "projectilespeed": 3000.0,
         "projectileclass": "blaster_proj",
 		"meansofdeath": "MOD_STUNNED",
-		"ammobase": "AMMO_SS_POWERPACK",
-		"ammodefault": "AMMO_MS_POWERPACK",
+		"ammobase": "AMMO_SS_POWERPAK",
+		"ammodefault": "AMMO_MS_POWERPAK",
         "clipSize":              6,
         "accuracy": {
         	"accuracyRating": 1,

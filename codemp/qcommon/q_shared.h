@@ -213,13 +213,13 @@ typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, cli
 
 // the game guarantees that no string from the network will ever
 // exceed MAX_STRING_CHARS
-#define	MAX_STRING_CHARS	1024	// max length of a string passed to Cmd_TokenizeString
-#define	MAX_STRING_TOKENS	1024	// max tokens resulting from Cmd_TokenizeString
-#define	MAX_TOKEN_CHARS		1024	// max length of an individual token
-
-#define	MAX_INFO_STRING		1024
-#define	MAX_INFO_KEY		1024
-#define	MAX_INFO_VALUE		1024
+#define	MAX_STRING_CHARS	2048	// max length of a string passed to Cmd_TokenizeString
+#define	MAX_STRING_TOKENS	MAX_STRING_CHARS	// max tokens resulting from Cmd_TokenizeString
+#define	MAX_TOKEN_CHARS		MAX_STRING_CHARS	// max length of an individual token
+												//--futuza: These can all be seperate, but in general no need to define each one seperately - just match MAX_STRING_CHARS
+#define	MAX_INFO_STRING		MAX_STRING_CHARS
+#define	MAX_INFO_KEY		MAX_STRING_CHARS
+#define	MAX_INFO_VALUE		MAX_STRING_CHARS
 
 #define	BIG_INFO_STRING		8192  // used for system info key only
 #define	BIG_INFO_KEY		  8192
@@ -1433,7 +1433,7 @@ typedef struct forcedata_s {
 	int			forceButtonNeedRelease;
 	int			forcePowerDuration[NUM_FORCE_POWERS];
 	int			forcePower;
-	int			forcePowerMax;
+	//int			forcePowerMax;		//replaced with ps.stats[STAT_MAX_STAMINA]
 	int			forcePowerRegenDebounceTime;
 	int			forcePowerLevel[NUM_FORCE_POWERS];		//so we know the max forceJump power you have
 	int			forcePowerBaseLevel[NUM_FORCE_POWERS];
@@ -1810,6 +1810,7 @@ typedef struct playerState_s {
 	qboolean		sightsTransition;	// Are we in a sights transition? (Used for player animation)
 	unsigned int	credits;		//how many credits we have on hand
 	//unsigned int	spent;		//how many credits we've spent so far (currently not used for anything real, but might have application in the future)
+	unsigned int	consumableTime;	//Determines consumable item cooldown, when we can next use another consumable.
 } playerState_t;
 // For ironsights
 #define IRONSIGHTS_MSB (1 << 31)
@@ -2439,6 +2440,19 @@ void Q_RGBCopy( vec4_t *output, vec4_t source );
 void getGalacticTimeStamp(char* outStr);	//Gets current time    to use : char myarray[17]; getBuildTimeStamp(myarray); 
 qboolean StringContainsWord(const char *haystack, const char *needle);
 qboolean Q_stratt( char *dest, unsigned int iSize, char *source );
+
+typedef struct stringList_s stringList_t;
+struct stringList_s
+{
+	char *string;
+
+	stringList_t *next;
+};
+
+void stringList_addSorted( stringList_t **el, const char *stringIn );
+void stringList_free( stringList_t **el );
+int stringList_writeToBuffer( stringList_t *el, char *buffer, int bufferSize );
+void sortStrings( int *numStrings, char *stringList, int bufsize );
 
 // Performance analysis
 typedef struct

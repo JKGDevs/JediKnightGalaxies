@@ -533,7 +533,7 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 
 	ent->client->ps.fd.forceDeactivateAll = 0;
 
-	ent->client->ps.forcePower = ent->client->ps.fd.forcePowerMax = FORCE_POWER_MAX;
+	ent->client->ps.forcePower = ent->client->ps.stats[STAT_MAX_STAMINA] = FORCE_POWER_MAX;
 	ent->client->ps.fd.forcePowerRegenDebounceTime = 0;
 	ent->client->ps.fd.forceGripEntityNum = ENTITYNUM_NONE;
 	ent->client->ps.fd.forceMindtrickTargetIndex = 0;
@@ -843,10 +843,10 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 		addTot = 1;
 	}
 	attacked->client->ps.forcePower += addTot;
-	if (attacked->client->ps.forcePower > attacked->client->ps.fd.forcePowerMax)
+	if (attacked->client->ps.forcePower > attacked->client->ps.stats[STAT_MAX_STAMINA])
 	{
 		// Fixed this. Raven didn't correctly give force points after 100 force. --eez
-		attacked->client->ps.forcePower = attacked->client->ps.fd.forcePowerMax;
+		attacked->client->ps.forcePower = attacked->client->ps.stats[STAT_MAX_STAMINA];
 	}
 
 	//play sound indicating that attack was absorbed
@@ -883,9 +883,9 @@ void WP_ForcePowerRegenerate( gentity_t *self, int overrideAmt )
 		self->client->ps.forcePower++;
 	}
 
-	if ( self->client->ps.forcePower > 100 )
+	if ( self->client->ps.forcePower > self->client->ps.stats[STAT_MAX_STAMINA])
 	{ //cap it off at the max (default 100)
-		self->client->ps.forcePower = 100;
+		self->client->ps.forcePower = self->client->ps.stats[STAT_MAX_STAMINA];
 	}
 
 	//self->x.forcePower = self->client->ns.forcePower;
@@ -1238,7 +1238,7 @@ void ForceTeamHeal( gentity_t *self )
 	{
 		ent = &g_entities[i];
 
-		if (ent && ent->client && self != ent && OnSameTeam(self, ent) && ent->client->ps.forcePower < ent->client->ps.fd.forcePowerMax 
+		if (ent && ent->client && self != ent && OnSameTeam(self, ent) && ent->client->ps.forcePower < ent->client->ps.stats[STAT_MAX_STAMINA] 
 			&& ForcePowerUsableOn(self, ent, FP_TEAM_FORCE) &&
 			trap->InPVS(self->client->ps.origin, ent->client->ps.origin))
 		{
@@ -1386,9 +1386,9 @@ void ForceTeamForceReplenish( gentity_t *self )
 	while (i < numpl)
 	{
 		g_entities[pl[i]].client->ps.forcePower += poweradd;
-		if (g_entities[pl[i]].client->ps.forcePower > g_entities[pl[i]].client->ps.fd.forcePowerMax)
+		if (g_entities[pl[i]].client->ps.forcePower > g_entities[pl[i]].client->ps.stats[STAT_MAX_STAMINA])
 		{
-			g_entities[pl[i]].client->ps.forcePower = g_entities[pl[i]].client->ps.fd.forcePowerMax;
+			g_entities[pl[i]].client->ps.forcePower = g_entities[pl[i]].client->ps.stats[STAT_MAX_STAMINA];
 		}
 
 		//At this point we know we got one, so add him into the collective event client bitflag

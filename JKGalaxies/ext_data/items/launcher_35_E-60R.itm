@@ -7,5 +7,6 @@
 	"weight":		"25",
 	"cost":		"1950",
 	"xml":			"",
-	"itemIcon":		"models/weapons/E-60R_RocketLauncher/icon_default"
+	"itemIcon":		"models/weapons/E-60R_RocketLauncher/icon_default",
+	"itemDescription": "Created by Baktoid Armor Workshop, this Clone War-era rocket launcher was used by assault battle droids to target the Republic's heavy vehicles and Clones who did not mind their spacing. It remains in use by bounty hunters and some military groups."
 }

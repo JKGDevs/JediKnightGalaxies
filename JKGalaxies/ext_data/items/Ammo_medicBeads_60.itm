@@ -6,5 +6,6 @@
 	"cost":		"150",
 	"ammoclass":	"AMMO_SLUGS_MEDICINAL",
 	"ammoquantity":	"60",
-	"itemIcon": "gfx/item_icons/default.tga"	//needs icon!
+	"itemIcon": "gfx/item_icons/ammo_metallic_bolts.tga",	//needs icon!
+	"itemDescription": "These gel-like bacta capsules have been designed to conform to the most common slugthrower munition sizes. While they lack the density of most slugs and thus fire at a slower velocity they provide a means to heal the injured at range."
 }

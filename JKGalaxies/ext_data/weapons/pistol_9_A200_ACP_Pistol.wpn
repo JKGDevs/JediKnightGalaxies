@@ -17,7 +17,7 @@
             "ammo":         [ "models/weapons/A200_ACP_Pistol/pad", "models/weapons/A200_ACP_Pistol/pad10" ]
         },
         
-        "gunposition":      "7.0 -3.0 -4.0",
+        "gunposition":      "12.0 -5.0 -6.0",
         "ironsightsposition": "7.0 0.0 -3.2",
         "ironsightsfov": "75",
     
@@ -79,8 +79,9 @@
         "projectilespeed": 7000.0,
         "projectileclass": "repeater_proj",
         "meansofdeath": "MOD_ACP",
-	"ammobase": "AMMO_ACP_POWERCELL_S",
-	"ammodefault": "AMMO_ACP_POWERCELL_S",
+        "ACPRatio": 0.4,
+	    "ammobase": "AMMO_ACP_POWERCELL_S",
+	    "ammodefault": "AMMO_ACP_POWERCELL_S",
         "clipSize":              10,
         "accuracy": {
 			"accuracyRating": 45,

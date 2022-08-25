@@ -1,0 +1,10 @@
+{
+	"name":         "Kessler Hunting Torso Armor",
+	"internal":     "torso_bountyhunter",
+	"itemtype":     "armor",
+	"armor":		"bhtorso",
+	"weight":		"5",
+	"cost":			"450",
+	"itemIcon":		"gfx/item_icons/bounty_hunter_torso.tga",
+	"itemDescription": "Marketed to bounty hunters and other dangerous professionals by the Kessler Corporation, this body armor combines layers of plastoids with a plasteel covering, marrying practicality to budget.  Popular in the Anoat sector of the Outer Rim."
+}

@@ -7,5 +7,6 @@
 	"weight":		"18",
 	"cost":		"1525",
 	"xml":			"xml/items/DC-15A_Blaster.xml",
-	"itemIcon":		"models/weapons/dc-15a_rifle/icon_default"
+	"itemIcon":		"models/weapons/dc-15a_rifle/icon_default",
+	"itemDescription": "Once the weapon of choice for the Galactic Republic's clone troopers, it remains serviceable and useful against droids and heavily shielded opponent's but has largely been superseded by E-11s. It uses ionized plasma and has a high rate of fire."
 }

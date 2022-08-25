@@ -5,5 +5,6 @@
 	"armor":		"sthelmet_rusty",
 	"weight":		"2",
 	"cost":			"150",
-	"itemIcon":		"gfx/item_icons/stormtrooper_helmet.tga"
+	"itemIcon":		"gfx/item_icons/stormtrooper_helmet_rusty.tga",
+	"itemDescription": "A well used Imperial Stormtrooper helmet, it likely belonged to a now fallen Trooper. It appears to be slightly damaged, but should still be functional."
 }

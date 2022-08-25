@@ -7,5 +7,6 @@
 	"weight":		"20",
 	"cost":		"1700",
 	"xml":			"xml/items/CR-24.xml",
-	"itemIcon":		"models/weapons/Cr-24_FlameCarbine/icon_default"
+	"itemIcon":		"models/weapons/Cr-24_FlameCarbine/icon_default",
+	"itemDescription": "An incendiary weapon produced by Merr-Sonn Munitions. It remains more popular than the competing CZerka product (CZ-24), especially among Corporate Sector forces. 'Fill your enemies with primal fear and their lungs with fire!' -Gand proverb."
 }

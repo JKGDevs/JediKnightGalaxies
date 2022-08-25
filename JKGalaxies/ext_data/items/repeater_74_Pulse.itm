@@ -7,5 +7,6 @@
 	"weight":		"20",
 	"cost":		"1775",
 	"xml":			"xml/items/PB10.xml",
-	"itemIcon":		"models/weapons/PulseCannon/icon_default"
+	"itemIcon":		"models/weapons/PulseCannon/icon_default",
+	"itemDescription": "Developed during the Clone Wars by Adostic Arms, it fired rapid concentrated bursts of plasma that excelled at taking out fast-moving targets and caused great pain to organics. While its popularity has waned, its potential for destruction has not."
 }

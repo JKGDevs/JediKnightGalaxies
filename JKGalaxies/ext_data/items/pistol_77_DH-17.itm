@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"715",
 	"xml":			"xml/items/DH-17.xml",
-	"itemIcon":		"models/weapons/DH-17_Pistol/icon_default"
+	"itemIcon":		"models/weapons/DH-17_Pistol/icon_default",
+	"itemDescription": "Created by BlasTech Industries for use by security forces, it has become a popular black market product among the Rebel and anti-imperial forces. Well suited to shipboard combat, it can punch through personal shields without damaging ship hulls."
 }

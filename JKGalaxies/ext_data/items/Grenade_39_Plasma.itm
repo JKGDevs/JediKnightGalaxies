@@ -7,5 +7,6 @@
 	"weight":		"1",
 	"cost":		"79",
 	"maxStack":		5,
-	"itemIcon":		"models/weapons/Grenade_Plasma/icon_default"
+	"itemIcon":		"models/weapons/Grenade_Plasma/icon_default",
+	"itemDescription": "A simple ancient grenade design that continues to remain in use due to its effectiveness in zoning out enemies.  Uses a compressed combustible gas that ignites upon contact with atmosphere creating an intense plasma fire."
 }

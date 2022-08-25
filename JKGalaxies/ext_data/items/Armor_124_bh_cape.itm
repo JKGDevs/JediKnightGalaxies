@@ -1,0 +1,10 @@
+{
+	"name":         "Bounty Hunter's Cape (brown)",
+	"internal":     "cape_bountyhunter",
+	"itemtype":     "armor",
+	"armor":		"bhcape",
+	"weight":		"1",
+	"cost":			"185",
+	"itemIcon":		"gfx/item_icons/bounty_hunter_cape.tga",
+	"itemDescription": "A simple protective cloth cape, made of callacord, microfibers, and leather.  Often worn by those working in dangerous lines of work such as bounty hunting or mercenary work."
+}

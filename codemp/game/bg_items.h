@@ -12,13 +12,14 @@
 typedef struct gentity_s gentity_t;
 #endif
 
-#define MAX_ITEM_TABLE_SIZE     (65535)
+#define MAX_ITEM_TABLE_SIZE     (1024)		//how many unique items the game can support (originally: 65553) --Futuza: lol not making that many items
 #define MAX_ITEM_FILE_LENGTH    (16384)
 #define MAX_ITEM_NAME			(64)
+#define MAX_ITEM_DESCRIPTION	(250)
 #define MAX_INVENTORY_ITEMS		(256)
 
 #define MAX_ACI_SLOTS			(10)
-#define MAX_ARMOR_PIECES		1024
+#define MAX_ARMOR_PIECES		(512)		//unused
 
 /*
  * Enumerations
@@ -28,6 +29,7 @@ typedef enum jkgItemType_e
 {
     ITEM_UNKNOWN,
     ITEM_WEAPON,
+	ITEM_TOOL,			// Very similar to weapon, things like pickaxe, drills, hydrospanners, etc.
     ITEM_ARMOR,
     ITEM_CLOTHING,		// Classified as "armor" in the filter
 	ITEM_CONSUMABLE,
@@ -85,6 +87,20 @@ typedef enum
 	IPT_TRADECREDITS,	// The other party has entered the number of credits that they want to send.
 } itemTradePacketType_t;
 
+typedef enum itemTier_e
+{
+	//The tiers or 'quality' of an item.
+
+	TIER_SCRAP,		//tier 0: lowest quality, things like scrap or raw materials
+	TIER_COMMON,	//tier 1: the base tier, most items are common
+	TIER_REFINED,	//tier 2: uncommon, quality items - harder to find than common
+	TIER_ELITE,		//tier 3: rare and high quality - elite items are the most powerful items that can be granted from a drop
+	TIER_SUPERIOR,	//tier 4: most powerful item type - can only be created by high level crafting, not available from drops/npcs
+	TIER_LEGENDARY,	//tier 5: unique 1-of-a-kind items, only a single instance should exist (eg: "Han Solo's Blaster") on par with superior
+
+	NUM_ITEM_TIERS
+} itemTier_t;
+
 /*
  * Item-specific structures
  */
@@ -94,7 +110,13 @@ typedef struct {
 	unsigned int weapon;
 	unsigned int variation;
 	int varID;
+	qboolean holsterState; //is the weapon holstered? (melee mode vs weapon mode)
 } itemWeaponData_t;
+
+// Tools
+typedef struct {
+	qboolean holsterState; //is the tool holstered?
+} itemToolData_t;
 
 // Armor
 typedef struct {
@@ -107,6 +129,8 @@ typedef struct {
 typedef struct {
 	char consumeScript[MAX_CONSUMABLE_SCRIPTNAME];
 	int consumeAmount;
+	qboolean partHealthReq;  //if set to true, it can only be consumed if hp < maxhealth
+	qboolean partStaminaReq;  //if set to true, it can only be consumed if stamina < maxstamina
 } itemConsumableData_t;
 
 // Shields
@@ -152,8 +176,13 @@ typedef struct {
 	char internalName[MAX_ITEM_NAME];
 	int itemID;
 	jkgItemType_t itemType;
-	unsigned int weight;
-	int maxStack;
+	itemTier_t itemTier;
+	float weight;
+	unsigned int maxStack;
+	bool tradeable;		//can it be traded?
+	bool segregated;	//if an item is segregated, it doesn't exist in the normal inventory space (eg: quest items, blueprints, etc)
+	bool droppable;		//can the item be dropped?
+	char itemDescription[MAX_ITEM_DESCRIPTION];
 
 	// Visual Data
 #ifndef _GAME
@@ -163,6 +192,7 @@ typedef struct {
 	// Data specific to the jkgItemType
 	union {
 		itemWeaponData_t weaponData;
+		itemToolData_t toolData;
 		itemArmorData_t armorData;
 		itemConsumableData_t consumableData;
 		itemShieldData_t shieldData;
@@ -177,10 +207,12 @@ typedef struct {
 // The item instance is what is kept in a player's inventory.
 typedef struct {
 	itemData_t* id;
-	int quantity;
-	bool equipped;
+	int quantity;		//how many do we have?
+	bool equipped;		//is the item assigned to aci/equipped?
 } itemInstance_t;
 
+//todo: make itemLookupTable into a singleton object with properties like size/capacity, etc so we can dynamically allocate additional space if the item table needs to be bigger
+//      currently it relies on MAX_ITEM_TABLE_SIZE to determine it's size
 extern itemData_t* itemLookupTable;
 extern int lastUsedItemID;
 
@@ -220,7 +252,7 @@ void BG_GiveItemNonNetworked(gentity_t* ent, itemInstance_t item);
 void BG_RemoveItemStack(gentity_t* ent, int itemStackNum);
 void BG_SendItemPacket(itemPacketType_t packetType, gentity_t* ent, void* memData, int intData, int intData2);
 void BG_ChangeItemStackQuantity(gentity_t* ent, int itemStackNum, int newQuantity);
-qboolean BG_ConsumeItem(gentity_t* ent, int itemStackNum);
+int BG_ConsumeItem(gentity_t* ent, int itemStackNum);
 void BG_SendTradePacket(itemTradePacketType_t packetType, gentity_t* ent, gentity_t* other, void* memData, int intData, int intData2);
 void BG_RemoveItemNonNetworked(gentity_t* ent, itemInstance_t item);
 void BG_AdjustItemStackQuantity(gentity_t* ent, int itemStack, int adjustment);

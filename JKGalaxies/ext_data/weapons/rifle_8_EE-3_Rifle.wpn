@@ -16,7 +16,7 @@
             "ammo":         [ "models/weapons/EE-3_Rifle/numbers3", "models/weapons/EE-3_Rifle/numbers2", "models/weapons/EE-3_Rifle/numbers1" ]
         },
         
-        "gunposition":      "7.0 -3.0 -5.0",
+        "gunposition":      "10.0 -4.0 -7.0",
         "ironsightsposition": "7.0 0 -4.5",
         "ironsightsfov": "20",
     
@@ -67,40 +67,62 @@
     },
     
     "firemode0": {
-        "damage":       24,
+        "damage":       25,
         "ammocost":     1,
-	    "burstshotdelay": 120,
-        "firedelay":    800,
+	    "burstshotdelay": 80,
+        "firedelay":    375,
         "firingtype":   "burst",
-        "range":        4600.0,
+        "range":        4900.0,
         "recoil":       0.7,
-//        "splashrange":  8.0,
 		"shotsperburst": 3,
         "spread":       0.4,
         "projectilespeed": 5500.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
         "splashmeansofdeath": "MOD_BLASTER",
-		"ammobase": "AMMO_POWERPACK_L",
+		"ammobase": "AMMO_POWERPACK_M",
 		"ammodefault": "AMMO_POWERPACK_M",
-        "clipSize":              45
+        "clipSize":              45,
+		"accuracy": {
+        	"accuracyRating": 30,
+        	"accuracyRatingPerShot": 1.8,
+        	"msToDrainAccuracy": 256,
+        	"maxAccuracyAdd": 55,
+        	"sightsModifier": 0.25
+        },
+		"heatGenerated": 3,
+		"maxHeat": 50
     },
 	
     "firemode1": {
-        "damage":       26,
+        "damage":       31,
         "ammocost":     1,
-        "firedelay":    125,
+        "firedelay":    100,
         "firingtype":   "semi",
-        "range":        4800.0,
+        "range":        5200.0,
         "recoil":       0.7,
         "spread":       0.2,
         "projectilespeed": 6000.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
         "splashmeansofdeath": "MOD_BLASTER",
-		"ammobase": "AMMO_POWERPACK_L",
+		"ammobase": "AMMO_POWERPACK_M",
 		"ammodefault": "AMMO_POWERPACK_M",
-        "clipSize":              45
+        "clipSize":              45,
+		"accuracy": 
+		{
+			"accuracyRating": 15,
+			"accuracyRatingPerShot": 2,
+			"msToDrainAccuracy": 75,
+			"maxAccuracyAdd": 70,
+			"crouchModifier": 0.7,
+			"runModifier": 1.5,
+			"sightsModifier": 0.25,
+			"walkModifier": 1.25,
+			"inAirModifier": 1.7
+        },
+		"heatGenerated": 1.9,
+		"maxHeat": 50
     },
     
 	"playeranims": {

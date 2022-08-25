@@ -5,5 +5,6 @@
 	"armor":		"stgloves",
 	"weight":		"2",
 	"cost":			"75",
-	"itemIcon":		"gfx/item_icons/stormtrooper_helmet.tga"
+	"itemIcon":		"gfx/item_icons/stormtrooper_gloves.tga",
+	"itemDescription": "Standard issue gloves part of the Imperial Stormtrooper protective outfit set. An evolution of earlier Phase II clone trooper armor used in the Clone Wars. Made of white plastoid alloys and fiber meshes it protects the wearers hands and forearms."
 }

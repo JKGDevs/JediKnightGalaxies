@@ -20,7 +20,7 @@ gentity_t *GLua_CheckNPC(lua_State *L, int idx) {
 		return NULL;
 	if (ent->s.eType != ET_NPC)
 		return NULL;
-	if (ent->IDCode != ent->IDCode)
+	if (ent->IDCode != npc->IDCode)
 		return NULL;
 	if (!ent->client)	// Safety check, since most functions will access client, ensure it's set
 		return NULL;
@@ -210,6 +210,16 @@ static int GLua_NPC_MakeVendor(lua_State *L)
 	return 0;
 }
 
+static int GLua_NPC_UnmakeVendor(lua_State* L)
+{
+	gentity_t* npc = GLua_CheckNPC(L, 1);
+	if (!npc) return 0;
+
+	JKG_UnmakeNPCVendor(npc);
+
+	return 0;
+}
+
 static int GLua_NPC_RefreshStock(lua_State *L)
 {
 	gentity_t* npc = GLua_CheckNPC(L, 1);
@@ -221,6 +231,24 @@ static int GLua_NPC_RefreshStock(lua_State *L)
 	JKG_RegenerateStock(npc);
 
 	return 0;
+}
+
+static int GLua_NPC_UseVendor(lua_State *L)
+{
+	gentity_t* npc = GLua_CheckNPC(L, 1);
+	GLua_Data_Player_t *ply = GLua_CheckPlayer(L, 2);
+	
+	if (!npc) return 0;
+	if (!ply) return 0;
+
+	if (npc->health <= 0)
+		return 0;
+
+	gentity_t* player;
+	player = &g_entities[ply->clientNum];
+
+	JKG_target_vendor_use(npc, player, player);
+	return 1;
 }
 
 static int GLua_NPC_GetPos(lua_State *L) {
@@ -408,14 +436,14 @@ static int GLua_NPC_MaxHealth(lua_State *L) {
 	return 1;
 }
 
-static int GLua_NPC_MaxArmor(lua_State *L) {
+static int GLua_NPC_MaxShield(lua_State *L) {
 	gentity_t *npc = GLua_CheckNPC(L, 1);
 	if (!npc) return 0;
 	lua_pushinteger(L,npc->client->ps.stats[STAT_MAX_SHIELD]);
 	return 1;
 }
 
-static int GLua_NPC_Armor(lua_State *L) {
+static int GLua_NPC_Shield(lua_State *L) {
 	gentity_t *npc = GLua_CheckNPC(L, 1);
 	if (!npc) return 0;
 	lua_pushinteger(L,npc->client->ps.stats[STAT_SHIELD]);
@@ -436,14 +464,14 @@ static int GLua_NPC_SetMaxHealth(lua_State *L) {
 	return 0;
 }
 
-static int GLua_NPC_SetArmor(lua_State *L) {
+static int GLua_NPC_SetShield(lua_State *L) {
 	gentity_t *npc = GLua_CheckNPC(L, 1);
 	if (!npc) return 0;
 	npc->client->ps.stats[STAT_SHIELD] = luaL_checkinteger(L, 2);
 	return 0;
 }
 
-static int GLua_NPC_SetMaxArmor(lua_State *L) {
+static int GLua_NPC_SetMaxShield(lua_State *L) {
 	gentity_t *npc = GLua_CheckNPC(L, 1);
 	if (!npc) return 0;
 	npc->client->ps.stats[STAT_MAX_SHIELD] = luaL_checkinteger(L, 2);
@@ -643,6 +671,97 @@ static int GLua_NPC_HasNoTarget(lua_State *L) {
 		lua_pushboolean(L,0);
 	}
 	return 1;
+}
+
+static int GLua_NPC_SetBusy(lua_State* L)
+{
+	gentity_t* npc = GLua_CheckNPC(L, 1);
+	int active = lua_toboolean(L, 2);
+	if (!npc) return 0;
+	if (active) {
+		npc->flags |= FL_BUSYMODE;
+	}
+	else {
+		npc->flags &= ~FL_BUSYMODE;
+	}
+	return 0;
+}
+
+static int GLua_NPC_HasBusy(lua_State* L)
+{
+	gentity_t* npc = GLua_CheckNPC(L, 1);
+	if (!npc) return 0;
+	if (npc->flags & FL_BUSYMODE) {
+		lua_pushboolean(L, 1);
+	}
+	else {
+		lua_pushboolean(L, 0);
+	}
+	return 1;
+}
+
+static int GLua_NPC_SetNoDebuff(lua_State* L)
+{
+	gentity_t* npc = GLua_CheckNPC(L, 1);
+	int active = lua_toboolean(L, 2);
+	if (!npc) return 0;
+	if (active) {
+		npc->flags |= FL_NO_DEBUFF;
+	}
+	else {
+		npc->flags &= ~FL_NO_DEBUFF;
+	}
+	return 0;
+}
+
+static int GLua_NPC_HasNoDebuff(lua_State* L)
+{
+	gentity_t* npc = GLua_CheckNPC(L, 1);
+	if (!npc) return 0;
+	if (npc->flags & FL_NO_DEBUFF) {
+		lua_pushboolean(L, 1);
+	}
+	else {
+		lua_pushboolean(L, 0);
+	}
+	return 1;
+}
+
+extern void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity, int duration);
+static int GLua_NPC_AddBuff(lua_State* L)
+{
+	//L1 = Player (required), L2 = Buffname (required), L3 = duration, L4 = intensity
+	if (lua_isnoneornil(L, 3)) return luaL_error(L, "No buff name provided");
+	gentity_t* npc = GLua_CheckNPC(L, 2);
+	if (!npc) return 0;
+
+	int duration = 5000; // default to 5 seconds
+	float intensity = 1.0f; // default to normal intensity
+	int buffID = -1;
+
+	const char* buffName = luaL_checkstring(L, 3);
+	if (sizeof(buffName) > BUFF_NAME_LEN)
+	{
+		return luaL_error(L, "Invalid buff name provided");
+	}
+
+	buffID = JKG_ResolveBuffName(buffName);
+	if (buffID < 0)
+	{
+		return luaL_error(L, "Invalid buff name provided");
+	}
+
+	//grab duration and intensity values (if present)
+	if (lua_gettop(L) > 3)
+	{
+		duration = lua_tointeger(L, 4);
+
+		if (lua_gettop(L) > 4)
+			intensity = lua_tonumber(L, 5);
+	}
+
+	G_BuffEntity(npc, npc, buffID, intensity, duration);
+	return 0;
 }
 
 extern stringID_table_t BSTable[];
@@ -1830,7 +1949,7 @@ static int GLua_Player_HasHoldable(lua_State *L) {
 */
 
 //Stoiss added this again as it fucked up the lua code for npcs
-static const struct luaL_reg npc_m [] = {
+static const struct luaL_reg npc_m[] = {
 	/* Metamethods */
 	{"__index", GLua_NPC_Index},
 	{"__newindex", GLua_NPC_NewIndex},
@@ -1842,7 +1961,9 @@ static const struct luaL_reg npc_m [] = {
 	{"IsValid", GLua_NPC_IsValid},
 	{"Kill", GLua_NPC_Kill},
 	{"MakeVendor", GLua_NPC_MakeVendor},
+	{"UnmakeVendor", GLua_NPC_UnmakeVendor},
 	{"RefreshVendorStock", GLua_NPC_RefreshStock},
+	{"UseVendor", GLua_NPC_UseVendor},
 	{"SetPos", GLua_NPC_SetPos},
 	{"GetPos", GLua_NPC_GetPos},
 	{"SetOrigin", GLua_NPC_SetPos},
@@ -1853,15 +1974,16 @@ static const struct luaL_reg npc_m [] = {
 	{"SetNavGoal", GLua_NPC_SetNavGoal},
 	{"Health", GLua_NPC_Health},
 	{"MaxHealth", GLua_NPC_MaxHealth},
-	{"MaxArmor", GLua_NPC_MaxArmor},
-	{"Armor", GLua_NPC_Armor},
+	{"MaxArmor", GLua_NPC_MaxShield},
+	{"Armor", GLua_NPC_Shield},
 	{"SetHealth", GLua_NPC_SetHealth},
 	{"SetMaxHealth", GLua_NPC_SetMaxHealth},
-	{"SetArmor", GLua_NPC_SetArmor},
-	{"SetMaxArmor", GLua_NPC_SetMaxArmor},
+	{"SetShield", GLua_NPC_SetShield},
+	{"SetMaxShield", GLua_NPC_SetMaxShield},
 	{"GetEyeTrace", GLua_NPC_GetEyeTrace},
 	{"GetEntity", GLua_NPC_GetEntity},
 	{"Damage", GLua_NPC_Damage},
+	{"AddBuff", GLua_NPC_AddBuff},
 	{"GiveForce", GLua_NPC_GiveForce},
 	{"TakeForce", GLua_NPC_TakeForce},
 	{"HasForce", GLua_NPC_HasForce},
@@ -1951,8 +2073,8 @@ static const struct luaL_reg npc_m [] = {
 static const struct GLua_Prop npc_p [] = {
 	{"Health", GLua_NPC_Health, GLua_NPC_SetHealth},
 	{"MaxHealth", GLua_NPC_MaxHealth, GLua_NPC_SetMaxHealth},
-	{"Armor", GLua_NPC_Armor, GLua_NPC_SetArmor},
-	{"MaxArmor", GLua_NPC_MaxArmor, GLua_NPC_SetMaxArmor},
+	{"Shield", GLua_NPC_Shield, GLua_NPC_SetShield},
+	{"MaxShield", GLua_NPC_MaxShield, GLua_NPC_SetMaxShield},
 	{"Entity", GLua_NPC_GetEntity, NULL},
 	{"Pos", GLua_NPC_GetPos, GLua_NPC_SetPos},
 	{"Origin", GLua_NPC_GetPos, GLua_NPC_SetPos},
@@ -1993,6 +2115,8 @@ static const struct GLua_Prop npc_p [] = {
 	{"GodMode", GLua_NPC_HasGodMode, GLua_NPC_SetGodMode},
 	{"NoKnockback", GLua_NPC_HasNoKnockback, GLua_NPC_SetNoKnockback},
 	{"NoTarget", GLua_NPC_HasNoTarget, GLua_NPC_SetNoTarget},
+	{"Busy",	GLua_NPC_HasBusy,		GLua_NPC_SetBusy },					//futuza: check if the npc is busy with something else (eg: in a pazaak game, a quest, etc.) and shouldn't be interacted with
+	{"NoDebuff", GLua_NPC_HasNoDebuff,	GLua_NPC_SetNoDebuff },
 	{"UseRange", GLua_NPC_GetUseRange, GLua_NPC_SetUseRange},
 	{NULL,		NULL,						NULL},
 };

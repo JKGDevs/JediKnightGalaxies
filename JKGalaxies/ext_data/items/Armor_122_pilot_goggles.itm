@@ -1,0 +1,10 @@
+{
+	"name":         "Pilot Googles",
+	"internal":     "hat_goggles_pilot",
+	"itemtype":     "armor",
+	"armor":		"jan_goggles",
+	"weight":		"1",
+	"cost":			"50",
+	"itemIcon":		"gfx/item_icons/pilot_goggles.tga",
+	"itemDescription": "Simple pilot's goggles designed for use in open air cockpits, they provide protection against the elements, but won't stop a blaster bolt."
+}

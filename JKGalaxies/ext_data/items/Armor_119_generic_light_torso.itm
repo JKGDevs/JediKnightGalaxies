@@ -5,5 +5,6 @@
 	"armor":		"gltorso",
 	"weight":		"2",
 	"cost":			"300",
-	"itemIcon":		"gfx/item_icons/default.tga"
+	"itemIcon":		"gfx/item_icons/klesh_torso.tga",
+	"itemDescription": "A simple lightweight armor designed to protect the wearer's torso. The armor implements kelsh components which provides minimal protection from blasters."
 }

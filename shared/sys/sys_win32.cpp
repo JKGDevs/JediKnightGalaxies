@@ -608,7 +608,11 @@ void Sys_CleanModuleName(char* name, size_t size)
 Sys_PrintModule
 ================
 */
+#ifdef _WIN64
+BOOL CALLBACK Sys_PrintModule(PCTSTR moduleName, DWORD64 base, void* userContext)
+#else
 BOOL CALLBACK Sys_PrintModule(PCTSTR moduleName, DWORD base, void* userContext)
+#endif
 {
 	Com_Printf("* %08X | %s\n", base, moduleName);
 	return TRUE;
@@ -637,15 +641,14 @@ LONG WINAPI Sys_PrintStackTrace(EXCEPTION_POINTERS* exception)
 	frame.AddrPC.Mode = AddrModeFlat;
 	frame.AddrFrame.Mode = AddrModeFlat;
 	frame.AddrStack.Mode = AddrModeFlat;
-
-#ifdef WIN32
-	frame.AddrPC.Offset = exception->ContextRecord->Eip;
-	frame.AddrFrame.Offset = exception->ContextRecord->Ebp;
-	frame.AddrStack.Offset = exception->ContextRecord->Esp;
-#else
+#ifdef _WIN64
 	frame.AddrPC.Offset = exception->ContextRecord->Rip;
 	frame.AddrFrame.Offset = exception->ContextRecord->Rbp;
 	frame.AddrStack.Offset = exception->ContextRecord->Rsp;
+#else
+	frame.AddrPC.Offset = exception->ContextRecord->Eip;
+	frame.AddrFrame.Offset = exception->ContextRecord->Ebp;
+	frame.AddrStack.Offset = exception->ContextRecord->Esp;
 #endif
 
 	Com_Printf("------------------------\n");
@@ -668,7 +671,11 @@ LONG WINAPI Sys_PrintStackTrace(EXCEPTION_POINTERS* exception)
 		char symbolBuffer[sizeof(IMAGEHLP_SYMBOL) + 255];
 		PIMAGEHLP_SYMBOL symbol = (PIMAGEHLP_SYMBOL)symbolBuffer;
 		IMAGEHLP_LINE line;
+#ifdef _WIN64
+DWORD64 offset = 0;
+#else
 		DWORD offset = 0;
+#endif
 
 		line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
 		symbol->SizeOfStruct = (sizeof IMAGEHLP_SYMBOL) + 255;
@@ -692,7 +699,7 @@ LONG WINAPI Sys_PrintStackTrace(EXCEPTION_POINTERS* exception)
 			funcName[0] = '\0';
 		}
 
-		if (SymGetLineFromAddr(process, frame.AddrPC.Offset, &offset, &line))
+		if (SymGetLineFromAddr(process, frame.AddrPC.Offset, (PDWORD)&offset, &line))
 		{
 			Q_strncpyz(fileName, line.FileName, MAX_PATH);
 			Sys_CleanModuleName(fileName, MAX_PATH);

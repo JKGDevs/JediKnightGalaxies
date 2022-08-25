@@ -1,0 +1,68 @@
+{
+
+	"ref":		"bh2torso",		// The reference that links this to the .itm file
+	"slot":		"torso",		// Which slot this goes in
+	"armor":		140,			// Effective hit points - "Armor" in the GUI
+	"movemodifier":	0.925,			// How much to modify the movement speed by
+
+	// Visuals - all done on the client
+	"visuals": {
+		// To specify a skin, use a * and the skin name. Here, it uses model_default.skin.
+		// modelGroup specifies which model group this armor belongs to - it won't load the same model twice.
+		"model":	"models/players/bounty_hunter2/model.glm*default",
+		"modelGroup":	"bounty_hunter2",
+
+		// armorOnSurfaces tells which surfaces we should -only- show on the armor.
+		"armorOnSurfaces": [
+			"torso",
+			"hips_belt",
+			"hips_torso",
+			"hips",
+			"torso_l_shoulder",
+			"torso_r_shoulder",
+			"r_arm",
+			"l_arm"
+		],
+
+		// bodyOffSurfaces says which surfaces to turn off on the player.
+		"bodyOffSurfaces": [
+			"torso",
+			"torso_holster",
+			"torso_strap",
+			"torso_bandolier",
+			"r_arm_shoulder",
+			"r_arm",
+			"r_arm_sleeve",
+			"l_arm",
+			"l_arm_shoulder",
+			"l_arm_sleeve",
+			"torso_body",
+			"l_arm_a",
+			"l_arm_b",
+			"l_arm_c",
+			"r_arm_a",
+			"r_arm_b",
+			"r_arm_c",
+			"torso_l_shoulder",
+			"torso_r_shoulder",
+			"torso_vest",
+			"torso_armor",
+			"hips_torso",
+			"hips_belt",
+			"hips",
+			"hips_lower",
+			"l_leg_knee",
+			"r_leg_knee",
+			"hips_holster",
+			"hips_augment",
+			"hips_l_packlarge",
+			"hips_l_packwide",
+			"hips_lowerarmor",
+			"hips_r_packsmall",
+			"hips_r_strap",
+			"hips_flaps",
+			"torso_lower",
+			"torso_cowelbase"
+		]
+	}
+}
