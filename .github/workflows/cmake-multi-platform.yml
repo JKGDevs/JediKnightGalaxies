@@ -102,7 +102,7 @@ jobs:
           if [ ${{ matrix.arch }} == "x86" ]; then
             OPTIONS+=" -DCMAKE_TOOLCHAIN_FILE=cmake/Toolchains/linux-i686.cmake"
           fi
-          cmake $GITHUB_WORKSPACE -A ${{ matrix.platform }} $OPTIONS
+          cmake $GITHUB_WORKSPACE $OPTIONS
 
       - name: Build
         working-directory: ${{ github.workspace }}/build
