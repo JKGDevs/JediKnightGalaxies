@@ -18,7 +18,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
 
-cmake_minimum_required(VERSION 3.3.0...3.30.5)
+cmake_minimum_required(VERSION 3.2.0...3.30.5)
 
 # Make sure the user is not executing this script directly
 if(NOT InJKG)
