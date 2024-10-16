@@ -4,13 +4,6 @@
 	"itemtype":	"shield",
 	"itemIcon":	"gfx/hud/psd_medium",
 	"cost":		"1000",
-	
-	"capacity":	100,
-	"cooldown":	0,
-	"regenrate":	1500,
-
-	"brokenSoundEffect":	"sound/shield/shield_broken",
-	"equippedSoundEffect":	"sound/shield/shield_equipped2",
-	
+	"shield": "shield_blastech_ind",
 	"itemDescription": "A premier personal shield manufactured by BlasTech Industries, it has an average regeneration rate and large capacity. Its continuous refresh rate sets it apart from many other designs, but can cause radiation poisoning over periods of extended use."
 }

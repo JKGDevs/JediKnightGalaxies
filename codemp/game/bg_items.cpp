@@ -1284,11 +1284,11 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 		itemData->itemType = ITEM_UNKNOWN;
 
 	jsonNode = cJSON_GetObjectItem(json, "tier");
-	item = cJSON_ToIntegerOpt(jsonNode, 1);
+	item = cJSON_ToIntegerOpt(jsonNode, TIER_COMMON);
 	if (item >= NUM_ITEM_TIERS || item < TIER_SCRAP) //out of range
 	{
 		Com_Printf(S_COLOR_YELLOW "Invalid item tier (%i) detected in %s, defaulting to common.\n", item, itemFilePath);
-		item = 1;
+		item = TIER_COMMON;
 	}
 	itemData->itemTier = static_cast<itemTier_t>(item);
 

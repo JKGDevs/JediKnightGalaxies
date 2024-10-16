@@ -2487,7 +2487,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 CheckShield
 ================
 */
-int CheckShield (gentity_t *ent, int damage, int dflags, meansOfDamage_t* means)
+int CheckShield (gentity_t *ent, int damage, int dflags, meansOfDamage_t* means, qboolean override)
 {
 	gclient_t	*client;
 	int			save;
@@ -2507,7 +2507,7 @@ int CheckShield (gentity_t *ent, int damage, int dflags, meansOfDamage_t* means)
 	if (dflags & DAMAGE_NO_SHIELD)
 		return 0;
 
-	if (means->modifiers.ignoreShield)
+	if (means->modifiers.ignoreShield && !override)
 		return 0;
 
 	count = client->ps.stats[STAT_SHIELD];
@@ -4444,7 +4444,7 @@ JKG_ApplyShieldProtection()
 Shields act as a scapegoat to protect a shielded client from damage before it is applied to the target's hp directly
 ===================================
 */
-void JKG_ApplyShieldProtection(gentity_t* targ, meansOfDamage_t* means, int *ssave, int *take, const int dflags, vec3_t dir, int *knockback, int mod)	//ssave and take are pointers to ints in the main combat function so we can modify these values
+void JKG_ApplyShieldProtection(gentity_t* targ, meansOfDamage_t* means, int *ssave, int *take, const int dflags, vec3_t dir, int *knockback, int mod, qboolean blocked)	//ssave and take are pointers to ints in the main combat function so we can modify these values
 {
 	// check if shield nulls damage completely
 	if (targ->client && means->modifiers.shieldBlocks && targ->client->ps.stats[STAT_SHIELD] > 0)
@@ -4456,7 +4456,7 @@ void JKG_ApplyShieldProtection(gentity_t* targ, meansOfDamage_t* means, int *ssa
 	}
 	else  //or save some from shield
 	{
-		*ssave = CheckShield(targ, *take, dflags, means);
+		*ssave = CheckShield(targ, *take, dflags, means, blocked);
 		if (*ssave)
 		{
 			if (targ->client) 
@@ -4514,6 +4514,53 @@ void JKG_ApplyShieldProtection(gentity_t* targ, meansOfDamage_t* means, int *ssa
 	}
 	if (*knockback < 0)
 		*knockback = 0;
+}
+
+
+/*
+===================================
+//check if mods were overriden
+JKG_IsShieldModOverriden()
+
+Shields can be overridden to disallow/allow means to bypass the shield.
+===================================
+*/
+qboolean JKG_IsShieldModOverriden(gentity_t* ent, int mod, std::vector<int> &list)  //entity wearing the shield, the means of damage, which list to check
+{
+	qboolean modIsBlocked = qfalse;
+
+	//look for shield items
+	shieldData_t* shield = nullptr;
+	std::string shield_name; //in case we need to report an error
+	for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
+	{
+		if (it->equipped && it->id->itemType == ITEM_SHIELD)
+		{
+			shield = it->id->shieldData.pShieldData;
+			shield_name = it->id->displayName;
+			break;
+		}
+	}
+
+	//has shield equipped
+	if (shield != nullptr)
+	{
+		//if we got at least 1 item on the block list
+		if (shield->blockedMODs.size() > 0)
+		{
+			//search block list
+			for (auto it : shield->blockedMODs)
+			{
+				if (mod == it)
+				{
+					modIsBlocked = qtrue;	//this shield blocks this mod and is special
+					//standardShield = qfalse;
+					break;
+				}
+			}
+		}
+	}
+	return modIsBlocked;
 }
 
 
@@ -5052,7 +5099,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	if (client && client->ps.stats[STAT_SHIELD] > 0)
 	{
 		//check for special shield properties:
-
+		//todo: use JKG_IsShieldModOverriden() to move this all into
 		bool modIsBlocked = qfalse, //if the mod is blocked by this shield
 			modIsAllowed = qfalse,	//if the mod bypasses this shield 
 			standardShield = qtrue;	//if the shield is normal
@@ -5080,10 +5127,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 				//search block list
 				for (auto it : shield->blockedMODs)
 				{
-					if (mod == shield->blockedMODs.at(it))
+					if (mod == it)
 					{
 						modIsBlocked = qtrue;	//this shield blocks this mod and is special
-						standardShield = qfalse;
+						//standardShield = qfalse;
 						break;
 					}
 				}
@@ -5094,7 +5141,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 				//search allowed list
 				for (auto it : shield->allowedMODs)
 				{
-					if (mod == shield->allowedMODs.at(it))
+					if (mod == it)
 					{
 						modIsAllowed = qtrue;	//this shield permits this mod to pass through the shield and is special
 						standardShield = qfalse;
@@ -5115,7 +5162,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 
 		//shield blocks this damage type!
 		if(modIsBlocked || standardShield)
-			JKG_ApplyShieldProtection(targ, means, &ssave, &take, dflags, dir, &knockback, mod);	//ssave, take, and knockback are modified
+			JKG_ApplyShieldProtection(targ, means, &ssave, &take, dflags, dir, &knockback, mod, modIsBlocked);	//ssave, take, and knockback are modified
 	}
 
 	//apply direct damage in case the shield was bypassed

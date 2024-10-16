@@ -1,0 +1,22 @@
+{
+    //Shield file - Jedi Knight Galaxies
+    //ref - reference that gets linked to .itm file
+    //capacity - total shield capacity (how much damage it can protect from before being overloaded)
+    //cooldown - how many ms to wait before recharging when overloaded
+    //regenrate - how many ms it takes to recharge 1 point of the shield
+    //rechargeSoundEffect - sound to play when the shield starts recharging
+    //brokenSoundEffect - sound to play when shield is overloaded/reduces to less than 1 capacity
+    //equippedSoundEffect - sound to play when the shield is equipped
+    //chargedSoundEffect - sound to play when the shield is fully recharged/at full capacity
+    //malfunctionSoundEffect - sound to play if the shield malfunctions (not yet implemented)
+    //blockedMODs - what means of damage the shield will block, if none specified it is a standard shield
+    //allowedMODs - what means of damage pass through the shield, if none specified it is a standard shield
+
+    "ref":			"shield_blastech_ind",
+    "capacity":	100,
+	"cooldown":	0,
+	"regenrate":	1500,
+
+	"brokenSoundEffect":	"sound/shield/shield_broken",
+	"equippedSoundEffect":	"sound/shield/shield_equipped2"
+}

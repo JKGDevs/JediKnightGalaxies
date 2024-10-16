@@ -91,9 +91,6 @@ static qboolean JKG_ParseShieldData(char* buffer, const char* fileName, shieldDa
 	Q_strncpyz(shieldData.ref, cJSON_ToString(jsonNode), sizeof(shieldData.ref));
 
 	jsonNode = cJSON_GetObjectItem(json, "capacity");
-	shieldData.capacity = cJSON_ToIntegerOpt(jsonNode, 100);
-
-	jsonNode = cJSON_GetObjectItem(json, "capacity");
 	shieldData.capacity = cJSON_ToIntegerOpt(jsonNode, SHIELD_DEFAULT_CAPACITY);
 
 	jsonNode = cJSON_GetObjectItem(json, "cooldown");

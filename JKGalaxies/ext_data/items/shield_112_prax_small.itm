@@ -4,15 +4,7 @@
 	"itemtype":	"shield",
 	"itemIcon":	"gfx/Item_Icons/psd_prax_s_glow",
 	"cost":		"675",
-	
-	"capacity":	40,
-	"cooldown":	5000,
-	"regenrate":	333,
-
-	"rechargeSoundEffect":	"sound/shield/shield_recharge3",
-	"brokenSoundEffect":	"sound/shield/shield_broken5",
-	"equippedSoundEffect":	"sound/shield/shield_equipped",
-	"chargedSoundEffect":	"sound/shield/shield_charged6",
+	"shield": "shield_prax_small",
 	
 	"itemDescription": "This highly specialized shield is designed to protect its wearer from slugthrowers and other projectile based weapons, rather than from blaster fire."
 }

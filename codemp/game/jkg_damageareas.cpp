@@ -253,6 +253,9 @@ void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity
 			//check if having a shield blocks the buff
 			if (pBuff->cancel.shieldRemoval && ent->client->ps.stats[STAT_SHIELD] > 0)
 			{
+				//todo: see if shield MODs were overriden, and if so also don't apply debuff
+				//JKG_IsShieldModOverriden()
+
 				// Play the shield hit effect
 				gentity_t* evEnt;
 				evEnt = G_TempEntity(ent->client->ps.origin, EV_SHIELD_HIT);
