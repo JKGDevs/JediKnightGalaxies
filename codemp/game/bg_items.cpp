@@ -1363,6 +1363,9 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 		Q_strncpyz(itemData->armorData.ref, cJSON_ToStringOpt(jsonNode, ""), sizeof(itemData->armorData.ref));
 		
 		itemData->armorData.pArm = JKG_FindArmorByName(itemData->armorData.ref);
+		if (itemData->armorData.pArm == nullptr) {
+			Com_Printf(S_COLOR_YELLOW "WARNING: %s is an armor, but doesn't have a valid reference to a .jet file!\n", itemFilePath);
+		}
 	}
 	else if (itemData->itemType == ITEM_CONSUMABLE) {
 		// consumeScript controls the script that gets run when we consume the item
@@ -1386,40 +1389,12 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 		itemData->consumableData.bingeable = (qboolean)cJSON_ToBooleanOpt(jsonNode, false);
 	}
 	else if (itemData->itemType == ITEM_SHIELD) {
-		memset(&itemData->shieldData, 0, sizeof(itemData->shieldData));
+		jsonNode = cJSON_GetObjectItem(json, "shield");
+		Q_strncpyz(itemData->shieldData.ref, cJSON_ToStringOpt(jsonNode, ""), sizeof(itemData->shieldData.ref));
 
-		jsonNode = cJSON_GetObjectItem(json, "capacity");
-		itemData->shieldData.capacity = cJSON_ToIntegerOpt(jsonNode, SHIELD_DEFAULT_CAPACITY);
-
-		jsonNode = cJSON_GetObjectItem(json, "cooldown");
-		itemData->shieldData.cooldown = cJSON_ToIntegerOpt(jsonNode, SHIELD_DEFAULT_COOLDOWN);
-
-		jsonNode = cJSON_GetObjectItem(json, "regenrate");
-		itemData->shieldData.regenrate = cJSON_ToIntegerOpt(jsonNode, SHIELD_DEFAULT_REGEN);
-
-		jsonNode = cJSON_GetObjectItem(json, "rechargeSoundEffect");
-		if (jsonNode) {
-			Q_strncpyz(itemData->shieldData.rechargeSoundEffect, cJSON_ToString(jsonNode), MAX_QPATH);
-		}
-
-		jsonNode = cJSON_GetObjectItem(json, "brokenSoundEffect");
-		if (jsonNode) {
-			Q_strncpyz(itemData->shieldData.brokenSoundEffect, cJSON_ToString(jsonNode), MAX_QPATH);
-		}
-
-		jsonNode = cJSON_GetObjectItem(json, "equippedSoundEffect");
-		if (jsonNode) {
-			Q_strncpyz(itemData->shieldData.equippedSoundEffect, cJSON_ToString(jsonNode), MAX_QPATH);
-		}
-
-		jsonNode = cJSON_GetObjectItem(json, "chargedSoundEffect");
-		if (jsonNode) {
-			Q_strncpyz(itemData->shieldData.chargedSoundEffect, cJSON_ToString(jsonNode), MAX_QPATH);
-		}
-
-		jsonNode = cJSON_GetObjectItem(json, "malfunctionSoundEffect");
-		if (jsonNode) {
-			Q_strncpyz(itemData->shieldData.malfunctionSoundEffect, cJSON_ToString(jsonNode), MAX_QPATH);
+		itemData->shieldData.pShieldData = JKG_FindShieldByName(itemData->shieldData.ref);
+		if (itemData->shieldData.pShieldData == nullptr) {
+			Com_Printf(S_COLOR_YELLOW "WARNING: %s is a shield, but doesn't have a valid reference to a .shd file!\n", itemFilePath);
 		}
 	}
 	else if (itemData->itemType == ITEM_JETPACK) {

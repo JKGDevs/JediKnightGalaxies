@@ -7,6 +7,7 @@
 #include "qcommon/q_shared.h"
 #include "bg_jetpacks.h"
 #include "bg_armor.h"
+#include "bg_shields.h"
 
 #ifdef _GAME
 typedef struct gentity_s gentity_t;
@@ -136,19 +137,9 @@ typedef struct {
 } itemConsumableData_t;
 
 // Shields
-#define SHIELD_DEFAULT_CAPACITY	25
-#define SHIELD_DEFAULT_COOLDOWN	10000
-#define SHIELD_DEFAULT_REGEN	100
 typedef struct {
-	int capacity;	// Total amount that the shield can absorb
-	int cooldown;	// Time between when we received a hit and when the shield will start recharging
-	int regenrate;	// Time (ms) it takes to recharge one shield unit
-
-	char rechargeSoundEffect[MAX_QPATH];	// Sound that plays once we start charging
-	char brokenSoundEffect[MAX_QPATH];		// Sound that plays once the shield is broken
-	char equippedSoundEffect[MAX_QPATH];	// Sound that plays once the shield is equipped
-	char chargedSoundEffect[MAX_QPATH];		// Sound that plays once a shield is finished charging
-	char malfunctionSoundEffect[MAX_QPATH];	// Sound that plays if the shield has malfunctioned --futuza: to be added later
+	char		ref[MAX_QPATH]; //Reference to a shieldData_t
+	shieldData_t* pShieldData;	// Pointer to the actual shieldData_t.
 } itemShieldData_t;
 
 // Jetpacks

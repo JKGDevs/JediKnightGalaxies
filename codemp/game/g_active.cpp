@@ -2116,9 +2116,9 @@ void ClientThink_real( gentity_t *ent ) {
 					{
 						if (it->equipped && it->id->itemType == ITEM_SHIELD)
 						{
-							if (it->id->shieldData.rechargeSoundEffect[0])
+							if (it->id->shieldData.pShieldData->rechargeSoundEffect[0])
 							{
-								G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->id->shieldData.rechargeSoundEffect));
+								G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->id->shieldData.pShieldData->rechargeSoundEffect));
 
 								// Play the effect for shield recharging
 								gentity_t* evEnt;
@@ -2144,9 +2144,9 @@ void ClientThink_real( gentity_t *ent ) {
 				{
 					if (it->equipped && it->id->itemType == ITEM_SHIELD)
 					{
-						if (it->id->shieldData.rechargeSoundEffect[0])
+						if (it->id->shieldData.pShieldData->rechargeSoundEffect[0])
 						{
-							G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->id->shieldData.chargedSoundEffect));
+							G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->id->shieldData.pShieldData->chargedSoundEffect));
 
 							// Play the effect for shield recharging
 							gentity_t* evEnt;

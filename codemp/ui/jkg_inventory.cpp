@@ -322,9 +322,9 @@ static void JKG_ConstructShieldDescription(itemInstance_t* pItem, std::vector<st
 	{
 		vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_ITEM_WEIGHT"), pItem->id->weight));
 	}
-	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_CAPACITY"), pItem->id->shieldData.capacity));
-	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_RECHARGE"), pItem->id->shieldData.cooldown / 1000.0f));
-	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_REGEN"), 1000.0f / pItem->id->shieldData.regenrate));
+	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_CAPACITY"), pItem->id->shieldData.pShieldData->capacity));
+	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_RECHARGE"), pItem->id->shieldData.pShieldData->cooldown / 1000.0f));
+	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_REGEN"), 1000.0f / pItem->id->shieldData.pShieldData->regenrate));
 }
 
 // Create an armor item's description

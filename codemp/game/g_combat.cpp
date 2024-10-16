@@ -2551,8 +2551,8 @@ void ShieldHitEffect(gentity_t* targ, vec3_t dir, int take)
 			// Play the sound on the server, since clients don't know about other clients's inventories
 			for (auto it = targ->inventory->begin(); it != targ->inventory->end(); ++it) {
 				if (it->equipped && it->id->itemType == ITEM_SHIELD) {
-					if (it->id->shieldData.brokenSoundEffect[0]) {
-						G_Sound(targ, CHAN_AUTO, G_SoundIndex(it->id->shieldData.brokenSoundEffect));
+					if (it->id->shieldData.pShieldData->brokenSoundEffect[0]) {
+						G_Sound(targ, CHAN_AUTO, G_SoundIndex(it->id->shieldData.pShieldData->brokenSoundEffect));
 					}
 				}
 			}
@@ -4446,7 +4446,6 @@ Shields act as a scapegoat to protect a shielded client from damage before it is
 */
 void JKG_ApplyShieldProtection(gentity_t* targ, meansOfDamage_t* means, int *ssave, int *take, const int dflags, vec3_t dir, int *knockback, int mod)	//ssave and take are pointers to ints in the main combat function so we can modify these values
 {
-
 	// check if shield nulls damage completely
 	if (targ->client && means->modifiers.shieldBlocks && targ->client->ps.stats[STAT_SHIELD] > 0)
 	{
@@ -5050,8 +5049,74 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	}
 
 	//see if shields protect target
-	if(client && client->ps.stats[STAT_SHIELD] > 0)
-		JKG_ApplyShieldProtection(targ, means, &ssave, &take, dflags, dir, &knockback, mod);	//ssave, take, and knockback are modified
+	if (client && client->ps.stats[STAT_SHIELD] > 0)
+	{
+		//check for special shield properties:
+
+		bool modIsBlocked = qfalse, //if the mod is blocked by this shield
+			modIsAllowed = qfalse,	//if the mod bypasses this shield 
+			standardShield = qtrue;	//if the shield is normal
+
+		//look for shield item
+		shieldData_t* shield = nullptr;
+
+		std::string shield_name; //in case we need to report an error
+		for (auto it = targ->inventory->begin(); it != targ->inventory->end(); ++it)
+		{
+			if (it->equipped && it->id->itemType == ITEM_SHIELD)
+			{
+				shield = it->id->shieldData.pShieldData;
+				shield_name = it->id->displayName;
+				break;
+			}
+		}
+
+		//has shield equipped
+		if (shield != nullptr)
+		{
+			//if we got at least 1 item on the block list
+			if (shield->blockedMODs.size() > 0)
+			{
+				//search block list
+				for (auto it : shield->blockedMODs)
+				{
+					if (mod == shield->blockedMODs.at(it))
+					{
+						modIsBlocked = qtrue;	//this shield blocks this mod and is special
+						standardShield = qfalse;
+						break;
+					}
+				}
+			}
+
+			if (shield->allowedMODs.size() > 0)
+			{
+				//search allowed list
+				for (auto it : shield->allowedMODs)
+				{
+					if (mod == shield->allowedMODs.at(it))
+					{
+						modIsAllowed = qtrue;	//this shield permits this mod to pass through the shield and is special
+						standardShield = qfalse;
+						break;
+					}
+				}
+			}
+
+			//warn them the item file is malformed and default it to a standardShield
+			if (modIsBlocked && modIsAllowed)
+			{
+				Com_Printf(S_COLOR_RED "Invalid Shield: means of damage is on both the block & allow list of %s.\n", shield_name);
+				modIsBlocked = qfalse;
+				modIsAllowed = qfalse;
+				standardShield = qtrue;
+			}
+		}
+
+		//shield blocks this damage type!
+		if(modIsBlocked || standardShield)
+			JKG_ApplyShieldProtection(targ, means, &ssave, &take, dflags, dir, &knockback, mod);	//ssave, take, and knockback are modified
+	}
 
 	//apply direct damage in case the shield was bypassed
 	take = take + directDmg;	

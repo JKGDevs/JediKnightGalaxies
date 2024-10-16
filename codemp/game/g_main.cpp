@@ -524,6 +524,9 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// Jetpacks, as well
 	JKG_LoadJetpacks();
 
+	// And shields
+	JKG_LoadShields();
+
 	// armor is good too
 	JKG_LoadArmor();
 	
