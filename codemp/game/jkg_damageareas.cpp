@@ -250,12 +250,22 @@ void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity
 			ent->buffData[i].endTime = level.time + duration;
 			ent->buffData[i].lastDamageTime = level.time;
 
-			//check if having a shield blocks the buff
-			if (pBuff->cancel.shieldRemoval && ent->client->ps.stats[STAT_SHIELD] > 0)
+			//look for shield items
+			shieldData_t* shield = nullptr;
+			for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
 			{
-				//todo: see if shield MODs were overriden, and if so also don't apply debuff
-				//JKG_IsShieldModOverriden()
+				if (it->equipped && it->id->itemType == ITEM_SHIELD)
+				{
+					shield = it->id->shieldData.pShieldData;
+					break;
+				}
+			}
+			qboolean overrides = JKG_IsShieldModOverriden(ent, pBuff->damage.meansOfDeath, shield, shield->blockedMODs);	//check if the shield overrides also cancel this damage type
+			shield = nullptr;
 
+			//check if having a shield blocks the buff
+			if ((pBuff->cancel.shieldRemoval || overrides) && ent->client->ps.stats[STAT_SHIELD] > 0)
+			{
 				// Play the shield hit effect
 				gentity_t* evEnt;
 				evEnt = G_TempEntity(ent->client->ps.origin, EV_SHIELD_HIT);

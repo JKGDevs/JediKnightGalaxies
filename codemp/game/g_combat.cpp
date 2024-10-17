@@ -4525,42 +4525,52 @@ JKG_IsShieldModOverriden()
 Shields can be overridden to disallow/allow means to bypass the shield.
 ===================================
 */
-qboolean JKG_IsShieldModOverriden(gentity_t* ent, int mod, std::vector<int> &list)  //entity wearing the shield, the means of damage, which list to check
+qboolean JKG_IsShieldModOverriden(gentity_t* ent, int mod, shieldData_t *shield, std::vector<int> &list)  //entity wearing the shield, the means of damage, which list to check
 {
-	qboolean modIsBlocked = qfalse;
+	qboolean overridden = qfalse;
 
-	//look for shield items
-	shieldData_t* shield = nullptr;
-	std::string shield_name; //in case we need to report an error
-	for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
+	if (list.data() == shield->blockedMODs.data())
 	{
-		if (it->equipped && it->id->itemType == ITEM_SHIELD)
+		//has shield equipped
+		if (shield != nullptr)
 		{
-			shield = it->id->shieldData.pShieldData;
-			shield_name = it->id->displayName;
-			break;
+			//if we got at least 1 item on the block list
+			if (shield->blockedMODs.size() > 0)
+			{
+				//search block list
+				for (auto it : shield->blockedMODs)
+				{
+					if (mod == it)
+					{
+						overridden = qtrue;	//this shield blocks this mod and is special
+						break;
+					}
+				}
+			}
 		}
 	}
-
-	//has shield equipped
-	if (shield != nullptr)
+	else if (list.data() == shield->allowedMODs.data())
 	{
-		//if we got at least 1 item on the block list
-		if (shield->blockedMODs.size() > 0)
+		if (shield->allowedMODs.size() > 0)
 		{
-			//search block list
-			for (auto it : shield->blockedMODs)
+			//search allowed list
+			for (auto it : shield->allowedMODs)
 			{
 				if (mod == it)
 				{
-					modIsBlocked = qtrue;	//this shield blocks this mod and is special
-					//standardShield = qfalse;
+					overridden = qtrue;	//this shield permits this mod to pass through the shield and is special
 					break;
 				}
 			}
 		}
 	}
-	return modIsBlocked;
+	else
+	{
+		Com_Printf(S_COLOR_RED "Passed an illegal vector to JKG_IsShieldModOverriden()\n");
+		overridden = qfalse;
+	}
+
+	return overridden;
 }
 
 
@@ -5104,9 +5114,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 			modIsAllowed = qfalse,	//if the mod bypasses this shield 
 			standardShield = qtrue;	//if the shield is normal
 
-		//look for shield item
+		//look for shield items
 		shieldData_t* shield = nullptr;
-
 		std::string shield_name; //in case we need to report an error
 		for (auto it = targ->inventory->begin(); it != targ->inventory->end(); ++it)
 		{
@@ -5118,46 +5127,18 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 			}
 		}
 
-		//has shield equipped
-		if (shield != nullptr)
+		modIsBlocked = JKG_IsShieldModOverriden(targ, mod, shield, shield->blockedMODs);
+		modIsAllowed = JKG_IsShieldModOverriden(targ, mod, shield, shield->allowedMODs);
+		if(modIsAllowed)
+			standardShield = qfalse;
+
+		//warn them the item file is malformed and default it to a standardShield
+		if (modIsBlocked && modIsAllowed)
 		{
-			//if we got at least 1 item on the block list
-			if (shield->blockedMODs.size() > 0)
-			{
-				//search block list
-				for (auto it : shield->blockedMODs)
-				{
-					if (mod == it)
-					{
-						modIsBlocked = qtrue;	//this shield blocks this mod and is special
-						//standardShield = qfalse;
-						break;
-					}
-				}
-			}
-
-			if (shield->allowedMODs.size() > 0)
-			{
-				//search allowed list
-				for (auto it : shield->allowedMODs)
-				{
-					if (mod == it)
-					{
-						modIsAllowed = qtrue;	//this shield permits this mod to pass through the shield and is special
-						standardShield = qfalse;
-						break;
-					}
-				}
-			}
-
-			//warn them the item file is malformed and default it to a standardShield
-			if (modIsBlocked && modIsAllowed)
-			{
-				Com_Printf(S_COLOR_RED "Invalid Shield: means of damage is on both the block & allow list of %s.\n", shield_name);
-				modIsBlocked = qfalse;
-				modIsAllowed = qfalse;
-				standardShield = qtrue;
-			}
+			Com_Printf(S_COLOR_RED "Invalid Shield: means of damage is on both the block & allow list of %s.\n", shield_name);
+			modIsBlocked = qfalse;
+			modIsAllowed = qfalse;
+			standardShield = qtrue;
 		}
 
 		//shield blocks this damage type!
