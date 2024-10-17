@@ -3,16 +3,7 @@
 	"internal":	"shield_prax_medium",
 	"itemtype":	"shield",
 	"itemIcon":	"gfx/Item_Icons/psd_prax_s_glow",
-	"cost":		"1650",
-	
-	"capacity":	80,
-	"cooldown":	4000,
-	"regenrate":	286,
-
-	"rechargeSoundEffect":	"sound/shield/shield_recharge2",
-	"brokenSoundEffect":	"sound/shield/shield_broken2",
-	"equippedSoundEffect":	"sound/shield/shield_equipped4",
-	"chargedSoundEffect":	"sound/shield/shield_charged5",
-	
-	"itemDescription": "This superior projectile shield while ineffective at protecting its wearer from energy and blaster weapons, offers protection from slugthrowers and other more primitive projectiles."
+	"cost":		"1450",
+	"shield": "shield_prax_medium",
+	"itemDescription": "This superior projectile shield while ineffective at protecting its wearer from special energy types such as pulse or disruptors, offers protection from slugthrowers and other more primitive projectiles."
 }

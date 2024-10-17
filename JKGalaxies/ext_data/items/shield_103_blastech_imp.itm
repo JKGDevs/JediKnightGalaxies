@@ -4,15 +4,6 @@
 	"itemtype":	"shield",
 	"itemIcon":	"gfx/hud/psd_small",
 	"cost":		"415",
-	
-	"capacity":	35,
-	"cooldown":	750,
-	"regenrate":	1200,
-
-	"brokenSoundEffect":	"sound/shield/shield_broken",
-	"equippedSoundEffect":	"sound/shield/shield_equipped2",
-	"rechargeSoundEffect":	"sound/shield/shield_recharge2",
-	"chargedSoundEffect":	"sound/shield/shield_charged2",
-	
+	"shield": 	"shield_blastech_imp",
 	"itemDescription": "A cheap inexpensive personal shield made famous by becoming standard issue for Imperial Stormtrooper Commanders and other mid-ranking Imperial Officers. While it offers some protection, powerful blasters will easily overload and penetrate through it."
 }

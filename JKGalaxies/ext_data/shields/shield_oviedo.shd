@@ -1,0 +1,12 @@
+{
+	"ref":			"shield_oviedo",
+    "capacity":	65,
+	"cooldown":	8000,
+	"regenrate":	250,
+
+	"rechargeSoundEffect":	"sound/shield/shield_recharge7",
+	"brokenSoundEffect":	"sound/shield/shield_broken3",
+	"equippedSoundEffect":	"sound/shield/shield_equipped4",
+	"chargedSoundEffect":	"sound/shield/shield_charged4",
+	"blockedMODs": ["MOD_CRUSH", "MOD_LAVA"]
+}

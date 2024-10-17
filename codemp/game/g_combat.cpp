@@ -4529,10 +4529,10 @@ qboolean JKG_IsShieldModOverriden(gentity_t* ent, int mod, shieldData_t *shield,
 {
 	qboolean overridden = qfalse;
 
-	if (list.data() == shield->blockedMODs.data())
+	//has shield equipped
+	if (shield != nullptr)
 	{
-		//has shield equipped
-		if (shield != nullptr)
+		if (list.data() == shield->blockedMODs.data())
 		{
 			//if we got at least 1 item on the block list
 			if (shield->blockedMODs.size() > 0)
@@ -4548,26 +4548,26 @@ qboolean JKG_IsShieldModOverriden(gentity_t* ent, int mod, shieldData_t *shield,
 				}
 			}
 		}
-	}
-	else if (list.data() == shield->allowedMODs.data())
-	{
-		if (shield->allowedMODs.size() > 0)
+		else if (list.data() == shield->allowedMODs.data())
 		{
-			//search allowed list
-			for (auto it : shield->allowedMODs)
+			if (shield->allowedMODs.size() > 0)
 			{
-				if (mod == it)
+				//search allowed list
+				for (auto it : shield->allowedMODs)
 				{
-					overridden = qtrue;	//this shield permits this mod to pass through the shield and is special
-					break;
+					if (mod == it)
+					{
+						overridden = qtrue;	//this shield permits this mod to pass through the shield and is special
+						break;
+					}
 				}
 			}
 		}
-	}
-	else
-	{
-		Com_Printf(S_COLOR_RED "Passed an illegal vector to JKG_IsShieldModOverriden()\n");
-		overridden = qfalse;
+		else
+		{
+			Com_Printf(S_COLOR_RED "Passed an illegal vector to JKG_IsShieldModOverriden()\n");
+			overridden = qfalse;
+		}
 	}
 
 	return overridden;

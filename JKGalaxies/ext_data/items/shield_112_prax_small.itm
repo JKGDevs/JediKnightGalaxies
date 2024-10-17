@@ -3,8 +3,7 @@
 	"internal":	"shield_prax_small",
 	"itemtype":	"shield",
 	"itemIcon":	"gfx/Item_Icons/psd_prax_s_glow",
-	"cost":		"675",
+	"cost":		"475",
 	"shield": "shield_prax_small",
-	
 	"itemDescription": "This highly specialized shield is designed to protect its wearer from slugthrowers and other projectile based weapons, rather than from blaster fire."
 }
