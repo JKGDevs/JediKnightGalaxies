@@ -144,7 +144,7 @@ static qboolean JKG_ParseShieldData(char* buffer, const char* fileName, shieldDa
 ============================
 JKG_LoadShield
 
-Loads an individual shield (.shd) file.
+Loads an individual shield (.shield) file.
 Called on both the client and the server.
 ============================
 */
@@ -194,7 +194,7 @@ void JKG_LoadShields() {
 	int failed = 0;
 	int numFiles;
 
-	numFiles = Q_FSGetFileListSorted(shieldDir, ".shd", shieldFiles, sizeof(shieldFiles));
+	numFiles = Q_FSGetFileListSorted(shieldDir, ".shield", shieldFiles, sizeof(shieldFiles));
 	shield = shieldFiles;
 
 	Com_Printf("------- Shields -------\n");
