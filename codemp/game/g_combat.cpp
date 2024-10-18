@@ -3888,8 +3888,10 @@ int G_ArmorDurabilityModifier(gentity_t* ent, int* damage, const int take, const
 		return 0;
 
 	int playDurabilitySnd = 0; //default: return 0/false if no durability damage, return 1+ if durability damage or the item hit is already at 0 durability
+	int index = -1; //stupid hack so I can check the inventory's index
 	for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
 	{
+		index++;
 		if (it->equipped && (it->id->itemType == ITEM_ARMOR || it->id->itemType == ITEM_CLOTHING /*|| it->id->itemType == ITEM_JETPACK */))	//if we have a piece of armor equipped
 		{
 			if (it->id->armorData.pArm->slot == armorSlot && it->id->itemTier != TIER_LEGENDARY) //if that piece is the one that got hit, and not legendary
@@ -3982,6 +3984,8 @@ int G_ArmorDurabilityModifier(gentity_t* ent, int* damage, const int take, const
 				{
 					++playDurabilitySnd;
 					it->durability -= durability_damage;
+					trap->SendServerCommand(ent - g_entities, va("durability_update %i %i", index, it->durability)); //have the server tell the client durability updated so the ui can see it
+
 					if (it->durability < 0)
 						it->durability = 0;
 
@@ -3989,7 +3993,6 @@ int G_ArmorDurabilityModifier(gentity_t* ent, int* damage, const int take, const
 					if (it->durability > 0 && it->durability <= it->id->maxDurability * 0.25f)
 					{
 						trap->SendServerCommand(ent - g_entities, va("chat 100 \"^3Warning:^7 %s is damaged, repair soon (^3%d/%d^7)!\"", it->id->displayName, it->durability, it->id->maxDurability));
-
 						//1-10%
 						if (it->durability == 1 || it->durability < it->id->maxDurability * 0.10f) 
 						{
@@ -4201,7 +4204,7 @@ bool G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 			gentity_t* durEvent;
 			durEvent = G_TempEntity(point, EV_DURABILITY_DMG);
 			durEvent->s.clientNum = ent->s.clientNum;
-			VectorCopy(ent->s.origin, durEvent->s.origin);
+			VectorCopy(ent->s.origin, durEvent->s.origin);	
 		}
 
 	}
@@ -5163,7 +5166,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		if (client &&
 			attacker->inuse)
 		{ //check for location based damage stuff.
-			isHeadShot = G_LocationBasedDamageModifier(targ, point, mod, dflags, &take, means);	//check for headshot, location based modifiers, resistances, and armor
+			isHeadShot = G_LocationBasedDamageModifier(targ, point, mod, dflags, &take, means);	//check for headshot, location based modifiers, resistances, armor, and durability changes
 			if (targ->health < 0)
 				isHeadShot = qfalse;	//don't notify about headshots on corpses
 		}

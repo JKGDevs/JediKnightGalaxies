@@ -31,10 +31,6 @@ void JKG_ShieldEquipped(gentity_t* ent, int shieldItemNumber, qboolean playSound
 	}
 
 	itemInstance_t* item = &(*ent->inventory)[shieldItemNumber];
-	if (ent->client->ps.stats[STAT_MAX_SHIELD] <= ent->client->ps.stats[STAT_SHIELD] && ent->client->ps.stats[STAT_SHIELD] != 0) {
-		// If we're at max shield, and upgrading capacity, increase our shield amount to match
-		ent->client->ps.stats[STAT_SHIELD] = item->id->shieldData.pShieldData->capacity;
-	}
 	item->equipped = qtrue;
 	ent->client->ps.stats[STAT_MAX_SHIELD] = item->id->shieldData.pShieldData->capacity;
 	ent->client->shieldEquipped = qtrue;

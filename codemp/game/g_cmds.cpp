@@ -2240,18 +2240,32 @@ void Cmd_ResendInv_f(gentity_t* ent) {
 	BG_SendItemPacket(IPT_RESET, ent, nullptr, ent->inventory->size(), 0);
 }
 
-void Cmd_SendItemDurability_f(gentity_t* ent)
+/*
+/*
+==================
+Cmd_SetItemDurability_f
+
+==================
+*/
+
+void Cmd_SetItemDurability_f(gentity_t* ent)
 {
 	char arg[4];
-	if (trap->Argc() != 2)
+	if (trap->Argc() != 3)
 	{
-		trap->SendServerCommand(ent->s.number, "print \"Usage: /sendItemDura <item num>\n\"");
+		trap->SendServerCommand(ent->s.number, "print \"Usage: /setItemDura <item num> <durability value>\n\"");
 		return;
 	}
 
 	trap->Argv(1, arg, sizeof(arg));
-	BG_UpdateItemDurability(ent, atoi(arg), (*ent->inventory)[atoi(arg)].durability);
+	int slot = atoi(arg);
+	trap->Argv(2, arg, sizeof(arg));
+	int durability = atoi(arg);
+
+	BG_UpdateItemDurability(ent, slot, durability);
+	trap->SendServerCommand(ent - g_entities, va("durability_update %i %i", slot, durability));
 }
+
 
 /*
 =================
@@ -5072,7 +5086,7 @@ static const command_t commands[] = {
 	{ "printbufflist",			Cmd_PrintBuffList_f,		0 },
 	{ "relax",					Cmd_Relax_f,				CMD_NEEDCHEATS | CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
 	{ "resendInv",				Cmd_ResendInv_f,			0 },
-	{ "sendItemDura",			Cmd_SendItemDurability_f,	0 },
+	{ "setItemDura",			Cmd_SetItemDurability_f,	CMD_NEEDCHEATS | CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
 	{ "say",					Cmd_SayLocal_f,				0 },
 	{ "sayact",					Cmd_SayAct_f,				0 },
 	{ "sayglobal",				Cmd_SayGlobal_f,			0 },

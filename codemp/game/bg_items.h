@@ -13,10 +13,10 @@
 typedef struct gentity_s gentity_t;
 #endif
 
-#define MAX_ITEM_TABLE_SIZE     (1024)		//how many unique items the game can support (originally: 65553) --Futuza: lol not making that many items
+#define MAX_ITEM_TABLE_SIZE     (2048)		//how many unique items the game can support (originally: 65553) --Futuza: lol not making that many items
 #define MAX_ITEM_FILE_LENGTH    (16384)
-#define MAX_ITEM_NAME			(64)
-#define MAX_ITEM_DESCRIPTION	(250)
+#define MAX_ITEM_NAME			(64)		//Max length the name of an item can be
+#define MAX_ITEM_DESCRIPTION	(250)		//Max length an item description can be.
 #define MAX_INVENTORY_ITEMS		(256)		//max number of items per player inventory
 
 #define MAX_ACI_SLOTS			(10)
@@ -94,7 +94,7 @@ typedef enum itemTier_e
 	//The tiers or 'quality' of an item.
 
 	TIER_SCRAP,		//tier 0: lowest quality, things like scrap or raw materials
-	TIER_COMMON,	//tier 1: the base tier, most items are common
+	TIER_COMMON,	//tier 1: the base/default tier, most items are common
 	TIER_REFINED,	//tier 2: uncommon, quality items - harder to find than common
 	TIER_ELITE,		//tier 3: rare and high quality - elite items are the most powerful items that can be granted from a drop
 	TIER_SUPERIOR,	//tier 4: most powerful item type - can only be created by high level crafting, not available from drops/npcs
@@ -127,7 +127,7 @@ typedef struct {
 } itemArmorData_t;
 
 // Consumables
-#define MAX_CONSUMABLE_SCRIPTNAME	32
+#define MAX_CONSUMABLE_SCRIPTNAME	64
 typedef struct {
 	char consumeScript[MAX_CONSUMABLE_SCRIPTNAME];
 	int consumeAmount;

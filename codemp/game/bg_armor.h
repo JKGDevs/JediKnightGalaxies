@@ -8,7 +8,7 @@
 #include <vector>
 #include <string>
 
-#define MAX_ARMOR_ITEMS		128		// Max amount of armor items
+#define MAX_ARMOR_ITEMS		256		// Max amount of armor items
 #define MAX_ARMOR_G2		64		// Max amount of armor G2 instances
 
 // Loading optimization: To prevent having multiple unnecessary GHOUL2

@@ -1472,7 +1472,7 @@ static void CG_ServerCommand( void ) {
 
 			i++;
 		}
-		
+
 		return;
 	}
 
@@ -1482,7 +1482,7 @@ static void CG_ServerCommand( void ) {
 		int argNum = trap->Cmd_Argc();
 		centity_t *clent = NULL;
 		centity_t *trackerent = NULL;
-		
+
 		if (argNum < 1)
 		{
 			assert(0);
@@ -1528,31 +1528,43 @@ static void CG_ServerCommand( void ) {
 
 	if ( !strcmp (cmd, "ieq") )
 	{
-	    if ( trap->Cmd_Argc() == 3 )
-	    {
-	        int newItem = atoi (CG_Argv (1));
-	        int oldItem = atoi (CG_Argv (2));
-	        
+		if ( trap->Cmd_Argc() == 3 )
+		{
+			int newItem = atoi (CG_Argv (1));
+			int oldItem = atoi (CG_Argv (2));
+
 			(*cg.playerInventory)[newItem].equipped = true;
 			if (oldItem != -1) {
 				(*cg.playerInventory)[oldItem].equipped = false;
 			}
-	        uiImports->InventoryNotify( INVENTORYNOTIFY_UPDATE );
-	    }
-	    return;
+			uiImports->InventoryNotify( INVENTORYNOTIFY_UPDATE );
+		}
+		return;
 	}
-	
+
 	if ( !strcmp (cmd, "iueq") )
 	{
-	    if ( trap->Cmd_Argc() == 2 )
-	    {
-	        int slot = atoi (CG_Argv (1));
+		if ( trap->Cmd_Argc() == 2 )
+		{
+			int slot = atoi (CG_Argv (1));
 			(*cg.playerInventory)[slot].equipped = false;
-	        uiImports->InventoryNotify( INVENTORYNOTIFY_UPDATE );
-	    }
-	    
-	    return;
+			uiImports->InventoryNotify( INVENTORYNOTIFY_UPDATE );
+		}
+
+		return;
 	}
+
+	if ( !strcmp (cmd, "durability_update") )
+	{
+		if (trap->Cmd_Argc() == 3)
+		{
+			int slot = atoi(CG_Argv(1));
+			(*cg.playerInventory)[slot].durability = atoi(CG_Argv(2));
+			uiImports->InventoryNotify(INVENTORYNOTIFY_UPDATE);
+		}
+		return;
+	}
+
 	if ( !strcmp (cmd, "inventory_update") )
 	{
 		cg.predictedPlayerState.credits = atoi(CG_Argv(1));

@@ -92,8 +92,8 @@ static void *CO_InventoryDataRequest ( jkgInventoryRequest_e data, int extra )
 		case INVENTORYREQUEST_ICONSHADER:
 			return (*cg.playerInventory)[extra].id->visuals.itemIcon;
 		case INVENTORYREQUEST_DURABILITY:
-			trap->SendClientCommand(va("sendItemDura %i", extra));;
-			return (void*)(&(*cg.playerInventory)[extra].durability);
+			tempSize = (*cg.playerInventory)[extra].durability;
+			return &tempSize;
         default:
             return NULL;
     }

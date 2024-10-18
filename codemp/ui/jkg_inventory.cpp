@@ -137,35 +137,30 @@ static QINLINE void JKG_ConstructItemTierDescription(itemTier_t tier, std::vecto
 
 void JKG_ConstructItemDurabilityDescription(itemInstance_t* pItem, std::vector<std::string>& vDescLines, int ownerDrawID)
 {
-	/*
-	
-	//int nItemNum = ownerDrawID + nPosition;
-	//if (nItemNum >= pItems.size()) {
-		//return;
-	//}
+	int nItemNum = ownerDrawID + nPosition;
 
-	//grab durability --futuza: todo this isn't updating, make it check the current durability
-	int durability = *(size_t*)cgImports->InventoryDataRequest(INVENTORYREQUEST_DURABILITY, ownerDrawID);
-	pItem->durability = durability;
-	
-
+	if (nItemNum >= pItems.size() || nItemNum < 0) {
+		return;
+	}
 
 	if (pItem->id->itemType != ITEM_AMMO && pItem->id->itemTier != TIER_LEGENDARY)
 	{
-		float percent = static_cast<float>(pItem->durability / pItem->id->maxDurability)*100.0f;
-		if (pItem->durability < 1)
+		//grab current durability
+		int durability = *static_cast<int*>(cgImports->InventoryDataRequest(INVENTORYREQUEST_DURABILITY, nItemNum)); //note: anytime durability is adjusted from server need to send cmd to client with trap->SendServerCommand(ent - g_entities, va("durability_update
+		float percent = (static_cast<float>(durability) / pItem->id->maxDurability)*100.0f;
+		if (durability < 1)
 		{
-			vDescLines.push_back(va("^1", UI_GetStringEdString2("@JKG_INVENTORY_DURABILITY"), pItem->durability, pItem->id->maxDurability, 0.0f));
+			vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_DURABILITY"), va("^1"), durability, pItem->id->maxDurability, 0.0f));
 		}
-		else if (pItem->durability <= pItem->id->maxDurability * 0.25f)
+		else if (durability <= pItem->id->maxDurability * 0.25f)
 		{
-			vDescLines.push_back(va("^3", UI_GetStringEdString2("@JKG_INVENTORY_DURABILITY"), pItem->durability, pItem->id->maxDurability, percent));
+			vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_DURABILITY"), va("^3"), durability, pItem->id->maxDurability, percent));
 		}
 		else
 		{
-			vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_DURABILITY"), pItem->durability, pItem->id->maxDurability, percent ));
+			vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_DURABILITY"), va("^7"), durability, pItem->id->maxDurability, percent ));
 		}
-	}*/
+	}
 }
 
 //lighten rgb color to make it easier to read

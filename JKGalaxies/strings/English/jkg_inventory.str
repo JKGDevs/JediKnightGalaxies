@@ -595,6 +595,6 @@ REFERENCE		    JETPACK_HOVERGRAVITY
 LANG_ENGLISH		"Hover Gravity: %.1f"
 
 REFERENCE           DURABILITY
-LANG_ENGLISH        "Durability: %i/%i (%.1f%%)"
+LANG_ENGLISH        "Durability: %s%i/%i (%.1f%%)"
 
 ENDMARKER
