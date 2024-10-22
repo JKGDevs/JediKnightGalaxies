@@ -477,9 +477,9 @@
 			"isEMP": true,
 			"isCC": true,
 			"dodgeable": true,
-			"organic": 0.6,
-			"shield": 1.8,
-			"droid": 1.8
+			"organic": 0.75,
+			"shield": 1.7,
+			"droid": 1.7
 		},
 
 		"killFeed": {
@@ -634,7 +634,7 @@
 			"dodgeable": true,
 			"armor": 1.4,
 			"organic": 1.0,
-			"shield": 0.9,
+			"shield": 0.85,
 			"droid": 0.9
 		},
 

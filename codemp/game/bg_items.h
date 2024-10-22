@@ -65,6 +65,18 @@ typedef enum
 
 typedef enum
 {
+	SHIELDTYPE_UNKNOWN,	//undefined shield
+	SHIELDTYPE_STD,		//standard shield: these do not have blockedMODs or allowedMODs, and block standard MODs
+	SHIELDTYPE_ABN,		//NOT a standard shield
+						
+						//consider additional types here such as particle shields, ray shields, bubble, etc
+						//note: officially particle shields == physical, and ray shields == energy
+						//		however, we may do something different as these definitions are sometimes silly in lore
+	SHIELDTYPE_MAX
+} shieldTypes_t;
+
+typedef enum
+{
 	IPT_ADD,		// Added an item to the inventory
 	IPT_REM,		// Removed an item from the inventory
 	IPT_ADDACI,		// Added an item to the inventory (and it is being forced to the ACI)

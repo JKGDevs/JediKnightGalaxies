@@ -1171,11 +1171,13 @@
 	//Item Preview
 	//=======================================
 	//Data that gets hidden when no item is selected
+
+	//icon
 	itemDef
 	{
 		name                shop_previewIcon
 		group               shop_preview
-		rect		360 79 175 175
+		rect				360 79 175 175
 		forecolor           1 1 1 1
 		ownerdraw			1059
 		visible				1
@@ -1183,6 +1185,7 @@
 	}
 		
 	//Stuff that is always drawn
+	//icon glow
 	itemDef
 	{
 		name                shop_overlayPreview
@@ -1214,11 +1217,12 @@
 	}
 
 	// Description lines
+	// (Warning: inventory can only display 23 lines, shop has 45 lines it can display)
 	itemDef
 	{
 		name		inv_desc0
 		group		shop_preview
-		rect		350 265 160 20
+		rect		348 259 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1234,7 +1238,7 @@
 	{
 		name		inv_desc1
 		group		shop_preview
-		rect		350 271 160 20
+		rect		348 265 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1250,7 +1254,7 @@
 	{
 		name		inv_desc2
 		group		shop_preview
-		rect		350 277 160 20
+		rect		348 271 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1266,7 +1270,7 @@
 	{
 		name		inv_desc3
 		group		shop_preview
-		rect		350 283 160 20
+		rect		348 277 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1282,7 +1286,7 @@
 	{
 		name		inv_desc4
 		group		shop_preview
-		rect		350 289 160 20
+		rect		348 283 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1298,7 +1302,7 @@
 	{
 		name		inv_desc5
 		group		shop_preview
-		rect		350 295 160 20
+		rect		348 289 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1314,7 +1318,7 @@
 	{
 		name		inv_desc6
 		group		shop_preview
-		rect		350 301 160 20
+		rect		348 295 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1330,7 +1334,7 @@
 	{
 		name		inv_desc7
 		group		shop_preview
-		rect		350 307 160 20
+		rect		348 301 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1346,7 +1350,7 @@
 	{
 		name		inv_desc8
 		group		shop_preview
-		rect		350 313 160 20
+		rect		348 307 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1362,7 +1366,7 @@
 	{
 		name		inv_desc9
 		group		shop_preview
-		rect		350 319 160 20
+		rect		348 313 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1378,7 +1382,7 @@
 	{
 		name		inv_desc10
 		group		shop_preview
-		rect		350 325 160 20
+		rect		348 319 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1394,7 +1398,7 @@
 	{
 		name		inv_desc11
 		group		shop_preview
-		rect		350 331 160 20
+		rect		348 325 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1410,7 +1414,7 @@
 	{
 		name		inv_desc12
 		group		shop_preview
-		rect		350 337 160 20
+		rect		348 331 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1426,7 +1430,7 @@
 	{
 		name		inv_desc13
 		group		shop_preview
-		rect		350 343 160 20
+		rect		348 337 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1442,7 +1446,7 @@
 	{
 		name		inv_desc14
 		group		shop_preview
-		rect		350 349 160 20
+		rect		348 343 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1458,7 +1462,7 @@
 	{
 		name		inv_desc15
 		group		shop_preview
-		rect		350 355 160 20
+		rect		348 349 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1474,7 +1478,7 @@
 	{
 		name		inv_desc16
 		group		shop_preview
-		rect		350 361 160 20
+		rect		348 355 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1490,7 +1494,7 @@
 	{
 		name		inv_desc17
 		group		shop_preview
-		rect		350 367 160 20
+		rect		348 361 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1506,7 +1510,7 @@
 	{
 		name		inv_desc18
 		group		shop_preview
-		rect		350 373 160 20
+		rect		348 367 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1522,7 +1526,7 @@
 	{
 		name		inv_desc19
 		group		shop_preview
-		rect		350 379 160 20
+		rect		348 373 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1538,7 +1542,7 @@
 	{
 		name		inv_desc20
 		group		shop_preview
-		rect		350 385 160 20
+		rect		348 379 160 20
 		style		1
 		text		""
 		textalign	ITEM_ALIGN_LEFT
@@ -1548,6 +1552,54 @@
 		visible		1
 		ownerdraw	1058
 		ownerdrawid	20
+		decoration
+	}
+	itemDef
+	{
+		name		inv_desc21
+		group		shop_preview
+		rect		348 385 160 20
+		style		1
+		text		""
+		textalign	ITEM_ALIGN_LEFT
+		font		5
+		textscale	0.35
+		forecolor	1 1 1 1
+		visible		1
+		ownerdraw	1058
+		ownerdrawid	21
+		decoration
+	}
+	itemDef
+	{
+		name		inv_desc22
+		group		shop_preview
+		rect		348 391 160 20
+		style		1
+		text		""
+		textalign	ITEM_ALIGN_LEFT
+		font		5
+		textscale	0.35
+		forecolor	1 1 1 1
+		visible		1
+		ownerdraw	1058
+		ownerdrawid	22
+		decoration
+	}
+	itemDef
+	{
+		name		inv_desc23
+		group		shop_preview
+		rect		348 397 160 20
+		style		1
+		text		""
+		textalign	ITEM_ALIGN_LEFT
+		font		5
+		textscale	0.35
+		forecolor	1 1 1 1
+		visible		1
+		ownerdraw	1058
+		ownerdrawid	23
 		decoration
 	}
 		

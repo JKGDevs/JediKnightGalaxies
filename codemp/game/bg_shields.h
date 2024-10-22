@@ -16,7 +16,7 @@
 
 struct shieldData_t {
 	char	ref[MAX_QPATH];		// The name of this shield (internal name, for referencing)
-
+	int type;		//type of shield, eg: standard, abnormal, ray, etc.
 	int capacity;	// Total amount that the shield can absorb
 	int cooldown;	// Time between when we received a hit and when the shield will start recharging
 	int regenrate;	// Time (ms) it takes to recharge one shield unit

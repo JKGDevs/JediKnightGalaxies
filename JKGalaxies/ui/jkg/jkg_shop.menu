@@ -2513,11 +2513,12 @@
 
 		// The descripton, for the examine menu
 		// Description lines
+		// (Warning: inventory can only display 23 lines, shop has 45 lines it can display)
 		itemDef
 		{
 			name		inv_desc0
 			group		shop_examine
-			rect		110 90 160 20
+			rect		108 90 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2533,7 +2534,7 @@
 		{
 			name		inv_desc1
 			group		shop_examine
-			rect		110 96 160 20
+			rect		108 96 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2549,7 +2550,7 @@
 		{
 			name		inv_desc2
 			group		shop_examine
-			rect		110 102 160 20
+			rect		108 102 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2565,7 +2566,7 @@
 		{
 			name		inv_desc3
 			group		shop_examine
-			rect		110 108 160 20
+			rect		108 108 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2581,7 +2582,7 @@
 		{
 			name		inv_desc4
 			group		shop_examine
-			rect		110 114 160 20
+			rect		108 114 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2597,7 +2598,7 @@
 		{
 			name		inv_desc5
 			group		shop_examine
-			rect		110 120 160 20
+			rect		108 120 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2613,7 +2614,7 @@
 		{
 			name		inv_desc6
 			group		shop_examine
-			rect		110 126 160 20
+			rect		108 126 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2629,7 +2630,7 @@
 		{
 			name		inv_desc7
 			group		shop_examine
-			rect		110 132 160 20
+			rect		108 132 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2645,7 +2646,7 @@
 		{
 			name		inv_desc8
 			group		shop_examine
-			rect		110 138 160 20
+			rect		108 138 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2661,7 +2662,7 @@
 		{
 			name		inv_desc9
 			group		shop_examine
-			rect		110 144 160 20
+			rect		108 144 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2677,7 +2678,7 @@
 		{
 			name		inv_desc10
 			group		shop_examine
-			rect		110 150 160 20
+			rect		108 150 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2693,7 +2694,7 @@
 		{
 			name		inv_desc11
 			group		shop_examine
-			rect		110 156 160 20
+			rect		108 156 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2709,7 +2710,7 @@
 		{
 			name		inv_desc12
 			group		shop_examine
-			rect		110 162 160 20
+			rect		108 162 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2725,7 +2726,7 @@
 		{
 			name		inv_desc13
 			group		shop_examine
-			rect		110 168 160 20
+			rect		108 168 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2741,7 +2742,7 @@
 		{
 			name		inv_desc14
 			group		shop_examine
-			rect		110 174 160 20
+			rect		108 174 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2757,7 +2758,7 @@
 		{
 			name		inv_desc15
 			group		shop_examine
-			rect		110 180 160 20
+			rect		108 180 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2773,7 +2774,7 @@
 		{
 			name		inv_desc16
 			group		shop_examine
-			rect		110 186 160 20
+			rect		108 186 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2789,7 +2790,7 @@
 		{
 			name		inv_desc17
 			group		shop_examine
-			rect		110 192 160 20
+			rect		108 192 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2805,7 +2806,7 @@
 		{
 			name		inv_desc18
 			group		shop_examine
-			rect		110 198 160 20
+			rect		108 198 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2821,7 +2822,7 @@
 		{
 			name		inv_desc19
 			group		shop_examine
-			rect		110 204 160 20
+			rect		108 204 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2837,7 +2838,7 @@
 		{
 			name		inv_desc20
 			group		shop_examine
-			rect		110 210 160 20
+			rect		108 210 160 20
 			style		1
 			text		""
 			textalign	ITEM_ALIGN_LEFT
@@ -2847,6 +2848,390 @@
 			visible		0
 			ownerdraw	1098
 			ownerdrawid	20
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc21
+			group		shop_examine
+			rect		108 216 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	21
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc22
+			group		shop_examine
+			rect		108 222 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	22
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc23
+			group		shop_examine
+			rect		108 228 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	23
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc24
+			group		shop_examine
+			rect		108 234 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	24
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc25
+			group		shop_examine
+			rect		108 240 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	25
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc26
+			group		shop_examine
+			rect		108 246 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	26
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc27
+			group		shop_examine
+			rect		108 252 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	27
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc28
+			group		shop_examine
+			rect		108 258 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	28
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc29
+			group		shop_examine
+			rect		108 264 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	29
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc30
+			group		shop_examine
+			rect		108 270 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	30
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc31
+			group		shop_examine
+			rect		108 276 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	31
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc32
+			group		shop_examine
+			rect		108 282 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	32
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc33
+			group		shop_examine
+			rect		108 288 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	33
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc34
+			group		shop_examine
+			rect		108 294 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	34
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc35
+			group		shop_examine
+			rect		108 300 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	35
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc36
+			group		shop_examine
+			rect		108 306 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	36
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc37
+			group		shop_examine
+			rect		108 312 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	37
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc38
+			group		shop_examine
+			rect		108 318 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	38
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc39
+			group		shop_examine
+			rect		108 324 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	39
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc40
+			group		shop_examine
+			rect		108 330 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	40
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc41
+			group		shop_examine
+			rect		108 330 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	41
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc42
+			group		shop_examine
+			rect		108 336 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	42
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc43
+			group		shop_examine
+			rect		108 342 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	43
+			decoration
+		}
+		itemDef
+		{
+			name		inv_desc44
+			group		shop_examine
+			rect		108 348 160 20
+			style		1
+			text		""
+			textalign	ITEM_ALIGN_LEFT
+			font		5
+			textscale	0.35
+			forecolor	1 1 1 1
+			visible		0
+			ownerdraw	1098
+			ownerdrawid	44
 			decoration
 		}
 

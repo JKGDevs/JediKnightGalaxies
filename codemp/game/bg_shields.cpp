@@ -136,6 +136,19 @@ static qboolean JKG_ParseShieldData(char* buffer, const char* fileName, shieldDa
 			Com_Printf(S_COLOR_ORANGE "%s has invalid allowedMODs data that has been ignored.\n", fileName);
 	}
 
+	//if no overrides, we have a standard shield
+	if (shieldData.blockedMODs.size() < 1 && shieldData.allowedMODs.size() < 1)
+	{
+		shieldData.type = SHIELDTYPE_STD;
+	}
+	//abnormal shield
+	else
+	{
+		shieldData.type = SHIELDTYPE_ABN;
+
+		//todo: add more shield types here based on blocked/allowed configs?
+	}
+
 	cJSON_Delete(json);
 	return qtrue;
 }

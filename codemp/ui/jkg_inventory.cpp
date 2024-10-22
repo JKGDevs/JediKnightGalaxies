@@ -6,6 +6,7 @@ static std::vector<std::pair<int, itemInstance_t*>> pItems;	// list of items
 static int nPosition = 0;					// position in the item list (changed with arrow buttons)
 static int nSelected = -1;					// selected item in the list (-1 for no selection)
 static std::vector<std::string> vItemDescLines;	// item description
+const int MAX_LENGTH_INV_LINE = 40; //max length of a line in the inventory/shop description
 
 
 void JKG_ConstructInventoryList() {
@@ -276,6 +277,18 @@ const char* JKG_GetArmorSlotString(armorData_t* pData) {
 	return "";
 }
 
+const char* JKG_GetShieldTypeString(shieldData_t* pData) {
+	switch (pData->type) {
+	case SHIELDTYPE_UNKNOWN:
+		return UI_GetStringEdString3("@JKG_INVENTORY_SHIELD_UNKNOWN");
+	case SHIELDTYPE_STD:
+		return UI_GetStringEdString3("@JKG_INVENTORY_SHIELD_STANDARD");
+	case SHIELDTYPE_ABN:
+		return UI_GetStringEdString3("@JKG_INVENTORY_SHIELD_ABNORMAL");
+	}
+	return "";
+}
+
 // Create a jetpack item's description
 static void JKG_ConstructJetpackDescription(itemInstance_t* pItem, std::vector<std::string>& vDescLines) {
 	// Jetpack
@@ -310,8 +323,10 @@ static void JKG_ConstructShieldDescription(itemInstance_t* pItem, std::vector<st
 	std::string typeDescription = "";
 	typeDescription = UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TYPE");
 	typeDescription = typeDescription + UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_SHIELD");
-
 	vDescLines.push_back(typeDescription);
+	typeDescription = va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_TYPE"), JKG_GetShieldTypeString(pItem->id->shieldData.pShieldData));
+	vDescLines.push_back(typeDescription);
+
 	JKG_ConstructItemTierDescription(pItem->id->itemTier, vDescLines);
 	if (pItem->id->weight > 0.0f)
 	{
@@ -320,6 +335,76 @@ static void JKG_ConstructShieldDescription(itemInstance_t* pItem, std::vector<st
 	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_CAPACITY"), pItem->id->shieldData.pShieldData->capacity));
 	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_RECHARGE"), pItem->id->shieldData.pShieldData->cooldown / 1000.0f));
 	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_REGEN"), 1000.0f / pItem->id->shieldData.pShieldData->regenrate));
+
+	//we have shield overrides, show them
+	if(pItem->id->shieldData.pShieldData->type == SHIELDTYPE_ABN)
+	{ 
+		meansOfDamage_t* means;
+
+		//list blocked MODs
+		if (pItem->id->shieldData.pShieldData->blockedMODs.size() > 0)
+		{
+			std::string list = UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_BLOCKS");
+			for (int i = 0; i < pItem->id->shieldData.pShieldData->blockedMODs.size(); i++)
+			{
+				means = JKG_GetMeansOfDamage(pItem->id->shieldData.pShieldData->blockedMODs.at(i));
+				list += va(UI_GetStringEdString2(means->inventoryName));
+
+				if (i == pItem->id->shieldData.pShieldData->blockedMODs.size() - 1)
+					list += " ";
+				else
+					list += ", ";
+
+				if (list.size() < MAX_LENGTH_INV_LINE-2) //still room on the line
+				{
+					if (i == pItem->id->shieldData.pShieldData->blockedMODs.size() - 1)
+					{
+						vDescLines.push_back(list);
+						list.clear();
+					}
+					else
+						continue;
+				}
+				else
+				{
+					vDescLines.push_back(list);
+					list.clear();
+				}
+			}
+		}
+
+		//list allowed MODs
+		if (pItem->id->shieldData.pShieldData->allowedMODs.size() > 0)
+		{
+			std::string list = UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_ALLOWS");
+			for (int i = 0; i < pItem->id->shieldData.pShieldData->allowedMODs.size(); i++)
+			{
+				means = JKG_GetMeansOfDamage(pItem->id->shieldData.pShieldData->allowedMODs.at(i));
+				list += va(UI_GetStringEdString2(means->inventoryName));
+
+				if (i == pItem->id->shieldData.pShieldData->allowedMODs.size() - 1)
+					list += " ";
+				else
+					list += ", ";
+
+				if (list.size() < MAX_LENGTH_INV_LINE-2) //still room on the line
+				{
+					if (i == pItem->id->shieldData.pShieldData->allowedMODs.size() - 1)
+					{
+						vDescLines.push_back(list);
+						list.clear();
+					}
+					else
+						continue;
+				}
+				else
+				{
+					vDescLines.push_back(list);
+					list.clear();
+				}
+			}
+		}
+	}
 }
 
 // Create an armor item's description
@@ -595,7 +680,7 @@ static void JKG_ConstructFiringModeDescription(weaponData_t* pWP, int firemode, 
 			(int)pFM->rangeSplash, JKG_UnitsToFeet(pFM->rangeSplash), JKG_UnitsToMeters(pFM->rangeSplash)));
 	}
 
-	vDescLines.push_back(""); // Add a blank line at the end because formatting is good (TM)
+	//vDescLines.push_back(""); // Add a blank line at the end because formatting is good (TM)
 }
 
 // Create a weapon item's description
@@ -729,7 +814,6 @@ static void JKG_ConstructConsumableDescription(itemInstance_t* pItem, std::vecto
 	std::string typeDescription = "";
 	typeDescription = UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TYPE");
 	typeDescription = typeDescription + UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_CONSUMABLE");
-
 	vDescLines.push_back(typeDescription);
 	JKG_ConstructItemTierDescription(pItem->id->itemTier, vDescLines);
 	if (pItem->id->weight > 0.0f)
@@ -742,8 +826,7 @@ static void JKG_ConstructConsumableDescription(itemInstance_t* pItem, std::vecto
 void JKG_SplitDescriptionLines(const std::string& info, std::vector<std::string>& vDescLines)
 {
 	//these 'consts' might need to be calculated based on inventory width of the current screen
-	const int MAXLENGTH = 39; //max length of a line
-	const int MAXFIRSTLINE = MAXLENGTH - 6; //max length with "info: " preceeding the text
+	const int MAXFIRSTLINE = MAX_LENGTH_INV_LINE - 6; //max length with "info: " preceeding the text
 	bool multiline = true;	//for determing if we need to handle multiple lines of description or a single line
 
 	std::string s = removeExtraSpacesInString(info); //clean up extra spaces
@@ -779,7 +862,7 @@ void JKG_SplitDescriptionLines(const std::string& info, std::vector<std::string>
 		{
 
 			//if it is the last line
-			if ((length - MAXLENGTH) < 1)
+			if ((length - MAX_LENGTH_INV_LINE) < 1)
 			{
 				vDescLines.push_back(s.substr(start, s.length()).c_str());
 				break;
@@ -787,24 +870,24 @@ void JKG_SplitDescriptionLines(const std::string& info, std::vector<std::string>
 			else
 			{
 				//find the last space in the string
-				std::string line = s.substr(start, MAXLENGTH);
+				std::string line = s.substr(start, MAX_LENGTH_INV_LINE);
 				int last_space = findLastSpaceInString(line);
 
 				//string ends in a space, put the whole line up
 				if (last_space == line.length() - 1)
 				{
-					vDescLines.push_back(s.substr(start, MAXLENGTH).c_str());
-					start = start + MAXLENGTH;
-					length = length - MAXLENGTH;
+					vDescLines.push_back(s.substr(start, MAX_LENGTH_INV_LINE).c_str());
+					start = start + MAX_LENGTH_INV_LINE;
+					length = length - MAX_LENGTH_INV_LINE;
 				}
 
 				//no spaces in string, break it up with a dash
 				else if (last_space == -1)
 				{
-					vDescLines.push_back((s.substr(start, MAXLENGTH) + "-").c_str());
+					vDescLines.push_back((s.substr(start, MAX_LENGTH_INV_LINE) + "-").c_str());
 
-					start = start + MAXLENGTH;
-					length = length - MAXLENGTH;
+					start = start + MAX_LENGTH_INV_LINE;
+					length = length - MAX_LENGTH_INV_LINE;
 				}
 
 				//go until the last word
@@ -830,27 +913,27 @@ void JKG_ConstructItemDescription(itemInstance_t* pItem, std::vector<std::string
 
 	switch (pItem->id->itemType) {
 		case ITEM_JETPACK:
-			JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			JKG_ConstructJetpackDescription(pItem, vDescLines);
+			JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			break;
 		case ITEM_SHIELD:
-			JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			JKG_ConstructShieldDescription(pItem, vDescLines);
+			JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			break;
 		case ITEM_ARMOR:
-			JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			JKG_ConstructArmorDescription(pItem, vDescLines);
+			JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			break;
 		case ITEM_WEAPON:
-			JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			JKG_ConstructWeaponDescription(pItem, vDescLines);
+			JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			break;
 		case ITEM_AMMO:
 			JKG_ConstructAmmoDescription(pItem, vDescLines);
 			break;
 		case ITEM_TOOL:
-			JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			JKG_ConstructToolDescription(pItem, vDescLines);
+			JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			break;
 		case ITEM_CONSUMABLE:
 			JKG_ConstructConsumableDescription(pItem, vDescLines);

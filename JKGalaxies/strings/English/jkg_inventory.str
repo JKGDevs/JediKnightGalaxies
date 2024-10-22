@@ -274,11 +274,29 @@ LANG_ENGLISH		"Maximum Stamina: -%i"
 REFERENCE       ARM_FILTER
 LANG_ENGLISH    "Filters toxins."
 
-REFERENCE	ARM_ANTITOXIN
+REFERENCE	    ARM_ANTITOXIN
 LANG_ENGLISH	"Removes toxins."
 
-REFERENCE	ARM_RESISTANCES
+REFERENCE	    ARM_RESISTANCES
 LANG_ENGLISH	"Resistances: "
+
+REFERENCE       SHIELD_TYPE
+LANG_ENGLISH    "Shield Type: %s"
+
+REFERENCE       SHIELD_BLOCKS
+LANG_ENGLISH    "Shield Blocks[+]: "
+
+REFERENCE       SHIELD_ALLOWS
+LANG_ENGLISH    "Shield Ignores[-]: "
+
+REFERENCE       SHIELD_UNKNOWN
+LANG_ENGLISH    "??? Unknown Make"
+
+REFERENCE       SHIELD_STANDARD
+LANG_ENGLISH    "Standard"
+
+REFERENCE       SHIELD_ABNORMAL
+LANG_ENGLISH    "Abnormal"
 
 REFERENCE		WEP_DAMAGE
 LANG_ENGLISH		"Damage: %i (%s)"
@@ -360,6 +378,9 @@ LANG_ENGLISH		"pulse"
 
 REFERENCE		MOD_ION
 LANG_ENGLISH		"ion"
+
+REFERENCE       MOD_IONBLASTER
+LANG_ENGLISH        "ionblaster"
 
 REFERENCE		MOD_ELECTRICAL
 LANG_ENGLISH		"electrical"
@@ -517,7 +538,7 @@ NOTES			For vertical recoil above 3.0
 LANG_ENGLISH		"Recoil: Intense"
 
 REFERENCE		EXPLANATION_ELECTRIC
-LANG_ENGLISH		"Electric Damage. Medium damage towards organic targets and armor, high damage towards droids and shields."
+LANG_ENGLISH		"Electric Damage. Weak against armor, moderate against organics, strong against droids and shields."
 
 REFERENCE		EXPLANATION_EXPLOSIVE
 LANG_ENGLISH		"Deals damage in a radius."
@@ -532,31 +553,34 @@ REFERENCE		EXPLANATION_STUN
 LANG_ENGLISH		"Has a chance to stun the target."
 
 REFERENCE		EXPLANATION_CARBONITE
-LANG_ENGLISH		"Has a chance to encase the target in carbonite."
+LANG_ENGLISH		"Has a chance to encase the target in carbonite.  Targets are unable to move while encased, but are resistant against all damage."
 
 REFERENCE		EXPLANATION_BLASTER
-LANG_ENGLISH		"Blaster damage. Well rounded damage, with a weakness towards shields."
+LANG_ENGLISH		"Blaster damage. Well rounded damage."
 
 REFERENCE		EXPLANATION_SLUG
-LANG_ENGLISH		"Slug damage. Highly effective against organic targets, and penetrates shields. However, it is weak against armor and droids."
+LANG_ENGLISH		"Slug damage. Highly effective against organic targets, and bypasses most shields. However, it is weak against armor and droids."
 
 REFERENCE		EXPLANATION_ACP
-LANG_ENGLISH		"ACP damage. Effective against shields and organic targets, weak against electrical systems and armor."
+LANG_ENGLISH		"ACP damage. Moderate against shields and organic targets, weak against droids and armor. Partially bypasses shields."
 
 REFERENCE		EXPLANATION_PULSE
-LANG_ENGLISH		"Pulse damage. Completely ignores armor, but relatively ineffective towards shields. Moderately effective against organic targets."
+LANG_ENGLISH		"Pulse damage. Bypasses armor, but ineffective against shields. Moderately effective against organic targets."
 
 REFERENCE		EXPLANATION_ION
-LANG_ENGLISH		"Ion damage. Completely ignores most armor, and extremely strong against shields. Very weak against organic targets."
+LANG_ENGLISH		"Ion damage. Bypasses armor, strong against shields and droids. Very weak against organic targets."
+
+REFERENCE       EXPLANATION_IONBLASTER
+LANG_ENGLISH        "Ionized blaster damage.  Blends blaster damage with Ion. Less effective against droids and shields, but stronger against organic targets than regular Ion."
 
 REFERENCE		EXPLANATION_SONIC
 LANG_ENGLISH		"Sonic damage. Somewhat effective against armor, shields, and organic targets. Ineffective against droids."
 
 REFERENCE		EXPLANATION_DISRUPTOR
-LANG_ENGLISH		"Disruptor damage. Well rounded damage, with a weakness towards shields. Can cause disintegrations."
+LANG_ENGLISH		"Disruptor damage. Strong against organic targets and armor, ineffective against shields. Can cause disintegrations."
 
 REFERENCE		EXPLANATION_QUARREL
-LANG_ENGLISH		"Quarrel damage. Well rounded damage, can impale enemies."
+LANG_ENGLISH		"Quarrel damage. Strong against armor, ineffective against shields, can dismember enemies."
 
 REFERENCE     		WEAPON_STATS
 LANG_ENGLISH  		"Weapon Stats"
