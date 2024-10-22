@@ -149,6 +149,8 @@ static qboolean JKG_ParseShieldData(char* buffer, const char* fileName, shieldDa
 		//todo: add more shield types here based on blocked/allowed configs?
 	}
 
+	//todo: add visuals and activation powers
+
 	cJSON_Delete(json);
 	return qtrue;
 }

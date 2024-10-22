@@ -8,12 +8,13 @@ Jedi Knight Galaxies is easily the most moddable mod for Jedi Academy in existen
 2. Understanding treasure classes
 3. Global tables
 4. Item fields
-5. Armor fields
-6. Weapon fields
-7. Ammo fields
-8. Jetpack fields
-9. Teams ("Gang Wars") fields
-10. Lightsabers - Hilts and Stances
+5. Shield fields
+6. Armor fields
+7. Weapon fields
+8. Ammo fields
+9. Jetpack fields
+10. Teams ("Gang Wars") fields
+11. Lightsabers - Hilts and Stances
 
 
 ## UNDERSTANDING THE DATA STRUCTURES
@@ -243,17 +244,26 @@ The following contains information specific to CONSUMABLE items:
  - bingeable (boolean, default false): if set to true, the item can ignore the cooldown for consumables
 
 The following contains information specific to SHIELD items:
+ - shield (string): The reference to the shield.  (Note: most shield functions have now been moved to their own file as of 10/22/2024)
 
- - capacity (integer, default 25): How much shield this item has when equipped
+
+The following contains information specific to JETPACK items:
+
+ - jetpack (string): The reference to the jetpack
+
+
+##SHIELD FIELDS
+Each .shield file contains data for one shield.  They may contain the following fields:
+ - ref (string): The internal name of this armor.
+ - capacity (integer, default 25): How much shield this item has when equipped.
  - cooldown (integer, default 10000): How long, in milliseconds, between the last time the shield was hit and when it will start recharging.
  - regenrate (integer, default 100): How long, in milliseconds, it takes for the shield to recharge one unit.
  - rechargeSoundEffect (string): The sound effect that is played when the shield starts recharging.
  - brokenSoundEffect (string): The sound effect that is played when the shield loses all of its charge
  - equippedSoundEffect (string): The sound effect that is played when the shield is equipped to the ACI.
-
-The following contains information specific to JETPACK items:
-
- - jetpack (string): The reference to the jetpack
+ - malfunctionSoundEffect (string): The sound effect that is played when the shield malfunctions (not yet implemented).
+ - blockedMODs (array of strings): List of means of damage (eg: ["MOD_SLUGTHROWER", "MOD_BLEEDING"]) this shield can block in addition to standard means of damage types.
+ - allowedMODs (array of strings): List of means of damage (eg: ["MOD_BLASTER", "MOD_ION"]) this shield is no longer able to protect from.
 
 
 ## ARMOR FIELDS
