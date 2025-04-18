@@ -1491,7 +1491,7 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 
 		itemData->shieldData.pShieldData = JKG_FindShieldByName(itemData->shieldData.ref);
 		if (itemData->shieldData.pShieldData == nullptr) {
-			Com_Printf(S_COLOR_YELLOW "WARNING: %s is a shield, but doesn't have a valid reference to a .shd file!\n", itemFilePath);
+			Com_Printf(S_COLOR_YELLOW "WARNING: %s is a shield, but doesn't have a valid reference to a .shield file!\n", itemFilePath);
 		}
 	}
 	else if (itemData->itemType == ITEM_JETPACK) {

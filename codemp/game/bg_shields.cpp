@@ -149,6 +149,12 @@ static qboolean JKG_ParseShieldData(char* buffer, const char* fileName, shieldDa
 		Q_strncpyz(shieldData.malfunctionSoundEffect, cJSON_ToString(jsonNode), MAX_QPATH);
 	}
 
+	jsonNode = cJSON_GetObjectItem(json, "overloadScript");
+	if(jsonNode)
+	{
+		Q_strncpyz(shieldData.overloadScript, cJSON_ToString(jsonNode), MAX_QPATH);
+	}
+
 	jsonNode = cJSON_GetObjectItem(json, "blockedMODs");
 	if (jsonNode) {
 		if (!JKG_ParseShieldOverrideTypes(jsonNode, shieldData, shieldData.blockedMODs))
@@ -176,6 +182,8 @@ static qboolean JKG_ParseShieldData(char* buffer, const char* fileName, shieldDa
 	{
 		//what does the shield do when you use ACI key to activate it?
 	}
+
+
 	
 	//todo: add visuals
 

@@ -26,6 +26,7 @@ struct shieldData_t {
 	char equippedSoundEffect[MAX_QPATH];	// Sound that plays once the shield is equipped
 	char chargedSoundEffect[MAX_QPATH];		// Sound that plays once a shield is finished charging
 	char malfunctionSoundEffect[MAX_QPATH];	// Sound that plays if the shield has malfunctioned --futuza: to be added later
+	char overloadScript[MAX_QPATH];			// What lua script to execute if the shield is overloaded
 
 	qboolean standard;						// does this shield offer standard protection?
 	std::vector<int> blockedMODs;			// what MODs the shield is a barrier to, if .size() < 1 then it has default types

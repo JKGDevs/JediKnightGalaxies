@@ -2542,23 +2542,35 @@ void ShieldHitEffect(gentity_t* targ, vec3_t dir, int take)
 		targ->client->shieldRechargeLast = targ->client->shieldRegenLast = level.time;
 		targ->client->shieldRecharging = qfalse;
 
-		// Break the shield if it's dead
+		// Break the shield if it's dead (overloaded)
 		if (targ->client->ps.stats[STAT_SHIELD] <= 0) {
 			gentity_t* evEnt2;
 			evEnt2 = G_TempEntity(targ->r.currentOrigin, EV_SHIELD_BROKEN);
 			evEnt2->s.otherEntityNum = targ->s.number;
 
+			itemShieldData_t shdInfo;
 			// Play the sound on the server, since clients don't know about other clients's inventories
 			for (auto it = targ->inventory->begin(); it != targ->inventory->end(); ++it) {
 				if (it->equipped && it->id->itemType == ITEM_SHIELD) {
-					if (it->id->shieldData.pShieldData->brokenSoundEffect[0]) {
-						G_Sound(targ, CHAN_AUTO, G_SoundIndex(it->id->shieldData.pShieldData->brokenSoundEffect));
+					shdInfo = it->id->shieldData; //grab this for later
+					if (shdInfo.pShieldData->brokenSoundEffect[0]) {
+						G_Sound(targ, CHAN_AUTO, G_SoundIndex(shdInfo.pShieldData->brokenSoundEffect));
 					}
+				}
+			}
+
+			//other overload effects
+			if(targ->client->shieldEquipped)
+			{
+				if(shdInfo.pShieldData->overloadScript != "")
+				{
+					GLua_ShieldOverloadScript(targ, shdInfo.pShieldData);
 				}
 			}
 		}
 	}
 }
+
 
 /*
  *	Applies knockback to the target as a result of damage
