@@ -109,7 +109,7 @@ int GLua_Hook_SelectSpawn(int clientNum, gentity_t **spawnpoint, int team, vec3_
 int GLua_Hook_SelectSpectatorSpawn(int clientNum, gentity_t **spawnpoint, vec3_t spawnorigin, vec3_t spawnangles);
 // Items
 void GLua_ConsumeItem(gentity_t* consumer, itemInstance_t* item);
-void GLua_ShieldOverloadScript(gentity_t* player, shieldData_t* shd);
+void GLua_ShieldOverloadScript(gentity_t* player, itemShieldData_t* shd);
 
 // ---
 void GLua_Run(const char *line);

@@ -31,7 +31,7 @@ enum {
 	GLUA_SPAWNNPC,
 	GLUA_CALLNPCFUNC,
 	GLUA_CONSUMEITEM,
-	//GLUA_SHIELDOVERLOAD,
+	GLUA_SHIELDOVERLOAD,
 	GLUA_MAX,
 };
 
@@ -268,7 +268,7 @@ void GLua_Init() {
 	GLua_Framework[GLUA_CALLNPCFUNC] = GLua_GetFrameworkRef(L, "npcmanager" , "CallNPCFunc");
 
 	GLua_Framework[GLUA_CONSUMEITEM] = GLua_GetFrameworkRef(L, "items", "ConsumeItem");
-	//GLua_Framework[GLUA_SHIELDOVERLOAD] = GLua_GetFrameworkRef(L, "items", "ShieldOverloadScript");
+	GLua_Framework[GLUA_SHIELDOVERLOAD] = GLua_GetFrameworkRef(L, "shields", "ShieldOverloadScript");
 
 	// Validate framework state
 	for (i=0; i<GLUA_MAX; i++) {
@@ -393,16 +393,15 @@ void GLua_ConsumeItem(gentity_t* consumer, itemInstance_t* item) {
 	return;
 }
 
-void GLua_ShieldOverloadScript(gentity_t* player, shieldData_t* shd)
+void GLua_ShieldOverloadScript(gentity_t* player, itemShieldData_t* shd)
 {
 	STACKGUARD_INIT(LuaInstance);
 	lua_State* L = LuaInstance;
 	if (!L) return;
-	lua_rawgeti(L, LUA_REGISTRYINDEX, GLua_Framework[GLUA_CONSUMEITEM]);
+	lua_rawgeti(L, LUA_REGISTRYINDEX, GLua_Framework[GLUA_SHIELDOVERLOAD]);
 	GLua_PushPlayer(L, player->s.number);
-	lua_pushstring(L, shd->overloadScript);
-	//lua_pushinteger(L, player->quantity);
-	if (lua_pcall(L, 3, 0, 0)) {
+	lua_pushstring(L, shd->pShieldData->overloadScript);
+	if (lua_pcall(L, 2, 0, 0)) {
 		trap->Print("GLua: Error occurred in GLua_ShieldOverloadScript: %s\n", lua_tostring(L, -1));
 		lua_pop(L, 1);
 	}

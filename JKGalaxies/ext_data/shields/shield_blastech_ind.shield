@@ -18,5 +18,6 @@
 	"regenrate":	1500,
 
 	"brokenSoundEffect":	"sound/shield/shield_broken",
-	"equippedSoundEffect":	"sound/shield/shield_equipped2"
+	"equippedSoundEffect":	"sound/shield/shield_equipped2",
+	"overloadScript":	"shield_radiation_chance"
 }

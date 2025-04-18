@@ -2548,13 +2548,13 @@ void ShieldHitEffect(gentity_t* targ, vec3_t dir, int take)
 			evEnt2 = G_TempEntity(targ->r.currentOrigin, EV_SHIELD_BROKEN);
 			evEnt2->s.otherEntityNum = targ->s.number;
 
-			itemShieldData_t shdInfo;
+			itemShieldData_t* shdInfo = nullptr;
 			// Play the sound on the server, since clients don't know about other clients's inventories
 			for (auto it = targ->inventory->begin(); it != targ->inventory->end(); ++it) {
 				if (it->equipped && it->id->itemType == ITEM_SHIELD) {
-					shdInfo = it->id->shieldData; //grab this for later
-					if (shdInfo.pShieldData->brokenSoundEffect[0]) {
-						G_Sound(targ, CHAN_AUTO, G_SoundIndex(shdInfo.pShieldData->brokenSoundEffect));
+					shdInfo = &it->id->shieldData; //grab this for later
+					if (shdInfo->pShieldData->brokenSoundEffect[0]) {
+						G_Sound(targ, CHAN_AUTO, G_SoundIndex(shdInfo->pShieldData->brokenSoundEffect));
 					}
 				}
 			}
@@ -2562,9 +2562,9 @@ void ShieldHitEffect(gentity_t* targ, vec3_t dir, int take)
 			//other overload effects
 			if(targ->client->shieldEquipped)
 			{
-				if(shdInfo.pShieldData->overloadScript != "")
+				if(shdInfo->pShieldData->overloadScript != "")
 				{
-					GLua_ShieldOverloadScript(targ, shdInfo.pShieldData);
+					GLua_ShieldOverloadScript(targ, shdInfo);
 				}
 			}
 		}
