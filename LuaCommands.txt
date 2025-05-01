@@ -1,12 +1,13 @@
 Jedi Knight Galaxies Lua API Documentation
 
 Format:
-Arguments are shown as follows: <name>:<type>
+Arguments are shown as follows: <name>(args):<type>
 the :<type> after the function shows the type of the return value (nil means it doesn't return anything)
 If an argument or return value can be of multiple types, they're shown seperated by a /
-Arguments enclosed in [ ] are optional.
+Arguments enclosed in [ ] are optional.  Args are seperated by a comma within a function call ().
+eg: SetAmmo(ammotype:string, amount:number):nil
 
-NOTE: The API is WIP, and therefore subject to change
+NOTE: The API is WIP, and therefore subject to change.
 
 --------------------------------------------------------------------------------------------------------
 
@@ -256,11 +257,15 @@ player:GetTable():table - Returns a table with all variables assigned to this pl
 player:GetID():number - Returns this player's ID.
 player:GetName():string - Returns this player's Name.
 player:GetIP():string - Returns this player's IP in a string. (IP and port)
+player:GetIPPort()
 player:IsValid():bool - Returns whether this player object is valid or not.
 
 player:SendChat(text:string):nil - Shows the specified text in the player's chat area.
+player:SendFadedChat(fadelevel:number, text:string):nil - Send a chat as if from far away (the text is fades out over distance)
 player:SendCenterPrint(text:string):nil - Shows the specified text in the center of the player's screen.
+player:SendCenterPrintAll(text:string):nil - as SendCenterPrint() but for all players on the server
 player:SendPrint(text:string):nil Shows the specified text in the player's console.
+player:SendNotify(text:string):nil sends a notification to a player (these are used for credit increases etc)
 player:SendCommand(command:string):nil - Sends the specified command to the player (CAUTION: The client side must know the command or the client gets errors!)
 
 player:SetPos(position:vector):nil - Moves the player to the specified location (Note: This is not a teleport and moving the player into another player will render them stuck)

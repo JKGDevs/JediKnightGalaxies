@@ -196,6 +196,9 @@
 			"damage": {
 				"multiply": 1.35
 			},
+			"heatGenerated": {
+				"multiply": 1.5
+			},
 			"visuals": {
 				"projectile": {
 					"hit": "Blasters/purple_flesh_impact",
@@ -359,7 +362,7 @@
 		"shortname": "Disintegrating ACP Drums",
 		"longname": "Arakyd Industries Disintegrating ACP Belt Drums",
 		"max": 900,
-		"pricePerUnit": 0.5 //total: 450
+		"pricePerUnit": 0.4 //total: 360
 	},
 
 	"AMMO_FLARE": {

@@ -13,7 +13,6 @@
 		],
 
 		"bodyOffSurfaces": [
-			"head_helmet",
 			"head_com"
 		]
 	}

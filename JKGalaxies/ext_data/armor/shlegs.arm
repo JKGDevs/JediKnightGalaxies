@@ -1,0 +1,45 @@
+{
+	"ref":		"shlegs",
+	"slot":		"legs",
+	"armor":		105,
+	"movemodifier":	0.95,
+
+	"visuals": {
+		"model":	"models/players/shoretrooper/model.glm*default",
+		"modelGroup":	"shoretrooper",
+
+		"armorOnSurfaces": [
+			"hips_legs",
+			"hips_holster",
+			"hips_belt",
+			"hips",
+			"hips_augment"
+		],
+
+		"bodyOffSurfaces": [
+			"hips",
+			"hipsb",
+			"hipsc",
+			"hipsd",
+			"hipse",
+			"hipsf",
+			"hipsg",
+			"hips_lower",
+			"hips_legs",
+			"hips_vest",
+			"l_leg_knee",
+			"r_leg_knee",
+			"hips_holster",
+			"hips_augment",
+			"hips_belt",
+			"hips_l_packlarge",
+			"hips_l_packwide",
+			"hips_lowerarmor",
+			"hips_r_packsmall",
+			"hips_r_strap",
+			"hips_flaps",
+			"hips_torso",
+			"torso_lower"
+		]
+	}
+}

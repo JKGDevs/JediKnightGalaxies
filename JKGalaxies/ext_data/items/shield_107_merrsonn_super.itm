@@ -4,15 +4,6 @@
 	"itemtype":	"shield",
 	"itemIcon":	"gfx/Item_Icons/psd_wrist_m_glow",
 	"cost":		"1900",
-	
-	"capacity":	100,
-	"cooldown":	5000,
-	"regenrate":	143,
-
-	"rechargeSoundEffect":	"sound/shield/shield_recharge2",
-	"brokenSoundEffect":	"sound/shield/shield_broken",
-	"equippedSoundEffect":	"sound/shield/shield_equipped4",
-	"chargedSoundEffect":	"sound/shield/shield_charged2",
-	
-	"itemDescription": "A successor to the Merr-Sonn PSX-1 Portable Shield first used during the Clone Wars era, this superior version while quite costly, is one of the most powerful personal shields available in the Galaxy offering a fast recharge rate and high capacity."
+	"shield": "shield_merrsonn_super",
+	"itemDescription": "A successor to the Merr-Sonn PSX-1 Portable Shield first used during the Clone Wars era, this superior version, while quite costly, is one of the most potent personal shields available in the Galaxy offering a fast recharge rate and high capacity."
 }

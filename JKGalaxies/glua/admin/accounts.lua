@@ -65,7 +65,7 @@ end
 -- Communication (Cyan/^5): Talking with clients, and amongst admins. Can be extremely annoying if spoofed.
 -- Structural (Magenta/^6): Alters the structure of administration, such as dealing with ranks. Not necessarily needed on accounts, but they're there for convenience.
 -- Annoying (Orange/^8): While not necessarily harmful, if used, they can be annoying. Stuff like slap, slay, etc falls into this category.
-
+--  (name, permissiondefault, friendly name, color)
 local function InitPermissions( )
 	AddPermission( "can-changedetails", 		1, "admchangedetails", 		"^3" )
 	AddPermission( "can-addaccounts", 			0, "admnewaccount", 		"^6" )
@@ -569,7 +569,7 @@ end
 local function ChangePassword(ply, argc, argv)
 	if ply.isLoggedIn then
 			if argc ~= 3 then
-				SystemReply(ply, "Syntax: /changepassword <oldpass> <newpass>")
+				SystemReply(ply, "^3Syntax: /changepassword <oldpass> <newpass>")
 			else
 				local accountname = ply:GetAccount()
 				local account = accounts[accountname]
@@ -595,7 +595,7 @@ local function Register(ply, argc, argv)
 	if ply.isLoggedIn then
 		-- We are logged in, so no need to re-log us
 		local account = ply:GetAccount()
-		SystemReply(ply, "^4You are already logged in as ^7" .. account .. "")
+		SystemReply(ply, "^4You are already logged in as ^7" .. account .. ".")
 		return
 	end
 	
@@ -661,7 +661,11 @@ local function Kick(ply, argc, argv)
 			SystemReply(ply, "^5Player " .. target:GetName() .. " ^5has been kicked.")
 			target:Kick(reason)
 			return
+		else
+			SystemReply(ply, "^1You don't have permission to perform this action.")
 		end
+	else
+		SystemReply(ply, "^1You are not logged in.")
 	end
 	chatcmds.Ignore()
 end
@@ -678,7 +682,7 @@ local function ChangeDetails(ply, argc, argv)
 				-- Syntax:
 				-- /admchangedetails password <oldpass> <newpass>
 				if argc ~= 4 then
-					SystemReply(ply, "Syntax: /admchangedetails password <oldpass> <newpass>")
+					SystemReply(ply, "^3Syntax: /admchangedetails password <oldpass> <newpass>")
 				else
 					local accountname = ply:GetAccount()
 					local account = accounts[accountname]
@@ -811,13 +815,15 @@ local function List(ply, argc, argv)
 					while players.GetByID(k) ~= nil do
 						local plysel = players.GetByID(k)
 						if plysel:IsValid() then
+							local plyselname = plysel:GetName()
 							if plysel.isLoggedIn then
-								local plyselname = plysel:GetName()
 								local plyselaccountname = plysel:GetAccount()
 								local plyselaccount = accounts[plyselaccountname]
 								if plyselaccount ~= nil then
-									printstring = printstring .. plysel:GetName() .. " ^7[" .. plyselaccountname .. "--" .. plyselaccount["rank"] .. "], "
+									printstring = printstring .. plysel:GetName() .. " ^7[" .. plyselaccountname .. "^7--" .. plyselaccount["rank"] .. "^7], "
 								end
+							else
+								printstring = printstring .. plysel:GetName() .. "^7[^1Not logged in.^7], "
 							end
 						end
 						k = k + 1
@@ -1340,40 +1346,65 @@ local function teleport(ply, argc, argv)
 		if argc < 2 then
 			local trace = ply:GetEyeTrace()
 			ply:Teleport(trace.EndPos + trace.HitNormal * 25)
-		else
+		end
+
+		if argc == 2 then
+			local target = players.GetByArg(argv[1])
+			if not target then
+				SystemReply(ply,"^1Target player '^7" .. argv[1] .. "^1' " ..  "not found.")
+				return
+			else
+				local trace = ply:GetEyeTrace()
+				target:Teleport(trace.EndPos + trace.HitNormal * 25)
+				return
+			end
+		end
+
+		--teleport admin to a player/client's location (and no clip us)
+		if argc == 3 then
+			local myself = string.lower(argv[1])
+			if myself == "me" then
+				local target = players.GetByArg(argv[2])
+				if not target then
+					SystemReply(ply,"^1Target player '^7" .. argv[2] .. "^1' " ..  "not found.")
+					return
+				else
+					ply.NoClip = true
+					ply:SetPos(target.Origin)
+					ply:SetAngles(target.Angles)
+				end
+			else
+				SystemReply(ply, "^3Syntax: /teleport - self to cursor, /teleport <playername/clientnumber> - target to cursor, /teleport me <playername/clientnumber>, /teleport <playername/clientnumber> <x> <y> <z> <yaw> - target to coords")
+				return
+			end
+		end
+
+		if argc > 3 then
 			local target = players.GetByArg(argv[1])
 			if not target then
 				SystemReply(ply,"^1Target player not found")
 				return
 			end
-			if argc == 2 then
-				local trace = ply:GetEyeTrace()
-				target:Teleport(trace.EndPos + trace.HitNormal * 25)
-				return
-			end
+			local destination = {}
+			local request = table.concat(argv," ",2, argc-1)
 
-			if argc > 2 then
-				local destination = {}
-				local request = table.concat(argv," ",2, argc-1)
-
-				for i in (request .. " "):gmatch("%S+") do
-					if(tonumber(i)) then --make sure it can convert to a number
-						table.insert(destination, tonumber(i))
-					else
-						SystemReply(ply, "^3Syntax: /teleport - self to cursor, /teleport <playername/clientnumber> - target to cursor, /teleport <playername/clientnumber> <x> <y> <z> <yaw> - target to coords")
-						return
-					end
-				end
-
-				if tablelength(destination) == 4 then --check to make sure table is appropriate length
-					target:SetPos(Vector( tostring(destination[1]) .. " " .. tostring(destination[2]) .. " " .. tostring(destination[3]) ))
-					target:SetAngles(Vector("0 " .. tostring(destination[4]) .. " 0"))
+			for i in (request .. " "):gmatch("%S+") do
+				if(tonumber(i)) then --make sure it can convert to a number
+					table.insert(destination, tonumber(i))
+				else
+					SystemReply(ply, "^3Syntax: /teleport - self to cursor, /teleport <playername/clientnumber> - target to cursor, /teleport me <playername/clientnumber>, /teleport <playername/clientnumber> <x> <y> <z> <yaw> - target to coords")
 					return
 				end
+			end
 
-				SystemReply(ply, "^3Syntax: /teleport - self to cursor, /teleport <playername/clientnumber> - target to cursor, /teleport <playername/clientnumber> <x> <y> <z> <yaw> - target to coords")
+			if tablelength(destination) == 4 then --check to make sure table is appropriate length
+				target:SetPos(Vector( tostring(destination[1]) .. " " .. tostring(destination[2]) .. " " .. tostring(destination[3]) ))
+				target:SetAngles(Vector("0 " .. tostring(destination[4]) .. " 0"))
 				return
 			end
+
+			SystemReply(ply, "^3Syntax: /teleport - self to cursor, /teleport <playername/clientnumber> - target to cursor, /teleport me <playername/clientnumber>, /teleport <playername/clientnumber> <x> <y> <z> <yaw> - target to coords")
+			return
 		end
 	else
 		SystemReply(ply, "^1You are not logged in.")

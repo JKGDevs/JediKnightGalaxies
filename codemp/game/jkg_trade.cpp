@@ -1,8 +1,6 @@
 #include "g_local.h"
 #include "jkg_treasureclass.h"
 
-using namespace std;
-
 /*
 ====================
 JKG_target_vendor_think
@@ -35,7 +33,7 @@ static void JKG_target_vendor_think(gentity_t* self) {
 	npc->flags |= FL_NO_KNOCKBACK;
 
 	TreasureClass* pTC = nullptr;
-	vector<int> items;
+	std::vector<int> items;
 	auto tc = umTreasureClasses.find(self->treasureclass);
 
 	if (tc == umTreasureClasses.end()) {
@@ -58,7 +56,7 @@ static void JKG_target_vendor_think(gentity_t* self) {
 	// Add the items that we've picked to the vendor's inventory
 	npc->inventory->clear();
 	for (auto it = items.begin(); it != items.end(); ++it) {
-		itemInstance_t item = BG_ItemInstance(*it, 1);
+		itemInstance_t item = BG_ItemInstance(*it, 1, MAX_DEFAULT_DURABILITY);
 		BG_GiveItemNonNetworked(npc, item);
 	}
 	
@@ -302,7 +300,7 @@ Regenerates the stock of a vendor (generic)
 void JKG_RegenerateStock(gentity_t* ent)
 {
 	TreasureClass* pTC = nullptr;
-	vector<int> items;
+	std::vector<int> items;
 	auto tc = umTreasureClasses.find(ent->treasureclass);
 
 	if (tc == umTreasureClasses.end()) {
@@ -318,7 +316,7 @@ void JKG_RegenerateStock(gentity_t* ent)
 
 	// Add the items that we've picked to the vendor's inventory
 	for (auto it = items.begin(); it != items.end(); ++it) {
-		itemInstance_t item = BG_ItemInstance(*it, 1);
+		itemInstance_t item = BG_ItemInstance(*it, 1, MAX_DEFAULT_DURABILITY);
 		BG_GiveItemNonNetworked(ent, item);
 	}
 

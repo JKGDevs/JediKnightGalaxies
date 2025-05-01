@@ -44,6 +44,9 @@ void CG_LoadingString( const char *s ) {
 	Q_strncpyz( cg.infoScreenText, s, sizeof( cg.infoScreenText ) );
 
 	trap->UpdateScreen();
+#ifdef _DEBUG
+	Com_Printf(va("Loading %s\n", s));	//also output current status to console
+#endif
 }
 
 /*

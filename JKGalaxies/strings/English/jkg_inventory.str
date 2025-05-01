@@ -175,6 +175,15 @@ LANG_ENGLISH		"Info: %s"
 REFERENCE		ITEM_TYPE
 LANG_ENGLISH		"Item Type: "
 
+REFERENCE       ITEM_TYPE_GUN
+LANG_ENGLISH    "Gun"
+
+REFERENCE       ITEM_TYPE_EXPLOSIVE
+LANG_ENGLISH    "Explosive"
+
+REFERENCE       ITEM_TYPE_MELEE
+LANG_ENGLISH    "Melee"
+
 REFERENCE		ITYPE_WEAPON
 LANG_ENGLISH		"Weapon"
 
@@ -263,10 +272,49 @@ REFERENCE		ARM_MAXSTAMINA_NEG
 LANG_ENGLISH		"Maximum Stamina: -%i"
 
 REFERENCE       ARM_FILTER
-LANG_ENGLISH    "Filters toxins." 
+LANG_ENGLISH    "Filters toxins."
+
+REFERENCE	    ARM_ANTITOXIN
+LANG_ENGLISH	"Removes toxins."
+
+REFERENCE	    ARM_RESISTANCES
+LANG_ENGLISH	"Resistances: "
+
+REFERENCE		SHIELD_PROTECTION_TYPE
+LANG_ENGLISH	"Protection: %s"
+
+REFERENCE       SHIELD_STANDARD
+LANG_ENGLISH    "Standard"
+
+REFERENCE       SHIELD_MODIFIED
+LANG_ENGLISH    "Modified"
+
+REFERENCE       SHIELD_BLOCKS
+LANG_ENGLISH    "Shield Blocks[+]: "
+
+REFERENCE       SHIELD_ALLOWS
+LANG_ENGLISH    "Shield Ignores[-]: "
+
+REFERENCE       SHIELD_TYPE
+LANG_ENGLISH    "Shield Type: %s"
+
+REFERENCE       SHIELDTYPE_UNKNOWN
+LANG_ENGLISH    "??? Unknown"
+
+REFERENCE       SHIELDTYPE_SHELL
+LANG_ENGLISH    "Shell"
+
+REFERENCE       SHIELDTYPE_BUBBLE
+LANG_ENGLISH    "Bubble"
+
+REFERENCE		SHIELDTYPE_HANDHELD
+LANG_ENGLISH	"Handheld"
 
 REFERENCE		WEP_DAMAGE
 LANG_ENGLISH		"Damage: %i (%s)"
+
+REFERENCE       WEP_ARMOR_PEN
+LANG_ENGLISH        "Armor Penetration: %i%%"
 
 REFERENCE		WEP_DAMAGE_SCATTERGUN
 LANG_ENGLISH		"Damage: %ix%i (%s)"
@@ -313,6 +361,12 @@ LANG_ENGLISH		"telefragging"
 REFERENCE		MOD_TEAM_CHANGE
 LANG_ENGLISH		"team change"
 
+REFERENCE       MOD_HEAL
+LANG_ENGLISH        "heal"
+
+REFERENCE       MOD_REPAIR
+LANG_ENGLISH        "repair"
+
 REFERENCE		MOD_SABER
 LANG_ENGLISH		"lightsaber"
 
@@ -339,6 +393,9 @@ LANG_ENGLISH		"pulse"
 
 REFERENCE		MOD_ION
 LANG_ENGLISH		"ion"
+
+REFERENCE       MOD_IONBLASTER
+LANG_ENGLISH        "ionblaster"
 
 REFERENCE		MOD_ELECTRICAL
 LANG_ENGLISH		"electrical"
@@ -374,7 +431,10 @@ REFERENCE		MOD_POISONED
 LANG_ENGLISH		"poison"
 
 REFERENCE       MOD_CURED
-LANG_ENGLISH        "heal"
+LANG_ENGLISH        "detox heal"
+
+REFERENCE		MOD_REVIVED
+LANG_ENGLISH		"healing revive"
 
 REFERENCE       MOD_STAMINA
 LANG_ENGLISH        "stamina"
@@ -423,6 +483,19 @@ LANG_ENGLISH		"Semi-automatic"
 
 REFERENCE		WEP_TAG_BURST
 LANG_ENGLISH		"Burst fire"
+
+REFERENCE       WEP_RANGE
+NOTES           Maximum effective range in meters (1m == 36.5 units).
+LANG_ENGLISH    "Range: %i meters "
+
+REFERENCE       WEP_RANGE_SHORT
+LANG_ENGLISH    "(short)"
+
+REFERENCE       WEP_RANGE_MEDIUM
+LANG_ENGLISH    "(medium)"
+
+REFERENCE       WEP_RANGE_LONG
+LANG_ENGLISH    "(long)"
 
 REFERENCE		WEP_FIRETIME
 LANG_ENGLISH		"Fires %i Rounds per Minute"
@@ -483,7 +556,7 @@ NOTES			For vertical recoil above 3.0
 LANG_ENGLISH		"Recoil: Intense"
 
 REFERENCE		EXPLANATION_ELECTRIC
-LANG_ENGLISH		"Electric Damage. Medium damage towards organic targets and armor, high damage towards droids and shields."
+LANG_ENGLISH		"Electric Damage. Weak against armor, moderate against organics, strong against droids and shields."
 
 REFERENCE		EXPLANATION_EXPLOSIVE
 LANG_ENGLISH		"Deals damage in a radius."
@@ -498,31 +571,34 @@ REFERENCE		EXPLANATION_STUN
 LANG_ENGLISH		"Has a chance to stun the target."
 
 REFERENCE		EXPLANATION_CARBONITE
-LANG_ENGLISH		"Has a chance to encase the target in carbonite."
+LANG_ENGLISH		"Has a chance to encase the target in carbonite.  Targets are unable to move while encased, but are resistant against all damage."
 
 REFERENCE		EXPLANATION_BLASTER
-LANG_ENGLISH		"Blaster damage. Well rounded damage, with a weakness towards shields."
+LANG_ENGLISH		"Blaster damage. Well rounded damage."
 
 REFERENCE		EXPLANATION_SLUG
-LANG_ENGLISH		"Slug damage. Highly effective against organic targets, and penetrates shields. However, it is weak against armor and droids."
+LANG_ENGLISH		"Slug damage. Highly effective against organic targets, and bypasses most shields. However, it is weak against armor and droids."
 
 REFERENCE		EXPLANATION_ACP
-LANG_ENGLISH		"ACP damage. Effective against shields and organic targets, weak against electrical systems and armor."
+LANG_ENGLISH		"ACP damage. Moderate against shields and organic targets, weak against droids and armor. Partially bypasses shields."
 
 REFERENCE		EXPLANATION_PULSE
-LANG_ENGLISH		"Pulse damage. Completely ignores armor, but relatively ineffective towards shields. Moderately effective against organic targets."
+LANG_ENGLISH		"Pulse damage. Bypasses armor, but ineffective against shields. Moderately effective against organic targets."
 
 REFERENCE		EXPLANATION_ION
-LANG_ENGLISH		"Ion damage. Completely ignores most armor, and extremely strong against shields. Very weak against organic targets."
+LANG_ENGLISH		"Ion damage. Bypasses armor, strong against shields and droids. Very weak against organic targets."
+
+REFERENCE       EXPLANATION_IONBLASTER
+LANG_ENGLISH        "Ionized blaster damage.  Blends blaster damage with Ion. Less effective against droids and shields, but stronger against organic targets than regular Ion."
 
 REFERENCE		EXPLANATION_SONIC
 LANG_ENGLISH		"Sonic damage. Somewhat effective against armor, shields, and organic targets. Ineffective against droids."
 
 REFERENCE		EXPLANATION_DISRUPTOR
-LANG_ENGLISH		"Disruptor damage. Well rounded damage, with a weakness towards shields. Can cause disintegrations."
+LANG_ENGLISH		"Disruptor damage. Strong against organic targets and armor, ineffective against shields. Can cause disintegrations."
 
 REFERENCE		EXPLANATION_QUARREL
-LANG_ENGLISH		"Quarrel damage. Well rounded damage, can impale enemies."
+LANG_ENGLISH		"Quarrel damage. Strong against armor, ineffective against shields, can dismember enemies."
 
 REFERENCE     		WEAPON_STATS
 LANG_ENGLISH  		"Weapon Stats"
@@ -557,7 +633,10 @@ LANG_ENGLISH    	"Thrust Consumption: %.2f"
 REFERENCE     		JETPACK_FUELREGEN
 LANG_ENGLISH    	"Fuel Regeneration: %.2f"
 
-REFERENCE		JETPACK_HOVERGRAVITY
+REFERENCE		    JETPACK_HOVERGRAVITY
 LANG_ENGLISH		"Hover Gravity: %.1f"
+
+REFERENCE           DURABILITY
+LANG_ENGLISH        "Durability: %s%i/%i (%.0f%%)"
 
 ENDMARKER

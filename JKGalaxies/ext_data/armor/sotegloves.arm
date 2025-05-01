@@ -1,0 +1,41 @@
+{
+	"ref":		"sotegloves",
+	"slot":		"gloves",
+	"armor":		50,
+	"movemodifier":	1.0,
+
+	"visuals": {
+		"model":	"models/players/sote_trooper/model.glm*default",
+		"modelGroup":	"sote_trooper_armor",
+
+		"armorOnSurfaces": [
+			"l_arm_wristarmor",
+			"r_arm_wristarmor",
+			"l_hand",
+			"r_hand"
+		],
+
+		"bodyOffSurfaces": [
+			"l_arm_wristarmor",
+			"r_arm_wristarmor",
+			"l_hand",
+			"l_handa",
+			"l_handb",
+			"l_handc",
+			"l_handd",
+			"l_hande",
+			"l_handf",
+			"r_handa",
+			"r_handb",
+			"r_handc",
+			"r_handd",
+			"r_hande",
+			"r_handf",
+			"l_hand_plate",
+			"r_hand",
+			"r_hand_plate",
+			"r_hand_inner_glove",
+			"l_hand_inner_glove"
+		]
+	}
+}

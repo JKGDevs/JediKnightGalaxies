@@ -823,7 +823,7 @@
 	* Refreshes the 'seeking party list', where people register to look for a party.
 	**************************************************/
 
-	void TeamPartyListRefresh( int clientNum, int iTime )
+	void TeamPartyListRefresh( int clientNum, unsigned int iTime )
 	{
 		char buffer[1016];	// Minus 'tpl ""' - 8 as safety.
 		int i, classId = 0;
@@ -831,7 +831,7 @@
 
 		memset( buffer, 0, sizeof( buffer ));
 
-		if (iTime < 0 || iTime >= INT_MAX - 1/*4294967296*/) // --futuza: fixed, can't check higher than INT_MAX
+		if (iTime < 0 || iTime >= UINT_MAX - 1/*4294967296*/) // --futuza: fixed, can't check higher than INT_MAX
 		{
 			iTime = 0;
 		}

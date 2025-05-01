@@ -1,0 +1,11 @@
+{
+	"name":         "BlazeGuard F-451 Helmet (Pyromaniac Helm)",
+	"internal":     "helmet_pyromaniac",
+	"itemtype":     "armor",
+	"armor":		"pmhelmet",
+	"weight":		"3",
+	"cost":			"315",
+	"tier": 		2,
+	"itemIcon":		"gfx/item_icons/pyromaniac_helmet.tga",
+	"itemDescription": "Made of heat resistant materials, this Merr-Sonn helmet was originally made for firefighters and includes a fume filter. It was later adopted by arsonist cults operating in among Imperial Core worlds to start fires and conceal their identities."
+}

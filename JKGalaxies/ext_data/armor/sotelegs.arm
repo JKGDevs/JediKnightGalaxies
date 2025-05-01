@@ -1,0 +1,46 @@
+{
+	"ref":		"sotelegs",
+	"slot":		"legs",
+	"armor":		120,
+	"movemodifier":	0.925,
+
+	"visuals": {
+		"model":	"models/players/sote_trooper/model.glm*default",
+		"modelGroup":	"sote_trooper_armor",
+
+		"armorOnSurfaces": [
+			"hips",
+			"hips_augment",
+			"hips_augment_r",
+			"hips_augment_l",
+			"hips_belt"
+		],
+
+		"bodyOffSurfaces": [
+			"hips",
+			"hipsb",
+			"hipsc",
+			"hipsd",
+			"hipse",
+			"hipsf",
+			"hipsg",
+			"hips_lower",
+			"hips_legs",
+			"hips_vest",
+			"l_leg_knee",
+			"r_leg_knee",
+			"hips_holster",
+			"hips_augment",
+			"hips_augment_r",
+			"hips_augment_l",
+			"hips_belt",
+			"hips_l_packlarge",
+			"hips_l_packwide",
+			"hips_lowerarmor",
+			"hips_r_packsmall",
+			"hips_r_strap",
+			"hips_flaps",
+			"torso_lower"
+		]
+	}
+}

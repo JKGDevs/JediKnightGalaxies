@@ -1,0 +1,116 @@
+name: build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, develop]
+    paths-ignore:
+      - "**.md"
+      - ".gitignore"
+      - "_Deprecated GLUA/*"
+      - "tools/*"
+  pull_request:
+    branches: [master, develop]
+    paths-ignore:
+      - "**.md"
+      - ".gitignore"
+      - "_Deprecated GLUA/*"
+      - "tools/*"
+
+jobs:
+  #windows builds
+  msvc:
+    name: Windows ${{ matrix.arch }} ${{ matrix.build_type }} (${{ matrix.portable }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86, x86_64]
+        build_type: [Release]
+        portable: [Non-Portable] #Portable, disabled for now
+        include:
+          - arch: x86
+            platform: Win32
+          - arch: x86_64
+            platform: x64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{ github.workspace }}/build
+
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{ github.workspace }}/build
+        run: |
+          OPTIONS="-DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=bin"
+          if [ "${{ matrix.portable }}" == "Portable" ]; then
+            OPTIONS+=" -DBuildPortableVersion=ON"
+          else
+            OPTIONS+=" -DBuildPortableVersion=OFF"
+          fi
+          cmake $GITHUB_WORKSPACE -A ${{ matrix.platform }} $OPTIONS
+
+      - name: Build
+        working-directory: ${{ github.workspace }}/build
+        shell: bash
+        run: cmake --build . --config ${{ matrix.build_type }} -j $NUMBER_OF_PROCESSORS
+
+#linux builds
+  ubuntu:
+    name: Ubuntu ${{ matrix.arch }} ${{ matrix.build_type }} (${{ matrix.portable }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86, x86_64]
+        build_type: [Release]
+        portable: [Non-Portable] #Portable, disabled for now
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Build Environment
+        run: |
+          if [ ${{ matrix.arch }} == "x86" ]; then
+            sudo dpkg --add-architecture i386
+            sudo apt-get -qq update
+            sudo apt-get -y install aptitude
+            sudo apt-get -y install gcc-multilib g++-multilib ninja-build
+            sudo apt-get -y install --allow-downgrades libpcre2-8-0:i386 libjpeg-dev:i386 libpng-dev:i386 libcurl4-openssl-dev:i386
+            sudo aptitude -y install libglib2.0-dev:i386 libsdl2-dev:i386
+          else
+            sudo apt-get -qq update
+            sudo apt-get install libjpeg-dev libpng-dev zlib1g-dev libsdl2-dev
+          fi
+          cmake -E make_directory ${{ github.workspace }}/build
+
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{ github.workspace }}/build
+        run: |
+          OPTIONS="-DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install"
+          if [ "${{ matrix.portable }}" == "Portable" ]; then
+            OPTIONS+=" -DUseInternalLibs=ON -DBuildPortableVersion=ON"
+          else
+            OPTIONS+=" -DUseInternalLibs=OFF -DBuildPortableVersion=OFF"
+          fi
+          if [ ${{ matrix.arch }} == "x86" ]; then
+            OPTIONS+=" -DCMAKE_TOOLCHAIN_FILE=cmake/Toolchains/linux-i686.cmake"
+          fi
+          cmake $GITHUB_WORKSPACE $OPTIONS
+
+      - name: Build
+        working-directory: ${{ github.workspace }}/build
+        shell: bash
+        run: cmake --build . --config ${{ matrix.build_type }} -j $NUMBER_OF_PROCESSORS
+
+      - name: Install
+        if: ${{ matrix.build_type == 'Release' }}
+        working-directory: ${{ github.workspace }}/build
+        shell: bash
+        run: cmake --install .

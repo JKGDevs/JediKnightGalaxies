@@ -1340,7 +1340,7 @@ static int GLua_NPC_SetEnemy(lua_State *L) {
 		// It's a targetname, so do a G_Find
 		enemy = G_Find( NULL, FOFS(targetname), lua_tostring(L,2));
 		if (!enemy) {
-			trap->Print("GLua_NPC_SetEnemy: no such enemy: '%s'\n", lua_tostring(L,2));
+			trap->Print("GLua_NPC_SetEnemy: no such enemy: '%s^7'\n", lua_tostring(L,2));
 			return 0;
 		}
 		G_SetEnemy(npc, enemy);
@@ -1479,7 +1479,7 @@ static int GLua_NPC_SetViewTarget(lua_State *L) {		// Does not have a Get equiva
 	if (lua_isstring(L,2)) {
 		viewtarget = G_Find( NULL, FOFS(targetname), lua_tostring(L,2));
 		if (!viewtarget) {
-			trap->Print("GLua_NPC_SetViewTarget: Could not find entity '%s'\n",  lua_tostring(L,2));
+			trap->Print("GLua_NPC_SetViewTarget: Could not find entity '%s^7'\n",  lua_tostring(L,2));
 			return 0;
 		}
 

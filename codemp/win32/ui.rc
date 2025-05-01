@@ -55,8 +55,8 @@ END
 #include "../qcommon/game_version.h"
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION VERSION_MAJOR_RELEASE,VERSION_MINOR_RELEASE,VERSION_EXTERNAL_BUILD,VERSION_INTERNAL_BUILD
- PRODUCTVERSION VERSION_MAJOR_RELEASE,VERSION_MINOR_RELEASE,VERSION_EXTERNAL_BUILD,VERSION_INTERNAL_BUILD
+ FILEVERSION JKG_VERSION_PHASE,JKG_VERSION_MAJOR,JKG_VERSION_MINOR
+ PRODUCTVERSION JKG_VERSION_PHASE,JKG_VERSION_MAJOR,JKG_VERSION_MINOR
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -71,15 +71,15 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "Raven Software & Activision Inc"
-            VALUE "CompanyName", "Jedi Knight Galaxies Team / Raven Software"
+            VALUE "Comments", "JKG Team / OpenJK Contributors / Raven Software & Activision Inc"
+            VALUE "CompanyName", "Jedi Knight Galaxies Team"
             VALUE "FileDescription", "Jedi Knight Galaxies User Interface Module"
-            VALUE "FileVersion", "1, 0, 1, 0"
+            VALUE "FileVersion", JKG_VERSION
+            VALUE "BuildVersion", JKG_VERSION
             VALUE "InternalName", "ui"
-            VALUE "LegalCopyright", "Copyright (C) 2003 Raven Software, Copyright (C) 2009 Jedi Knight Galaxies Team"
+            VALUE "LegalCopyright", JKG_COPYRIGHT
             VALUE "OriginalFilename", "uix86.dll"
-            VALUE "ProductName", "Jedi Knight®: Jedi Academy (MP) - Jedi Knight Galaxies"
-            VALUE "ProductVersion", "1, 0, 1, 0"
+            VALUE "ProductName", "Jedi Knight Galaxies"
         END
     END
     BLOCK "VarFileInfo"

@@ -70,13 +70,15 @@ local function PzkTestCmd(ply, argc, argv)
 	local cards = JKG.Pazaak.Cards
 	local opp = ply:GetEyeTrace().Entity
 	local cardsel = true
+	
 	if opp and not opp:IsPlayer() then
 		opp = nil
 	else
 		opp = opp:ToPlayer()
 		if opp.Busy then
 			ply:SendPrint(opp.Name .. "^7 is busy and cannot respond.  Try later.")
-			opp:SendPrint(ply.Name .. "^7 tried to challenge you to Pazaak.")
+			ply:SendNotify(sys.StripColorcodes(opp.Name) .. " is busy and cannot respond.  Try later.")
+			opp:SendChat("^7System: " .. ply.Name .. "^7 tried to challenge you to Pazaak.")
 			return
 		end
 	end
@@ -147,8 +149,8 @@ local function SliceTestCmd(ply, argc, argv)
 	
 	if argc < 2 then
 		ply:SendPrint("Please select a difficulty level: /slctest ^2easy^7, /slctest ^3medium^7, /slctest ^1hard")
-		ply:SendPrint("To create a custom game: /slctest ^5custom^7 <columns> Number of columns, between 1 - 8")
-		ply:SendPrint("                                         <rows> Number of rows, between 1 - 8")
+		ply:SendPrint("To create a custom game: /slctest ^5custom^7 <columns> Grid width, between 1 - 8")
+		ply:SendPrint("                                         <rows> Grid height, between 1 - 8")
 		ply:SendPrint("                                         <seurity levels> Number of security levels between 1 - 5")
 		ply:SendPrint("                                         <intrusion detection time> (seconds) 0 for no intrusion detection")
 		ply:SendPrint("                                         <alarm nodes> Number of alarm nodes")
@@ -193,16 +195,29 @@ local function SliceTestCmd(ply, argc, argv)
 			slc:AddProgram("SCANLINE")
 		elseif argv[1] == 'custom' then
 			if argc < 14 then
-				ply:SendPrint("Not enough arguments to create a custom game")
+				ply:SendPrint("Not enough arguments to create a custom game, args: " .. tostring(argc))
 				return
 			end
 			if argc > 14 then
 				ply:SendPrint("Too many arguments to create a custom game")
 				return
 			end
-			slc:SetFieldSize(argv[2],argv[3])
+
+			--check if everything is a number
+			for i = 2,13,1
+			do
+				local placeholder = tonumber(argv[i])
+				if type(placeholder) == "number" then
+					argv[i] = placeholder
+				else
+					ply:SendPrint("Invalid argument, argv[" .. tostring(i) .. "] is not a number.  Contains: " .. tostring(argv[i]))
+					return
+				end
+			end
+
+			slc:SetFieldSize(argv[2],argv[3]) --width, height
 			slc:SetSecurityLevelCount(argv[4])
-			if argv[5] != 0 then
+			if argv[5] ~= 0 then
 				slc:SetIntrusionDetection(true, argv[5])
 			end
 			--alarm nodes, reset nodes, lvl1, lvl2, lvl3, lvl4, lvl5
@@ -232,6 +247,16 @@ local function SliceTestCmd(ply, argc, argv)
 end
 
 cmds.Add("slctest", SliceTestCmd)
+
+
+
+local function PartyManagementCmd(ply, argc, argv)
+
+
+
+end
+
+cmds.Add("partytest", PartyManagementCmd)
 
 local function AddMethod(method, sb, sb2)
 	sb:Append(method .. " ")

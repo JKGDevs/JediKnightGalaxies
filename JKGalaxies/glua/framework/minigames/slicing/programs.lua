@@ -45,7 +45,7 @@ JKG.Slicing.Programs.PROBE = {
 		
 		state:__ShowDialog(0, "Probing security grid...", nil, nil)
 		state:__LockField(true)
-		
+
 		-- Process columns first
 		for col=1, state.Width do
 			value = 0
@@ -56,19 +56,18 @@ JKG.Slicing.Programs.PROBE = {
 					alarms = alarms + 1
 				elseif nodeid == 1 or nodeid == 2 then -- Relay or reset
 					value = value + 1
-				else	-- Access
+				else	-- Access (3 - 7)
 					value = value + (nodeid - 1)
 				end
 			end
 			table.insert(summary, {Value = value, Alarms = alarms})
 		end
-		
+
 		-- Process rows next
-		
-		for row=1, state.Width do
+		for row=1, #state.Grid do
 			value = 0
 			alarms = 0
-			for col=1, state.Height do
+			for col=1, state.Width do
 				local nodeid = state.Grid[row][col]
 				if nodeid == 0 then	-- Alarm node
 					alarms = alarms + 1
@@ -80,9 +79,8 @@ JKG.Slicing.Programs.PROBE = {
 			end
 			table.insert(summary, {Value = value, Alarms = alarms})
 		end
-		
+
 		-- Simulate execution time
-	
 		timer.Simple(1000, finalize, state, summary)
 	end,
 }

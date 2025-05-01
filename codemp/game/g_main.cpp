@@ -524,6 +524,9 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// Jetpacks, as well
 	JKG_LoadJetpacks();
 
+	// And shields
+	JKG_LoadShields();
+
 	// armor is good too
 	JKG_LoadArmor();
 	
@@ -608,7 +611,9 @@ void G_ShutdownGame( int restart ) {
 
 	GLua_Close();
 
+	JKG_UnbindChatCommands();
 	CCmd_Cleanup();
+	
 
 	/* First save all bans, then clear them to free up the allocated memory) */
 	JKG_Bans_SaveBans();
@@ -1621,7 +1626,12 @@ void ExitLevel (void) {
 			continue;
 		}
 		cl->ps.persistant[PERS_SCORE] = 0;
+
+		//set all players to spectator for the next game (mixup teams)
+		gentity_t* ent = g_entities + i;
+		SetTeamQuick(ent, TEAM_SPECTATOR, true);
 	}
+
 
 	// we need to do this here before chaning to CON_CONNECTING
 	G_WriteSessionData();

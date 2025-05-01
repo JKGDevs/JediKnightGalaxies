@@ -92,7 +92,9 @@
         	"sightsModifier": 0.75,
         	"walkModifier": 1.1,
         	"inAirModifier": 1.8
-        }
+        },
+		"heatGenerated": 10,
+		"maxHeat": 50
     },
     
     "firemode1": {

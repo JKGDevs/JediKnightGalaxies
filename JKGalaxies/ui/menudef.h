@@ -381,6 +381,7 @@
 #define UI_JKG_SHOP_AMMOPRICE	1097	// no param
 #define UI_JKG_SHOP_ITEMDESC	1098	// param: which line of text
 #define UI_JKG_SHOP_REFRESHTIME 1099    // no param
+#define UI_JKG_SHOP_DURAPRICE   2000    //no param
 
 // Padding in case the shop needs more ownerdraw
 

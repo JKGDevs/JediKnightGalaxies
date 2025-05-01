@@ -10,6 +10,7 @@ if not defined FOUND (
 	exit /b 1
 ) else (
 	echo Found CMake!
+	cmake --version
 )
 if not exist build\nul (mkdir build)
 pushd build

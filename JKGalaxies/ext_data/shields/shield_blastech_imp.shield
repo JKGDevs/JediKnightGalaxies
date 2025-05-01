@@ -1,0 +1,11 @@
+{
+    "ref":			"shield_blastech_imp",
+	"capacity":	35,
+	"cooldown":	750,
+	"regenrate":	1200,
+
+	"brokenSoundEffect":	"sound/shield/shield_broken",
+	"equippedSoundEffect":	"sound/shield/shield_equipped2",
+	"rechargeSoundEffect":	"sound/shield/shield_recharge2",
+	"chargedSoundEffect":	"sound/shield/shield_charged2"
+}

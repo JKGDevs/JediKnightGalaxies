@@ -66,11 +66,20 @@ static void JKG_ParseSingleMeansOfDamage(const char* name, cJSON* json) {
 		child = cJSON_GetObjectItem(jsonNode, "shieldBlocks");
 		mod.modifiers.shieldBlocks = cJSON_ToBooleanOpt(child, qfalse);
 
+		child = cJSON_GetObjectItem(jsonNode, "shieldProtects");
+		mod.modifiers.shieldProtects = cJSON_ToBooleanOpt(child, qfalse);
+
 		child = cJSON_GetObjectItem(jsonNode, "dodgeable");
 		mod.modifiers.dodgeable = cJSON_ToBooleanOpt(child, qfalse);
 
 		child = cJSON_GetObjectItem(jsonNode, "isEMP");
 		mod.modifiers.isEMP = cJSON_ToBooleanOpt(child, qfalse);
+
+		child = cJSON_GetObjectItem(jsonNode, "isCC");
+		mod.modifiers.isCC = cJSON_ToBooleanOpt(child, qfalse);
+
+		child = cJSON_GetObjectItem(jsonNode, "canRevive");
+		mod.modifiers.canRevive = cJSON_ToBooleanOpt(child, qfalse);
 
 		child = cJSON_GetObjectItem(jsonNode, "armor");
 		mod.modifiers.armor = cJSON_ToNumberOpt(child, 1.0);
@@ -83,6 +92,24 @@ static void JKG_ParseSingleMeansOfDamage(const char* name, cJSON* json) {
 
 		child = cJSON_GetObjectItem(jsonNode, "droid");
 		mod.modifiers.droid = cJSON_ToNumberOpt(child, 1.0);
+
+		child = cJSON_GetObjectItem(jsonNode, "armorPenetration");
+		mod.modifiers.armorPenetration = cJSON_ToNumberOpt(child, 0.0);		//1.0 ignores all of the target's armor, 0.5 ignores 50% of the armor, 0.1 ignores 10% of the armor
+
+		if (mod.modifiers.ignoreArmor)	
+		{
+			mod.modifiers.armorPenetration = 0.0f; //if we're ignoring the armor, penetration doesn't matter
+		}
+
+		//validate range
+		if (mod.modifiers.armorPenetration > 0.999f)
+			mod.modifiers.armorPenetration = 0.999f;
+		if (mod.modifiers.armorPenetration < 0.0f)
+			mod.modifiers.armorPenetration = 0.0f;
+
+		if(mod.modifiers.shieldProtects && mod.modifiers.shieldBlocks)
+			Com_Printf(S_COLOR_YELLOW "Warning: %s has both shieldProtects and shieldBlocks properties!\n", mod.inventoryName);
+		
 	}
 	else {
 		// defaults
@@ -90,14 +117,25 @@ static void JKG_ParseSingleMeansOfDamage(const char* name, cJSON* json) {
 		mod.modifiers.droid = 1.0f;
 		mod.modifiers.organic = 1.0f;
 		mod.modifiers.shield = 1.0f;
+
+		mod.modifiers.ignoreArmor = qfalse;
+		mod.modifiers.ignoreShield = qfalse;
+		mod.modifiers.shieldBlocks = qfalse;
+		mod.modifiers.shieldProtects = qfalse;
+		mod.modifiers.dodgeable = qfalse;
+		mod.modifiers.isEMP = qfalse;
+		mod.modifiers.isCC = qfalse;
+		mod.modifiers.canRevive = qfalse;
+		mod.modifiers.armorPenetration = 0.0f;
+
 	}
 
 	jsonNode = cJSON_GetObjectItem(json, "dismemberment");
 	if (jsonNode) {
-		child = cJSON_GetObjectItem(json, "canDismember");
+		child = cJSON_GetObjectItem(jsonNode, "canDismember");
 		mod.dismemberment.canDismember = cJSON_ToBooleanOpt(child, qfalse);
 
-		child = cJSON_GetObjectItem(json, "blowChunks");
+		child = cJSON_GetObjectItem(jsonNode, "blowChunks");
 		mod.dismemberment.blowChunks = cJSON_ToBooleanOpt(child, qfalse);
 	}
 

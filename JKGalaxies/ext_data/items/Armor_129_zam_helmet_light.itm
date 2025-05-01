@@ -3,6 +3,7 @@
 	"internal":     "helmet_zam_light",
 	"itemtype":     "armor",
 	"armor":		"zam_helmet",
+	"tier":			3,
 	"weight":		"2",
 	"cost":			"210",
 	"itemIcon":		"gfx/item_icons/zam_helmet.tga",

@@ -180,6 +180,48 @@ int JKG_ArmorSlotFromText(const char* text) {
 }
 
 /*
+=========================
+JKG_ParseArmorResistances
+
+=========================
+*/
+qboolean JKG_ParseArmorResistances(cJSON* json, armorData_t& armor)
+{
+	qboolean status = qtrue; //if no errors encountered
+	if (json)
+	{
+		int resistSize = cJSON_GetArraySize(json);
+		for (int i = 0; i < resistSize; i++)
+		{
+			int mod; float resistance; cJSON* jsonNode;
+			cJSON* arrayObj = cJSON_GetArrayItem(json, i);
+
+			jsonNode = cJSON_GetObjectItem(arrayObj, "means");
+			mod = JKG_GetMeansOfDamageIndex(cJSON_ToString(jsonNode));
+			if (mod == MOD_UNKNOWN)
+			{
+				Com_Printf(S_COLOR_ORANGE "Unrecognized armor resistance means of damage specified: %s\n", cJSON_ToString(jsonNode));
+				status = qfalse;
+				continue;
+			}
+
+			jsonNode = cJSON_GetObjectItem(arrayObj, "resistance");
+			resistance = cJSON_ToNumberOpt(jsonNode, 1.0f);
+			if (resistance < 0)
+				resistance = 0;
+
+			//> 1.0  means the armor actually has a weakness against this means, prolly a mistake so warn em
+			if (resistance > 1.0)
+				Com_Printf(S_COLOR_YELLOW "Found armor resistance value higher than 1.0, this armor takes EXTRA damage against specified means.\n");
+
+			armor.resistances.push_back(std::make_pair(mod, resistance));	//add the pair to the list
+		}
+	}
+
+	return status;
+}
+
+/*
 =====================
 JKG_ParseArmorFile
 
@@ -217,11 +259,22 @@ static qboolean JKG_ParseArmorFile(char* buffer, const char* fileName, armorData
 	jsonNode = cJSON_GetObjectItem(json, "stamina");
 	armorData.stamina = cJSON_ToIntegerOpt(jsonNode, 0);
 
-	jsonNode = cJSON_GetObjectItem(json, "filter");
-	armorData.filter = cJSON_ToBooleanOpt(jsonNode, false);
+	jsonNode = cJSON_GetObjectItem(json, "antitoxin");
+	armorData.antitoxin = cJSON_ToBooleanOpt(jsonNode, false);
+
+	//only check for filter, if we don't have antitoxin (as it is superior)
+	if (!armorData.antitoxin)	
+	{
+		jsonNode = cJSON_GetObjectItem(json, "filter");
+		armorData.filter = cJSON_ToBooleanOpt(jsonNode, false);
+	}
 
 	jsonNode = cJSON_GetObjectItem(json, "movemodifier");
 	armorData.movemodifier = cJSON_ToNumberOpt(jsonNode, 1.0);
+
+	jsonNode = cJSON_GetObjectItem(json, "resistances");
+	if (!JKG_ParseArmorResistances(jsonNode, armorData))
+		Com_Printf(S_COLOR_ORANGE "%s has invalid resistances data that has been ignored.\n", fileName);
 
 	jsonNode = cJSON_GetObjectItem(json, "visuals");
 	JKG_ParseArmorVisuals(jsonNode, armorData);

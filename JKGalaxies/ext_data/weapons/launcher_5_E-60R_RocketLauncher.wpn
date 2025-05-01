@@ -51,12 +51,32 @@
     },
     
     "firemode0": {
-        "damage":       75,//150,
+        "damage":          //using new style of area damage
+        {
+            "damageradius":
+            {
+                "start": 400,
+                "falloff": "linear"
+            },
+            "damage": 90,
+            "buffs": [
+			{
+				"buff": "standard-bleed",
+				"duration": 5000
+			},
+            {
+                "buff": "standard-fire",
+				"duration": 1000
+            }
+            ]
+        },
+        "armorPenetration": 0.1,     //penetrates through 10% of armor
+        //"damage":       75,//150,
+        //"splashrange":  400,//200,
         "collisionsize":3.0,
         "ammocost":     1,
         "firedelay":    1000,
         "firingtype":   "semi",
-        "splashrange":  400,//200,
         "range":        40000.0,
         "recoil":       7.0,
         "spread":       0.15,

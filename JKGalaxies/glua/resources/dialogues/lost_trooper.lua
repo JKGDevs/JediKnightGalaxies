@@ -52,8 +52,11 @@ DLG.Nodes = {
 		ScriptFunc = function(owner, ply, data)
 			--update the quest's stage to 1, and notify player
 			ply.Quests["losttrooper"].stage = 1
+			ply.Quests["losttrooper"].status = 1
+			ply.Quests["losttrooper"].objective = "Found a confused Stormtrooper who seems to be hallucinating. I may be able to convince them to talk to me."
 			ply:SendCenterPrint("Started: " .. ply.Quests["losttrooper"].title)
 			ply:SendPrint("Started " .. ply.Quests["losttrooper"].title)
+			ply:SendPrint("Objective: " .. ply.Quests["losttrooper"].objective)
 			ply.EntPtr:PlaySound(11, "sound/interface/quest/QuestStartReveal00.mp3")
 			
 			--allow him to sell us stuff too
@@ -172,6 +175,11 @@ DLG.Nodes = {
 		SubNode = "D26",
 		ScriptFunc = function(owner, ply, data)
 			ply.Quests["losttrooper"].stage = 2
+			table.insert(ply.Quests["losttrooper"].questlog, ply.Quests["losttrooper"].objective) --put old objective into the questlog table
+			ply.Quests["losttrooper"].objective = "The trooper seems to think I'm a hallucination, I may be able to convince him to trust me." --update objective
+			ply:SendCenterPrint("Objective: Gain the trooper's trust.") --note that we don't always need to tell the player the objective changed, we can be sneaky about it
+			ply:SendPrint("Objective: " .. ply.Quests["losttrooper"].objective) --we could do: "Objective updated." and leave it up to that.
+			ply.EntPtr:PlaySound(11, "sound/interface/quest/notify00.wav")
 		end,
 		HasCondition = false,
 	},
@@ -420,6 +428,9 @@ DLG.Nodes = {
 			owner.ChaseEnemies = true
 			--fail the quest and notify user they failed
 			ply.Quests["losttrooper"].stage = -1
+			ply.Quests["losttrooper"].status = -1
+			table.insert(ply.Quests["losttrooper"].questlog, ply.Quests["losttrooper"].objective) --put old objective into the table
+			ply.Quests["losttrooper"].objective = "I failed to assist the lost trooper." --update objective
 			ply:SendCenterPrint("Failed: " .. ply.Quests["losttrooper"].title)
 			ply:SendPrint("Failed " .. ply.Quests["losttrooper"].title)
 			ply.EntPtr:PlaySound(11, "sound/interface/quest/QuestFailed.mp3")

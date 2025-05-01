@@ -35,6 +35,7 @@ static void DefineBaselineConstants(void)
 	//Stoiss end
 
 	bgConstants.consumableTime = 3000;
+	bgConstants.fallDamageDelta = 0.32;	//original: 0.16 (was not deadly enough)
 
 	bgConstants.staminaDrains.lossFromJumping = 10;
 	bgConstants.staminaDrains.lossFromKicking = 5;
@@ -118,6 +119,9 @@ static void ParseConstantsFile ( const char *fileText )
 
 		jsonNode = cJSON_GetObjectItem(json, "consumableTime");
 		bgConstants.consumableTime = cJSON_ToIntegerOpt(jsonNode, 3000);
+
+		jsonNode = cJSON_GetObjectItem(json, "fallDamageDelta");
+		bgConstants.fallDamageDelta = cJSON_ToNumber(jsonNode);
 
 		jsonNode = cJSON_GetObjectItem(json, "stamina");
 		if (jsonNode) {

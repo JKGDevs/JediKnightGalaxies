@@ -1,6 +1,7 @@
 #ifndef __AUTO_VERSION_HEADER
 #define __AUTO_VERSION_HEADER
 
+//this file is for JKA's version history/status
 #define VERSION_MAJOR_RELEASE		1
 #define VERSION_MINOR_RELEASE		0
 #define VERSION_EXTERNAL_BUILD		1

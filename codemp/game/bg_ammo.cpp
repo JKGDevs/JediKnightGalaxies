@@ -780,6 +780,8 @@ static void JKG_ParseAmmoOverrides(ammo_t* ammo, cJSON* json) {
 	JKG_ParseAmmoOverride_Int(json, "accuracyRatingPerShot", ammo->overrides.accuracyRatingPerShot);
 	JKG_ParseAmmoOverride_Float(json, "knockback", ammo->overrides.knockback);
 	JKG_ParseAmmoOverride_Float(json, "speed", ammo->overrides.speed);
+	JKG_ParseAmmoOverride_Float(json, "armorPenetration", ammo->overrides.armorPenetration);
+	JKG_ParseAmmoOverride_Float(json, "heatGenerated", ammo->overrides.heatGenerated);
 
 #ifndef UI_EXPORTS	// UI hasn't got a clue what buffs are
 	JKG_ParseBuffOverrides(ammo, json, "buffs");

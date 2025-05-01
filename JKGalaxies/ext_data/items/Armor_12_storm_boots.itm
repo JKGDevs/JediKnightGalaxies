@@ -1,0 +1,10 @@
+{
+	"name":         "Stormtrooper Boots",
+	"internal":		"boots_stormtrooper",
+	"itemtype":		"armor",
+	"armor":		"stboots",
+	"weight":		"2",
+	"cost":			"350",
+	"itemIcon":		"gfx/item_icons/stormtrooper_boots.tga",
+	"itemDescription": "Standard issue leg armor part of the Imperial Stormtrooper protective outfit set. An evolution of earlier Phase II clone trooper armor used in the Clone Wars. Made of white plastoid alloys it protects the wearers legs and feet."
+}

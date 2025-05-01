@@ -1,7 +1,7 @@
 # Build our bundled minizip.
 #
 # It is built as a static relocatable library, and linked into any target that
-# requires it.  Other targets in OpenJK that consume need to add
+# requires it.  Other targets in JKG that consume need to add
 # MINZIP_INCLUDE_DIRS and MINIZIP_LIBRARIES to their lists of include
 # directories and target link libraries.
 #

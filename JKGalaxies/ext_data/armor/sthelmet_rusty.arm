@@ -5,8 +5,8 @@
 	"movemodifier":	1.0,
 
 	"visuals": {
-		"model":	"models/players/stormtrooper/model.glm*reddirt",
-		"modelGroup":	"stormtrooper",
+		"model":	"models/players/stormtrooper_rust/model.glm*default",
+		"modelGroup":	"stormtrooper_rust",
 
 		"armorOnSurfaces": [
 			"head",

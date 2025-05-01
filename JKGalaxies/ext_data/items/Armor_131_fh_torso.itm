@@ -1,0 +1,11 @@
+{
+	"name":             "Diplomat Outfit (Top)",
+	"internal":             "torso_foxhunter",
+	"itemtype":             "armor",
+	"armor":		"fhtorso",
+	"weight":		"1",
+	"cost":			"425",
+	"tier":			2,
+	"itemIcon":		"gfx/item_icons/foxhunter_torso.tga",
+	"itemDescription": "This refined top offers both comfort, style, and protection for the modern politician or businessman with a sense of adventure. Perfect for when you're expecting negotiations to involve both a blaster and a meal with an Imperial Senator."
+}

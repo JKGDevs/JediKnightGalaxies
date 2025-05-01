@@ -1,0 +1,35 @@
+{
+	"ref":		"sggloves",
+	"slot":		"gloves",
+	"armor":		40,
+	"movemodifier":	1.0,
+
+	"visuals": {
+		"model":	"models/players/sunguard/model.glm*default",
+		"modelGroup":	"sunguard",
+
+		"armorOnSurfaces": [
+			"l_arm_wristarmor",
+			"r_arm_wristarmor",
+			"l_hand_plate",
+			"r_hand_plate",
+			"l_hand",
+			"r_hand"
+		],
+
+		"bodyOffSurfaces": [
+			"l_arm_wristarmor",
+			"r_arm_wristarmor",
+			"l_hand",
+			"l_hand_plate",
+			"r_hand",
+			"r_hand_plate",
+			"r_hand_inner_glove",
+			"l_hand_inner_glove",
+			"r_arm_sleeve",
+			"l_arm_sleeve",
+			"r_hand_wrist",
+			"l_hand_wrist"
+		]
+	}
+}

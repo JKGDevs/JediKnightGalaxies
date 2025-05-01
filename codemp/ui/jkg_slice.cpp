@@ -174,6 +174,7 @@ void JKG_Slice_ProgramSetParameter(int param)
 
 	Menu_SetItemText(menu, "progdesc", sliceData.programs[sliceData.selectedProgram].desc);
 	Menu_SetItemText(menu, "btn_runprogram", "Run program");
+	Menu_ItemDisable(menu, "btn_stopslicing", 0);
 }
 
 static void JKG_Slice_Dialog_Show(const char *line1, const char *line2, const char *line3, int type, int dlgid) {

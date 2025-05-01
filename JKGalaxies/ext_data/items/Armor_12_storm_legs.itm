@@ -1,7 +1,7 @@
 {
-	"name":             "Stormtrooper Legguards",
-	"internal":             "legs_stormtrooper",
-	"itemtype":             "armor",
+	"name":         "Stormtrooper Legguards",
+	"internal":     "legs_stormtrooper",
+	"itemtype":     "armor",
 	"armor":		"stlegs",
 	"weight":		"2",
 	"cost":			"350",

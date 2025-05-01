@@ -18,6 +18,7 @@ const stringID_table_s itemPacketNames[] = {
 	ENUM2STRING(IPT_CLEAR),
 	ENUM2STRING(IPT_OPEN),
 	ENUM2STRING(IPT_QUANT),
+	ENUM2STRING(IPT_DURA),
 	ENUM2STRING(IPT_RESET),
 	ENUM2STRING(IPT_EQUIP),
 	ENUM2STRING(IPT_UNEQUIP),
@@ -234,7 +235,7 @@ void BG_SendItemPacket(itemPacketType_t packetType, gentity_t* ent, void* memDat
 		case IPT_ADDACI:
 			{
 				itemInstance_t* pItem = (itemInstance_t*)memData;
-				Com_sprintf(packet, sizeof(packet), "pInv %s %i %i", packetName, pItem->id->itemID, pItem->quantity);
+				Com_sprintf(packet, sizeof(packet), "pInv %s %i %i %i", packetName, pItem->id->itemID, pItem->quantity, pItem->durability);
 			}
 			break;
 		case IPT_REM:
@@ -252,12 +253,15 @@ void BG_SendItemPacket(itemPacketType_t packetType, gentity_t* ent, void* memDat
 		case IPT_QUANT:
 			Com_sprintf(packet, sizeof(packet), "pInv %s %i %i", packetName, intData, intData2);
 			break;
+		case IPT_DURA:
+			Com_sprintf(packet, sizeof(packet), "pInv %s %i %i", packetName, intData, intData2);
+			break;
 		case IPT_RESET:
 			Com_sprintf(packet, sizeof(packet), "pInv %s %i ", packetName, intData);
 			{
 				for(auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
 					// big thanks to Daggo for fixing this
-					Q_strncpyz(packet, va("%s %i %i", packet, it->id->itemID, it->quantity), sizeof(packet));
+					Q_strncpyz(packet, va("%s %i %i %i", packet, it->id->itemID, it->quantity, it->durability), sizeof(packet));
 				}
 			}
 			break;
@@ -286,7 +290,8 @@ void BG_ReceivedItemPacket(itemPacketType_t packetType) {
 				// Add the item to our inventory
 				int itemID = atoi(CG_Argv(2));
 				int itemQuantity = atoi(CG_Argv(3));
-				itemInstance_t item = BG_ItemInstance(itemID, itemQuantity);
+				int durability = atoi(CG_Argv(4));
+				itemInstance_t item = BG_ItemInstance(itemID, itemQuantity, durability);
 				BG_GiveItem(item);
 			}
 			break;
@@ -295,7 +300,8 @@ void BG_ReceivedItemPacket(itemPacketType_t packetType) {
 				// Add the item to our inventory
 				int itemID = atoi(CG_Argv(2));
 				int itemQuantity = atoi(CG_Argv(3));
-				itemInstance_t item = BG_ItemInstance(itemID, itemQuantity);
+				int durability = atoi(CG_Argv(4));
+				itemInstance_t item = BG_ItemInstance(itemID, itemQuantity, durability);
 				BG_GiveItem(item);
 				JKG_CG_FillACISlot(cg.playerInventory->size() - 1, -1);	// WARNING: this should be avoided with items that can stack
 			}
@@ -306,6 +312,14 @@ void BG_ReceivedItemPacket(itemPacketType_t packetType) {
 				int itemStack = atoi(CG_Argv(2));
 				int newQuant = atoi(CG_Argv(3));
 				(*cg.playerInventory)[itemStack].quantity = newQuant;
+			}
+			break;
+		case IPT_DURA:
+			{	
+				//change the durability value of an item
+				int itemID = atoi(CG_Argv(2));
+				int itemDurability = atoi(CG_Argv(3));
+				(*cg.playerInventory)[itemID].durability = itemDurability;
 			}
 			break;
 		case IPT_REM:
@@ -331,9 +345,10 @@ void BG_ReceivedItemPacket(itemPacketType_t packetType) {
 			{
 				int numItems = atoi(CG_Argv(2));
 				for (int i = 0; i < numItems; i++) {
-					int itemID = atoi(CG_Argv(3 + (2 * i)));
-					int quant = atoi(CG_Argv(4 + (2 * i)));
-					itemInstance_t item = BG_ItemInstance(itemID, quant);
+					int itemID = atoi(CG_Argv(3 + (3 * i)));
+					int quant = atoi(CG_Argv(4 + (3 * i)));
+					int durability = atoi(CG_Argv(5 + (3 * i)));
+					itemInstance_t item = BG_ItemInstance(itemID, quant, durability);
 					cg.playerInventory->push_back(item);
 				}
 			}
@@ -455,7 +470,8 @@ void BG_ReceivedTradePacket(itemTradePacketType_t packet) {
 				for (int i = 0; i < numItems; i++) {
 					int itemID = atoi(CG_Argv(4 + (2*i)));
 					int quantity = atoi(CG_Argv(5 + (2*i)));
-					itemInstance_t item = BG_ItemInstance(itemID, quantity);
+					int durability = atoi(CG_Argv(6 + (2*i)));
+					itemInstance_t item = BG_ItemInstance(itemID, quantity, durability);
 					cg.otherTradeItems->push_back(item);
 				}
 				cg.currentlyTradingWith = otherEntity;
@@ -471,7 +487,8 @@ void BG_ReceivedTradePacket(itemTradePacketType_t packet) {
 				for (int i = 0; i < numItems; i++) {
 					int itemID = atoi(CG_Argv(4 + (2 * i)));
 					int quantity = atoi(CG_Argv(5 + (2 * i)));
-					itemInstance_t item = BG_ItemInstance(itemID, quantity);
+					int durability = atoi(CG_Argv(6 + (2 * i)));
+					itemInstance_t item = BG_ItemInstance(itemID, quantity, durability);
 					cg.otherTradeItems->push_back(item);
 				}
 				cg.currentlyTradingWith = otherEntity;
@@ -512,7 +529,8 @@ void BG_ReceivedTradePacket(itemTradePacketType_t packet) {
 			{
 				int itemID = atoi(CG_Argv(3));
 				int quantity = atoi(CG_Argv(4));
-				itemInstance_t item = BG_ItemInstance(itemID, quantity);
+				int durability = atoi(CG_Argv(5));
+				itemInstance_t item = BG_ItemInstance(itemID, quantity, durability);
 				BG_GiveItem(item);
 			}
 			cg.ourTradeItems->clear();
@@ -539,28 +557,33 @@ Creates a new itemInstance object.
 This will cap at max quantity.
 ====================
 */
-itemInstance_t BG_ItemInstance(itemData_t* pItemData, const int quantity) {
-	itemInstance_t returnValue = { nullptr, 0, false };
+itemInstance_t BG_ItemInstance(itemData_t* pItemData, const int quantity, const int durability) {
+	itemInstance_t returnValue = { nullptr, 0, false, 50 };
 
 	if (pItemData == nullptr) {
 		return returnValue;
 	}
 	returnValue.quantity = quantity;
 	returnValue.id = pItemData;
+	returnValue.durability = durability;
 	if (pItemData->maxStack != 0 && quantity > pItemData->maxStack) {
 		returnValue.quantity = pItemData->maxStack;
+	}
+	if (pItemData->maxDurability != 0 && durability > pItemData->maxDurability)
+	{
+		returnValue.durability = pItemData->maxDurability;
 	}
 	return returnValue;
 }
 
-itemInstance_t BG_ItemInstance(const char* internalName, const int quantity) {
+itemInstance_t BG_ItemInstance(const char* internalName, const int quantity, const int durability) {
 	itemData_t* pItemData = BG_FindItemDataByName(internalName);
-	return BG_ItemInstance(pItemData, quantity);
+	return BG_ItemInstance(pItemData, quantity, durability);
 }
 
-itemInstance_t BG_ItemInstance(const int itemID, const int quantity) {
+itemInstance_t BG_ItemInstance(const int itemID, const int quantity, const int durability) {
 	itemData_t* pItemData = &itemLookupTable[itemID];
-	return BG_ItemInstance(pItemData, quantity);
+	return BG_ItemInstance(pItemData, quantity, durability);
 }
 
 /*
@@ -614,6 +637,15 @@ void BG_GiveItem(gentity_t* ent, itemInstance_t item, qboolean ACI) {
 		return;
 	}
 
+	//make sure inventory isn't full
+	if (ent->client && ent->s.eType == ET_PLAYER && ent->inventory->size() >= MAX_INVENTORY_ITEMS)
+	{
+		//notify
+		trap->SendServerCommand(ent - g_entities, va("print \"^1Inventory full! ^7Cannot accept %s item.\n\"", item.id->displayName));
+		trap->SendServerCommand(ent - g_entities, va("notify 1 \"Inventory full!\""));
+		return;
+	}
+
 	BG_GiveItemNonNetworked(ent, item);
 
 	// Network data to the client
@@ -640,6 +672,15 @@ void BG_GiveItemNonNetworked(gentity_t* ent, itemInstance_t item) {
 		return;
 	}
 
+	//make sure inventory isn't full
+	if (ent->client && ent->s.eType == ET_PLAYER && ent->inventory->size() >= MAX_INVENTORY_ITEMS)
+	{
+		//notify
+		trap->SendServerCommand(ent - g_entities, va("print \"^1Inventory full! ^7Cannot accept %s item.\n\"", item.id->displayName));
+		trap->SendServerCommand(ent - g_entities, va("notify 1 \"Inventory full!\""));
+		return;
+	}
+
 	// Fill any incomplete stacks.
 	int nItemID = item.id->itemID;
 	int nMaxStack = item.id->maxStack;
@@ -662,6 +703,9 @@ void BG_GiveItemNonNetworked(gentity_t* ent, itemInstance_t item) {
 			return;
 		}
 	}
+	
+	//--futuza: note that this won't work for player trading, we want durability to be persistent across trades and not reset
+	item.durability = item.id->maxDurability;
 
 	// Add the new item stack to the inventory
 	ent->inventory->push_back(item);
@@ -745,6 +789,12 @@ void BG_GiveItemNonNetworked(itemInstance_t item)
 		return;
 	}
 
+	//make sure inventory isn't full
+	if (cg.playerInventory->size() >= MAX_INVENTORY_ITEMS)
+	{
+		return;
+	}
+
 	// Fill any incomplete stacks.
 	int nItemID = item.id->itemID;
 	int nMaxStack = item.id->maxStack;
@@ -767,6 +817,10 @@ void BG_GiveItemNonNetworked(itemInstance_t item)
 			return;
 		}
 	}
+
+	//--futuza: note that this won't work for player trading, we want durability to be persistent across trades and not reset
+	item.durability = item.id->maxDurability;
+
 	cg.playerInventory->push_back(item);
 
 	// If this item is a weapon, shield, jetpack or consumable - which is not already in our ACI, and the ACI is not full, add it.
@@ -884,6 +938,9 @@ void BG_RemoveItemStack(gentity_t* ent, int itemStack) {
 }
 #else
 void BG_RemoveItemStack(int itemStack) {
+	itemInstance_t item = (*cg.playerInventory)[itemStack];
+
+	//tell player it was removed?
 	cg.playerInventory->erase(cg.playerInventory->begin() + itemStack);
 }
 #endif
@@ -982,6 +1039,33 @@ void BG_AdjustItemStackQuantity(int itemStack, int adjustment) {
 }
 #endif
 
+
+
+
+/*
+====================
+BG_UpdateItemDurability
+
+Server tells client what the current durability value is as well.
+====================
+*/
+#ifdef _GAME
+void BG_UpdateItemDurability(gentity_t* ent, int itemStackNum, int newValue) 
+{
+	if (itemStackNum < 0 || itemStackNum >= ent->inventory->size()) {
+		trap->Print("client %i tried to change durability of invalid slot %i!!\n", ent->s.number);
+		return;
+	}
+	(*ent->inventory)[itemStackNum].durability = newValue;
+	BG_SendItemPacket(IPT_DURA, ent, nullptr, itemStackNum, (*ent->inventory)[itemStackNum].durability);
+}
+#else
+void BG_UpdateItemDurability(int itemStackNum, int newValue)
+{
+	(*cg.playerInventory)[itemStackNum].durability = newValue;
+}
+#endif
+
 /*
 ====================
 BG_AddItemToACI
@@ -1060,7 +1144,7 @@ int BG_ConsumeItem(gentity_t* ent, int itemStackNum) {
 		return 2;
 	}
 
-	if (ent->client->ps.consumableTime > level.time)
+	if (ent->client->ps.consumableTime > level.time && !item->id->consumableData.bingeable)
 	{
 		//still on cooldown for consumables
 		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/interface/ammocon_done.mp3"));
@@ -1084,6 +1168,53 @@ int BG_ConsumeItem(gentity_t* ent, int itemStackNum) {
 	return 0;
 }
 #endif
+
+int BG_GetRepairDuraCost(itemInstance_t* item)
+{
+	int totalCost = 0;
+
+	if (item->durability >= item->id->maxDurability)
+		return totalCost;
+
+	int missingDura = item->id->maxDurability - item->durability;
+	float costPerDura =  static_cast<float>(item->id->baseCost) / static_cast<float>(item->id->maxDurability);
+	
+	//if our item wasn't broken
+	if (item->durability > 0)
+		costPerDura *= 0.10;	//it only costs 1/10th to repair, otherwise we'll have to pay a lot more
+	else
+	{
+		switch (item->id->itemTier) //item tier determines cost
+		{
+		case TIER_SCRAP:
+			costPerDura *= 0.3f;
+			break;
+		case TIER_COMMON:
+			costPerDura *= 0.35f;
+			break;
+		case TIER_REFINED:
+			costPerDura *= 0.45f;
+			break;
+		case TIER_ELITE:
+			costPerDura *= 0.6f;
+			break;
+		case TIER_SUPERIOR:
+			costPerDura *= 0.9f;
+			break;
+		default:
+			costPerDura *= 0.4f;
+			break;
+		}
+	}
+
+	totalCost = costPerDura * missingDura;
+
+	//if our price is between 0 and 1, just make it cost 1 credit - so players can't scam us out of free repairs
+	if (0 < totalCost && totalCost < 1)
+		totalCost = 1;
+
+	return totalCost;
+}
 
 /*
 ====================
@@ -1250,11 +1381,11 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 		itemData->itemType = ITEM_UNKNOWN;
 
 	jsonNode = cJSON_GetObjectItem(json, "tier");
-	item = cJSON_ToIntegerOpt(jsonNode, 1);
+	item = cJSON_ToIntegerOpt(jsonNode, TIER_COMMON);
 	if (item >= NUM_ITEM_TIERS || item < TIER_SCRAP) //out of range
 	{
 		Com_Printf(S_COLOR_YELLOW "Invalid item tier (%i) detected in %s, defaulting to common.\n", item, itemFilePath);
-		item = 1;
+		item = TIER_COMMON;
 	}
 	itemData->itemTier = static_cast<itemTier_t>(item);
 
@@ -1267,12 +1398,9 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 	jsonNode = cJSON_GetObjectItem(json, "droppable");
 	itemData->droppable = cJSON_ToBooleanOpt(jsonNode, true);
 
-	//legendary items are special
-	if (itemData->itemTier == TIER_LEGENDARY)
-	{
-		itemData->tradeable = true;
-		itemData->droppable = true;
-	}
+	jsonNode = cJSON_GetObjectItem(json, "maxDurability");
+	item = cJSON_ToIntegerOpt(jsonNode, MAX_DEFAULT_DURABILITY);	//default durability is 50, but items can individually specify this (and probably should)
+	itemData->maxDurability = item;
 
 	jsonNode = cJSON_GetObjectItem(json, "itemDescription");
 	str = cJSON_ToStringOpt(jsonNode, "No description available.");
@@ -1290,6 +1418,14 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 	jsonNode = cJSON_GetObjectItem(json, "maxStack");
 	item = cJSON_ToIntegerOpt(jsonNode, 1);
 	itemData->maxStack = item;
+
+	//legendary items are special
+	if (itemData->itemTier == TIER_LEGENDARY)
+	{
+		itemData->tradeable = true;
+		itemData->droppable = true;
+		itemData->maxDurability = 999;	//legendary can't be effected by durability
+	}
 
 	//Equipment Info
 	if (itemData->itemType == ITEM_WEAPON) {
@@ -1324,6 +1460,9 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 		Q_strncpyz(itemData->armorData.ref, cJSON_ToStringOpt(jsonNode, ""), sizeof(itemData->armorData.ref));
 		
 		itemData->armorData.pArm = JKG_FindArmorByName(itemData->armorData.ref);
+		if (itemData->armorData.pArm == nullptr) {
+			Com_Printf(S_COLOR_YELLOW "WARNING: %s is an armor, but doesn't have a valid reference to a .arm file!\n", itemFilePath);
+		}
 	}
 	else if (itemData->itemType == ITEM_CONSUMABLE) {
 		// consumeScript controls the script that gets run when we consume the item
@@ -1341,42 +1480,18 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 		// partStaminaReq only allows the item to be consumed if the entity lacks stamina
 		jsonNode = cJSON_GetObjectItem(json, "partStaminaReq");
 		itemData->consumableData.partStaminaReq = (qboolean)cJSON_ToBooleanOpt(jsonNode, false);
+
+		// bingeable allows the item to be consumed rapidly (ignoring the ps.consumableTime)
+		jsonNode = cJSON_GetObjectItem(json, "bingeable");
+		itemData->consumableData.bingeable = (qboolean)cJSON_ToBooleanOpt(jsonNode, false);
 	}
 	else if (itemData->itemType == ITEM_SHIELD) {
-		memset(&itemData->shieldData, 0, sizeof(itemData->shieldData));
+		jsonNode = cJSON_GetObjectItem(json, "shield");
+		Q_strncpyz(itemData->shieldData.ref, cJSON_ToStringOpt(jsonNode, ""), sizeof(itemData->shieldData.ref));
 
-		jsonNode = cJSON_GetObjectItem(json, "capacity");
-		itemData->shieldData.capacity = cJSON_ToIntegerOpt(jsonNode, SHIELD_DEFAULT_CAPACITY);
-
-		jsonNode = cJSON_GetObjectItem(json, "cooldown");
-		itemData->shieldData.cooldown = cJSON_ToIntegerOpt(jsonNode, SHIELD_DEFAULT_COOLDOWN);
-
-		jsonNode = cJSON_GetObjectItem(json, "regenrate");
-		itemData->shieldData.regenrate = cJSON_ToIntegerOpt(jsonNode, SHIELD_DEFAULT_REGEN);
-
-		jsonNode = cJSON_GetObjectItem(json, "rechargeSoundEffect");
-		if (jsonNode) {
-			Q_strncpyz(itemData->shieldData.rechargeSoundEffect, cJSON_ToString(jsonNode), MAX_QPATH);
-		}
-
-		jsonNode = cJSON_GetObjectItem(json, "brokenSoundEffect");
-		if (jsonNode) {
-			Q_strncpyz(itemData->shieldData.brokenSoundEffect, cJSON_ToString(jsonNode), MAX_QPATH);
-		}
-
-		jsonNode = cJSON_GetObjectItem(json, "equippedSoundEffect");
-		if (jsonNode) {
-			Q_strncpyz(itemData->shieldData.equippedSoundEffect, cJSON_ToString(jsonNode), MAX_QPATH);
-		}
-
-		jsonNode = cJSON_GetObjectItem(json, "chargedSoundEffect");
-		if (jsonNode) {
-			Q_strncpyz(itemData->shieldData.chargedSoundEffect, cJSON_ToString(jsonNode), MAX_QPATH);
-		}
-
-		jsonNode = cJSON_GetObjectItem(json, "malfunctionSoundEffect");
-		if (jsonNode) {
-			Q_strncpyz(itemData->shieldData.malfunctionSoundEffect, cJSON_ToString(jsonNode), MAX_QPATH);
+		itemData->shieldData.pShieldData = JKG_FindShieldByName(itemData->shieldData.ref);
+		if (itemData->shieldData.pShieldData == nullptr) {
+			Com_Printf(S_COLOR_YELLOW "WARNING: %s is a shield, but doesn't have a valid reference to a .shield file!\n", itemFilePath);
 		}
 	}
 	else if (itemData->itemType == ITEM_JETPACK) {

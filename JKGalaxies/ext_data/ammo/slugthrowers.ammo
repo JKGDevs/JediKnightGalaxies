@@ -157,5 +157,66 @@
 				}
 			]
 		}
+	},
+	//mostly a meme ammo for testing revives
+	"AMMO_SLUGS_MIRACLE":
+	{
+		"shortname": "Miracle Beads",
+		"longname": "Miraculous Reviving Slugthrower Beads",
+		"basedOn": "AMMO_SLUGS",
+		"max": 60,
+		"pricePerUnit": 35,
+		"overrides": 
+		{
+			"meansofdeath": "MOD_REVIVED",
+        	"splashmeansofdeath": "MOD_REVIVED",
+			"Damage": {
+				"set": -25
+			},
+			
+			"splashRange":
+			{
+				"add": 75
+			},
+
+			"ammocost": {
+				"multiply": 2
+			},
+			"speed": {
+				"set": 2000
+			},
+			"visuals":
+			{
+				"projectile":
+				{
+					"miss": "weapons/watergun_impact_small",
+					"hit": "weapons/watergun_impact_small" ,
+					"effect": "Slugthrowers/slug_medtracershot"
+				},
+				"fire":
+				{
+					"muzzleEffect": "blasters/muzzleflash_Green_small"
+				}
+			},
+			"buffs": 
+			[
+				{
+					"buff": "refined-heal",
+					"addbuff": true,
+					"duration": 
+					{
+						"set": 10000
+					},
+					"intensity":
+					{
+						"multiply": 1.5
+					}
+				},
+				{
+					"buff": "standard-bleed",
+					"remove": true
+				}
+			]
+		}
 	}
 }

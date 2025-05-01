@@ -301,6 +301,11 @@ local function CinBuildExport(ply, name)
 end
 
 local function CinBuild(ply, argc, argv)
+	if ply.isLoggedIn ~=true then
+		ply:SendPrint("^1You are not logged in.")
+		return
+	end
+	
 	local temp
 	local rank = GetRank(ply)
 	if rank["can-cinbuild"] ~= true then

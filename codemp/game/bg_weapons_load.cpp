@@ -173,7 +173,7 @@ static void BG_ParseDamage ( weaponFireModeStats_t *fireModeStats, cJSON *damage
         
         node = cJSON_GetObjectItem (damageNode, "damagedelay");
         darea.damageDelay = cJSON_ToIntegerOpt (node, 0);
-        
+            
         node = cJSON_GetObjectItem (damageNode, "penetration");
         switch ( cJSON_ToIntegerOpt (node, 0) )
         {
@@ -305,9 +305,16 @@ static void BG_ParseWeaponFireMode ( weaponFireModeStats_t *fireModeStats, cJSON
     node = cJSON_GetObjectItem(fireModeNode, "decayRate");
     fireModeStats->decayRate = (float)cJSON_ToNumberOpt(node, 0.25);
     if (fireModeStats->decayRate > 1) //check for invalid decayRates
-        fireModeStats->decayRate = 1;
+        fireModeStats->decayRate = 1.0f;
     if (fireModeStats->decayRate < 0)
-        fireModeStats->decayRate = 0;
+        fireModeStats->decayRate = 0.0f;
+
+    node = cJSON_GetObjectItem(fireModeNode, "armorPenetration");
+    fireModeStats->armorPenetration = (float)cJSON_ToNumberOpt(node, 0.0);
+    if (fireModeStats->armorPenetration > 0.999f) //clamp range
+        fireModeStats->armorPenetration = 0.999f;
+    if (fireModeStats->armorPenetration < 0.0f)
+        fireModeStats->armorPenetration = 0.0f;
 
     node = cJSON_GetObjectItem (fireModeNode, "splashrange");
     fireModeStats->rangeSplash = (float)cJSON_ToNumberOpt (node, 0.0);
@@ -450,7 +457,7 @@ static void BG_ParseWeaponStats ( weaponData_t *weaponData, cJSON *statsNode )
     weaponData->reloadModifier = (float)cJSON_ToNumberOpt (node, 1.0);
 
     node = cJSON_GetObjectItem(statsNode, "swaptime");
-    weaponData->swapTime = cJSON_ToNumberOpt(node, 300);
+    weaponData->swapTime = cJSON_ToNumberOpt(node, 300); //no negative swaptimes (its unsigned)
     
     node = cJSON_GetObjectItem (statsNode, "startzoomfov");
     weaponData->startZoomFov = (float)cJSON_ToNumberOpt (node, 50.0);

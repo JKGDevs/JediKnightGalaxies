@@ -7,19 +7,21 @@
 #include "qcommon/q_shared.h"
 #include "bg_jetpacks.h"
 #include "bg_armor.h"
+#include "bg_shields.h"
 
 #ifdef _GAME
 typedef struct gentity_s gentity_t;
 #endif
 
-#define MAX_ITEM_TABLE_SIZE     (1024)		//how many unique items the game can support (originally: 65553) --Futuza: lol not making that many items
+#define MAX_ITEM_TABLE_SIZE     (2048)		//how many unique items the game can support (originally: 65553) --Futuza: lol not making that many items
 #define MAX_ITEM_FILE_LENGTH    (16384)
-#define MAX_ITEM_NAME			(64)
-#define MAX_ITEM_DESCRIPTION	(250)
-#define MAX_INVENTORY_ITEMS		(256)
+#define MAX_ITEM_NAME			(64)		//Max length the name of an item can be
+#define MAX_ITEM_DESCRIPTION	(250)		//Max length an item description can be.
+#define MAX_INVENTORY_ITEMS		(256)		//max number of items per player inventory
 
 #define MAX_ACI_SLOTS			(10)
 #define MAX_ARMOR_PIECES		(512)		//unused
+#define MAX_DEFAULT_DURABILITY	(50)
 
 /*
  * Enumerations
@@ -64,12 +66,26 @@ typedef enum
 
 typedef enum
 {
+	SHIELDTYPE_UNKNOWN,
+	SHIELDTYPE_SHELL,		//wraps around the player's shape
+	SHIELDTYPE_BUBBLE,		//bubble around the player (eg: Galakmech style)
+	SHIELDTYPE_HANDHELD,	//a physical shield in player's offhand, eg: gungan riot/kite shields
+
+							//consider additional types here such as particle shields, ray shields, bubble, etc
+							//note: officially particle shields == physical, and ray shields == energy
+							//		however, we may do something different as these definitions are sometimes silly in lore
+	SHIELDTYPE_MAX
+} shieldTypes_t;
+
+typedef enum
+{
 	IPT_ADD,		// Added an item to the inventory
 	IPT_REM,		// Removed an item from the inventory
 	IPT_ADDACI,		// Added an item to the inventory (and it is being forced to the ACI)
 	IPT_CLEAR,		// Clears the client inventory
 	IPT_OPEN,		// Tells the client to open their inventory
 	IPT_QUANT,		// An item's quantity has been changed
+	IPT_DURA,		// Tells client the item's current durability
 	IPT_RESET,		// Reset the player's inventory (usually only done after a vid_restart)
 	IPT_EQUIP,		// Equipped an item
 	IPT_UNEQUIP,	// Unequipped an item
@@ -92,7 +108,7 @@ typedef enum itemTier_e
 	//The tiers or 'quality' of an item.
 
 	TIER_SCRAP,		//tier 0: lowest quality, things like scrap or raw materials
-	TIER_COMMON,	//tier 1: the base tier, most items are common
+	TIER_COMMON,	//tier 1: the base/default tier, most items are common
 	TIER_REFINED,	//tier 2: uncommon, quality items - harder to find than common
 	TIER_ELITE,		//tier 3: rare and high quality - elite items are the most powerful items that can be granted from a drop
 	TIER_SUPERIOR,	//tier 4: most powerful item type - can only be created by high level crafting, not available from drops/npcs
@@ -125,28 +141,19 @@ typedef struct {
 } itemArmorData_t;
 
 // Consumables
-#define MAX_CONSUMABLE_SCRIPTNAME	32
+#define MAX_CONSUMABLE_SCRIPTNAME	64
 typedef struct {
 	char consumeScript[MAX_CONSUMABLE_SCRIPTNAME];
 	int consumeAmount;
 	qboolean partHealthReq;  //if set to true, it can only be consumed if hp < maxhealth
 	qboolean partStaminaReq;  //if set to true, it can only be consumed if stamina < maxstamina
+	qboolean bingeable;			//if set to true, this item can ignore ps.consumableTime and be done in rapid succession (default false)
 } itemConsumableData_t;
 
 // Shields
-#define SHIELD_DEFAULT_CAPACITY	25
-#define SHIELD_DEFAULT_COOLDOWN	10000
-#define SHIELD_DEFAULT_REGEN	100
 typedef struct {
-	int capacity;	// Total amount that the shield can absorb
-	int cooldown;	// Time between when we received a hit and when the shield will start recharging
-	int regenrate;	// Time (ms) it takes to recharge one shield unit
-
-	char rechargeSoundEffect[MAX_QPATH];	// Sound that plays once we start charging
-	char brokenSoundEffect[MAX_QPATH];		// Sound that plays once the shield is broken
-	char equippedSoundEffect[MAX_QPATH];	// Sound that plays once the shield is equipped
-	char chargedSoundEffect[MAX_QPATH];		// Sound that plays once a shield is finished charging
-	char malfunctionSoundEffect[MAX_QPATH];	// Sound that plays if the shield has malfunctioned --futuza: to be added later
+	char		ref[MAX_QPATH]; //Reference to a shieldData_t
+	shieldData_t* pShieldData;	// Pointer to the actual shieldData_t.
 } itemShieldData_t;
 
 // Jetpacks
@@ -178,11 +185,12 @@ typedef struct {
 	jkgItemType_t itemType;
 	itemTier_t itemTier;
 	float weight;
+	int maxDurability;
 	unsigned int maxStack;
-	bool tradeable;		//can it be traded?
-	bool segregated;	//if an item is segregated, it doesn't exist in the normal inventory space (eg: quest items, blueprints, etc)
-	bool droppable;		//can the item be dropped?
-	char itemDescription[MAX_ITEM_DESCRIPTION];
+	bool tradeable;		//can it be traded? (unimplemented)
+	bool segregated;	//if an item is segregated, it doesn't exist in the normal inventory space (eg: quest items, blueprints, etc) (unimplemented)
+	bool droppable;		//can the item be dropped? (unimplemented)
+	char itemDescription[MAX_ITEM_DESCRIPTION];	//flavor text for the item
 
 	// Visual Data
 #ifndef _GAME
@@ -207,8 +215,9 @@ typedef struct {
 // The item instance is what is kept in a player's inventory.
 typedef struct {
 	itemData_t* id;
-	int quantity;		//how many do we have?
-	bool equipped;		//is the item assigned to aci/equipped?
+	int quantity;				//how many do we have?
+	bool equipped;				//is the item assigned to aci/equipped?
+	int durability;	//how much durability is left on this item
 } itemInstance_t;
 
 //todo: make itemLookupTable into a singleton object with properties like size/capacity, etc so we can dynamically allocate additional space if the item table needs to be bigger
@@ -227,11 +236,12 @@ itemData_t *BG_GetItemByWeaponIndex(int weaponIndex);
 int BG_FindItemByInternal(const char *internalName);
 qboolean BG_HasWeaponItem(int clientNum, int weaponId);
 itemData_t* BG_FindItemDataByName(const char* internalName);
-itemInstance_t BG_ItemInstance(itemData_t* pItemData, const int quantity);
-itemInstance_t BG_ItemInstance(const char* internalName, const int quantity);
-itemInstance_t BG_ItemInstance(const int itemID, const int quantity);
+itemInstance_t BG_ItemInstance(itemData_t* pItemData, const int quantity, const int durability);
+itemInstance_t BG_ItemInstance(const char* internalName, const int quantity, const int durability);
+itemInstance_t BG_ItemInstance(const int itemID, const int quantity, const int durability);
 int BG_FirstStack(const std::vector<itemInstance_t>& container, const int itemID);
 int BG_NextStack(const std::vector<itemInstance_t>& container, const int itemID, const int prevStack);
+int BG_GetRepairDuraCost(itemInstance_t* item);
 void BG_LoadDefaultWeaponItems(void);
 void BG_InitItems();
 void BG_ShutdownItems();
@@ -243,6 +253,7 @@ void BG_ReceivedItemPacket(itemPacketType_t packet);
 void BG_RemoveItemStack(int itemStackNum);
 void BG_RemoveItemNonNetworked(itemInstance_t item);
 void BG_ChangeItemStackQuantity(int itemStackNum, int newQuantity);
+void BG_UpdateItemDurability(int itemStackNum, int newValue);
 void BG_AddItemToACI(int itemStackNum, int aciSlot);
 void BG_ReceivedTradePacket(itemTradePacketType_t packet);
 void BG_AdjustItemStackQuantity(int itemStack, int adjustment);
@@ -252,6 +263,7 @@ void BG_GiveItemNonNetworked(gentity_t* ent, itemInstance_t item);
 void BG_RemoveItemStack(gentity_t* ent, int itemStackNum);
 void BG_SendItemPacket(itemPacketType_t packetType, gentity_t* ent, void* memData, int intData, int intData2);
 void BG_ChangeItemStackQuantity(gentity_t* ent, int itemStackNum, int newQuantity);
+void BG_UpdateItemDurability(gentity_t* ent, int itemStackNum, int newValue);
 int BG_ConsumeItem(gentity_t* ent, int itemStackNum);
 void BG_SendTradePacket(itemTradePacketType_t packetType, gentity_t* ent, gentity_t* other, void* memData, int intData, int intData2);
 void BG_RemoveItemNonNetworked(gentity_t* ent, itemInstance_t item);

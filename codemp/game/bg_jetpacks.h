@@ -21,6 +21,7 @@ struct jetpackData_t {
 		bool	thrustAllowed;		// Whether thrusting is allowed
 		bool	fwdThrustAllowed;	// Whether forward thrusting is allowed
 		bool	loadBearingAllowed;	// Whether the jetpack can carry extra weight, like CTF flags
+		int		cooldown;			// How many ms to wait before the jetpack can be reactivated
 
 		float	hoverGravity;		// How much to modify gravity when hovering
 

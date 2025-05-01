@@ -1,0 +1,10 @@
+{
+	"name":         "Shoretrooper Boots",
+	"internal":		"boots_shoretrooper",
+	"itemtype":		"armor",
+	"armor":		"shboots",
+	"weight":		"2",
+	"cost":			"350",
+	"itemIcon":		"gfx/item_icons/shoretrooper_boots.tga",
+	"itemDescription": "Based on standard issue Imperial Stormtrooper boots, these boots have been adopted for use in tropical environments and are issued to coastal defender stormtroopers, also called shoretroopers. Tan plastoid alloys protect the wearer's feet."
+}

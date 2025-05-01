@@ -1,0 +1,11 @@
+{
+    "ref":			"shield_merrsonn_ultra",
+    "capacity":	70,
+	"cooldown":	5000,
+	"regenrate":	111,
+
+	"rechargeSoundEffect":	"sound/shield/shield_recharge",
+	"brokenSoundEffect":	"sound/shield/shield_broken6",
+	"equippedSoundEffect":	"sound/shield/shield_equipped3",
+	"chargedSoundEffect":	"sound/shield/shield_recharge8"
+}

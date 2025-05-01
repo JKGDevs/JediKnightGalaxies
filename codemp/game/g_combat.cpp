@@ -1660,7 +1660,7 @@ qboolean JKG_HandleUnclaimedBounties(gentity_t* deadguy)
 {
 	int multiplier = (deadguy->client->numKillsThisLife > jkg_maxKillStreakBounty.integer) ? jkg_maxKillStreakBounty.integer : deadguy->client->numKillsThisLife;
 	gentity_t* player; int reward = jkg_bounty.integer*multiplier;	//set default reward as jkg_bounty
-	int team_amt{ 0 };	//# of players on the team to reward
+	std::vector<int> awards; awards.reserve((MAX_CLIENTS * 0.5)+1);	//which players on the team to award
 
 	int teamToReward = deadguy->client->sess.sessionTeam;	//get dead guy's team
 	if (teamToReward == TEAM_RED)	//if he was red, blue team gets reward
@@ -1673,29 +1673,28 @@ qboolean JKG_HandleUnclaimedBounties(gentity_t* deadguy)
 	for (int i = 0; i < sv_maxclients.integer; i++)
 	{
 		player = &g_entities[i];
-		if (!player->inuse || (player - g_entities >= MAX_CLIENTS) || player == nullptr || player->client == nullptr || player->client->sess.sessionTeam != teamToReward)
+		if (!player->inuse || (player - g_entities >= MAX_CLIENTS) || player == nullptr || player->client == nullptr || player->client->sess.sessionTeam != teamToReward) //don't reward spectators, nonclients, etc
 			continue;
 
-		if(player->client->sess.sessionTeam == teamToReward)
-			team_amt++;
+		if (player->client->sess.sessionTeam == teamToReward)
+		{
+			awards.push_back(i);	//add the client to the award list
+		}
 	}
 
-	if (team_amt < 1)	//nobody there
+	if (awards.size() < 1)	//nobody there
 		return false;
 
 	//calculate team reward split
-	reward = (reward / team_amt);																//equally distribute reward among team
+	reward = (reward / awards.size());															//equally distribute reward among team
 	reward = (reward < jkg_teamKillBonus.integer) ? jkg_teamKillBonus.integer : reward;			//unless its less than teamKillBonus
-	if (team_amt == 1)																			//if only one player, don't give him the whole reward since its not a direct kill
+	if (awards.size() == 1)																		//if only one player, don't give him the whole reward since its not a direct kill
 		reward = reward * 0.5;
 
-	for (int i = 0; i < sv_maxclients.integer; i++)
+	//if we're not on deadguy's team, we deserve a reward!
+	for (int i : awards)
 	{
 		player = &g_entities[i];
-		if (!player->inuse || (player - g_entities >= MAX_CLIENTS) || player == nullptr || player->client == nullptr)	//don't reward spectators, nonclients, etc
-			continue;
-
-		//if we're not on deadguy's team, we deserve a reward!
 		if (player->client->sess.sessionTeam == teamToReward)
 		{
 			trap->SendServerCommand(player->s.number, va("notify 1 \"Team Bounty Claimed: +%i Credits\"", reward));
@@ -1864,8 +1863,11 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	{
 		if (self->assists) {
 			for (auto it = self->assists->begin(); it != self->assists->end(); ++it) {
-				int awardedCredits;
-				int creditsPerKill;
+				int awardedCredits;		//total credits to award
+				int creditsPerKill;		//how much to pay for a kill/objective
+				int ccAssistCredits;	//assist credits from crowd control
+				int dmgAssistCredits;	//assist credits from dmg
+				const float captureCCRatio = 0.10f; const float killCCRatio = 0.15f;	//% to reward for applying CC
 
 				if (!JKG_CanAwardAssist(self, attacker, *it)) {
 					continue;
@@ -1873,52 +1875,65 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 				if (g_gametype.integer == GT_CTF) {
 					creditsPerKill = jkg_creditsPerTeamCapture.integer;
+					ccAssistCredits = creditsPerKill * captureCCRatio;
 				}
 				else {
 					creditsPerKill = jkg_creditsPerKill.integer;
+					ccAssistCredits = creditsPerKill * killCCRatio;
 				}
 
 				// One point of damage is worth 1% of total credits earned per kill
-				awardedCredits = (creditsPerKill / 100.0f) * it->damageDealt;
+				awardedCredits = dmgAssistCredits = (creditsPerKill / 100.0f) * it->damageDealt;
+
+				//did we help with cc?
+				if (it->isCC)
+				{
+					awardedCredits += ccAssistCredits;
+				}
 
 				// Don't trigger it if we don't have any credits to award for this assist
 				if (awardedCredits > 0) {
 					int minAssistReward = (creditsPerKill * ( (51 <= jkg_minAssistAwardRatio.integer ? 50 : jkg_minAssistAwardRatio.integer) / 100.0f));		//the minimum bonus added to assist credits, awardRatio cannot exceed 50% of creditsPerKill
 
 					if (minAssistReward)	//only award if greater than 0
-						awardedCredits = ((awardedCredits < minAssistReward) ? minAssistReward : awardedCredits);
+						dmgAssistCredits = ((dmgAssistCredits < minAssistReward) ? minAssistReward : dmgAssistCredits);
 
-					if (awardedCredits >= creditsPerKill) {
+					if (dmgAssistCredits >= creditsPerKill) {
 						// Always award less than a full kill's worth of credits.
-						awardedCredits = creditsPerKill - 1;
+						dmgAssistCredits = creditsPerKill - 1;
 					}
 
+					awardedCredits = dmgAssistCredits + ccAssistCredits;
 					it->entWhoHit->client->ps.credits += awardedCredits;
+					trap->SendServerCommand(it->entWhoHit - g_entities, "hitmarker"); // Do a hitmarker, as a hint that they got a reward
 
-					// Do a hitmarker, as a hint that they got a reward
-					trap->SendServerCommand(it->entWhoHit - g_entities,
-						va("notify 1 \"Assist: +%i Credits\"", awardedCredits));
-					trap->SendServerCommand(it->entWhoHit - g_entities, "hitmarker");
+					if(dmgAssistCredits > 0)
+						trap->SendServerCommand(it->entWhoHit - g_entities,
+							va("notify 1 \"Assist: +%i Credits\"", dmgAssistCredits));
+					
+					if(ccAssistCredits > 0)
+						trap->SendServerCommand(it->entWhoHit - g_entities,
+							va("notify 1 \"Crowd Control Assist: +%i Credits\"", ccAssistCredits));
 				}
 			}
 		}
 		self->assists->clear();
 
 		
-		//award bonus credits to teammates:
-		if(jkg_teamKillBonus.integer > 0 && !g_dontPenalizeTeam)
+		//award bonus credits to my teammates when I get a kill:
+		if(jkg_teamKillBonus.integer > 0 && !g_dontPenalizeTeam && level.gametype >= GT_TEAM)
 		{
 			gentity_t* player; int reward;
 
 			for (int j = 0; j < sv_maxclients.integer; j++)
 			{
-				reward = 0;
+				reward = 0;	//since we're looping through each player, reset to 0 each time
 				player = &g_entities[j];
 				if (!player->inuse || (player - g_entities >= MAX_CLIENTS)  || attacker == nullptr || attacker->client == nullptr || player == attacker)	//don't reward spectators, nonclients or the killer
 					continue;
 
-				//if I have more deaths than the # of kills doubled - I get extra credits
-				if ( player->client->ps.persistant[PERS_RANK] * 2 < player->client->ps.persistant[PERS_KILLED])
+				//if my team is losing - they get extra credits
+				if (IsMyTeamWinning(player) == -1)
 					reward += jkg_teamKillBonus.integer;
 
 				if (!OnSameTeam(self, attacker))	//if the victim and the attacker aren't on the same team
@@ -2472,7 +2487,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 CheckShield
 ================
 */
-int CheckShield (gentity_t *ent, int damage, int dflags, meansOfDamage_t* means)
+int CheckShield (gentity_t *ent, int damage, int dflags, meansOfDamage_t* means, qboolean override)
 {
 	gclient_t	*client;
 	int			save;
@@ -2492,7 +2507,7 @@ int CheckShield (gentity_t *ent, int damage, int dflags, meansOfDamage_t* means)
 	if (dflags & DAMAGE_NO_SHIELD)
 		return 0;
 
-	if (means->modifiers.ignoreShield)
+	if (means->modifiers.ignoreShield && !override)
 		return 0;
 
 	count = client->ps.stats[STAT_SHIELD];
@@ -2527,23 +2542,35 @@ void ShieldHitEffect(gentity_t* targ, vec3_t dir, int take)
 		targ->client->shieldRechargeLast = targ->client->shieldRegenLast = level.time;
 		targ->client->shieldRecharging = qfalse;
 
-		// Break the shield if it's dead
+		// Break the shield if it's dead (overloaded)
 		if (targ->client->ps.stats[STAT_SHIELD] <= 0) {
 			gentity_t* evEnt2;
 			evEnt2 = G_TempEntity(targ->r.currentOrigin, EV_SHIELD_BROKEN);
 			evEnt2->s.otherEntityNum = targ->s.number;
 
+			itemShieldData_t* shdInfo = nullptr;
 			// Play the sound on the server, since clients don't know about other clients's inventories
 			for (auto it = targ->inventory->begin(); it != targ->inventory->end(); ++it) {
 				if (it->equipped && it->id->itemType == ITEM_SHIELD) {
-					if (it->id->shieldData.brokenSoundEffect[0]) {
-						G_Sound(targ, CHAN_AUTO, G_SoundIndex(it->id->shieldData.brokenSoundEffect));
+					shdInfo = &it->id->shieldData; //grab this for later
+					if (shdInfo->pShieldData->brokenSoundEffect[0]) {
+						G_Sound(targ, CHAN_AUTO, G_SoundIndex(shdInfo->pShieldData->brokenSoundEffect));
 					}
+				}
+			}
+
+			//other overload effects
+			if(targ->client->shieldEquipped)
+			{
+				if(shdInfo->pShieldData->overloadScript[0])
+				{
+					GLua_ShieldOverloadScript(targ, shdInfo);
 				}
 			}
 		}
 	}
 }
+
 
 /*
  *	Applies knockback to the target as a result of damage
@@ -3854,15 +3881,228 @@ void G_CheckForBlowingUp(gentity_t *ent, gentity_t *enemy, vec3_t point, int dam
 }
 //[/FullDismemberment]
 
+
+
+/*
+G_ArmorDurabilityModifier()
+
+	Check on if low durability (25% or less) is reducing armor's effectiveness, then adjust damage.
+	Check if durability score of armor/item should be reduced (chance based on item tier)
+	Decrease durability if applicable, adjust armor appearance based on current durability
+	If durability is 0, check if armor should break if so delete the equipped item.  EDIT: Instead armor just should do nothing.  
+	
+	Reminder: Legendary items cannot take durability damage/be effected by it.
+*/
+int G_ArmorDurabilityModifier(gentity_t* ent, int* damage, const int take, const int armorSlot)
+{
+	//check if durability is enabled
+	if (jkg_durability.integer < 1)
+		return 0;
+
+	if (*damage < 1)
+		return 0;
+
+	int playDurabilitySnd = 0; //default: return 0/false if no durability damage, return 1+ if durability damage or the item hit is already at 0 durability
+	int index = -1; //stupid hack so I can check the inventory's index
+	for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
+	{
+		index++;
+		if (it->equipped && (it->id->itemType == ITEM_ARMOR || it->id->itemType == ITEM_CLOTHING /*|| it->id->itemType == ITEM_JETPACK */))	//if we have a piece of armor equipped
+		{
+			if (it->id->armorData.pArm->slot == armorSlot && it->id->itemTier != TIER_LEGENDARY) //if that piece is the one that got hit, and not legendary
+			{
+				//adjust damage based on durability value
+				if (it->durability > 0)
+				{
+					//11-25%
+					if (it->durability > it->id->maxDurability * 0.10f && it->durability <= it->id->maxDurability * 0.25f)
+					{
+						//efx - armor crumble
+						*damage = ((*damage + take)* 0.25);	//decrease armor's efficiency by 25%
+					}
+
+					//1-10%
+					else if (it->durability <= it->id->maxDurability * 0.10f)
+					{
+						//efx - armor crumbling more
+						*damage = ((*damage + take) * 0.5);		//decrease armor's efficiency by 50%
+					}
+				}
+				else //0 durability
+				{
+					//efx+snd for armor crumble is in cg_event.cpp, see: EV_DURABILITY_DMG
+					++playDurabilitySnd;
+					*damage = take; //0 durability makes armor do nothing
+					trap->SendServerCommand(ent - g_entities, va("notify 1 \"Armor damaged!\"")); //warn the player they're wearing something with 0 durability!
+					break;
+				}
+
+				//decrease durability
+				float chance = 0.0f;	//likelihood of taking durability damage
+				int durability_damage = 0;
+				switch (it->id->itemTier)
+				{
+				case TIER_SCRAP:
+					chance = 0.5f;	//50% chance of taking durability damage
+					break;
+				case TIER_COMMON:
+					chance = 0.4f;	//40% etc.
+					break;
+				case TIER_REFINED:
+					chance = 0.3f;
+					break;
+				case TIER_ELITE:
+					chance = 0.2f;
+					break;
+				case TIER_SUPERIOR:
+					chance = 0.1f;
+					break;
+				default:
+					chance = 0.5f;
+					break;
+				}
+
+				//if we have a non-zero chance, check if the dmg exceeded armor value for higher chance
+				if (chance > 0.0f)
+				{
+					if (take > it->id->armorData.pArm->armor)
+						chance += 0.5;
+
+					if (take > it->id->armorData.pArm->armor * 2)
+					{
+						chance = 1.0f;
+						durability_damage = 2;
+					}
+				}
+
+				if (chance >= 1.0)	//guaranteed
+				{
+					if (durability_damage < 1)	//if not previously set
+						durability_damage = 1;
+				}
+				else if (chance <= 0.0f)	//immune
+				{
+					durability_damage = 0;
+				}
+				else	//badluck: it got damaged
+				{
+					if (chance >= Q_flrand(0.0f, 1.0f))
+					{
+						if (durability_damage < 1)	//if not previously set
+							durability_damage = 1;
+					}
+					else
+						durability_damage = 0;
+				}
+
+				if (durability_damage)
+				{
+					++playDurabilitySnd;
+					it->durability -= durability_damage;
+					trap->SendServerCommand(ent - g_entities, va("durability_update %i %i", index, it->durability)); //have the server tell the client durability updated so the ui can see it
+
+					if (it->durability < 0)
+						it->durability = 0;
+
+					//1-25% durability
+					if (it->durability > 0 && it->durability <= it->id->maxDurability * 0.25f)
+					{
+						trap->SendServerCommand(ent - g_entities, va("chat 100 \"^3Warning:^7 %s is damaged, repair immediately (^3%d/%d^7)!\"", it->id->displayName, it->durability, it->id->maxDurability));
+						//1-10%
+						if (it->durability == 1 || it->durability < it->id->maxDurability * 0.10f) 
+						{
+							//adjust item appearance to appear heavily damaged
+							//draw crumble/dust efx
+						}
+
+						//11-25%
+						else 
+						{
+							//adjust item appearance to appear damaged
+							//draw crumble/dust efx
+						}
+					}
+					else if (it->durability < 1)
+					{
+						trap->SendServerCommand(ent - g_entities, va("chat 100 \"^1Warning:^7 %s is severely damaged, and needs repairs to offer protection (^10/%d^7)!\"", it->id->displayName, it->id->maxDurability));
+					}
+
+					/* Don't bother with breaking/unequipping at 0 for now, feels bad.
+
+					//we're at 0 durability, risk of breaking!
+					if (it->durability < 1)
+					{
+						
+						//determine break chance
+						switch (it->id->itemTier)
+						{
+						case TIER_SCRAP:
+							chance = 0.5f;	//50% chance of taking durability damage
+							break;
+						case TIER_COMMON:
+							chance = 0.45f;
+							break;
+						case TIER_REFINED:
+							chance = 0.4f;
+							break;
+						case TIER_ELITE:
+							chance = 0.35f;
+							break;
+						case TIER_SUPERIOR:
+							chance = 0.30f;
+							break;
+						default:
+							chance = 0.5f;
+							break;
+						}
+
+						if (chance >= Q_flrand(0.0f, 1.0f)) //unlucky, it broke!
+						{
+							trap->SendServerCommand(ent - g_entities, va("chat 100 \"^1%s broke!^7\"", it->id->displayName));
+							trap->SendServerCommand(ent - g_entities, va("notify 1 \"%s broke!\"", it->id->displayName));
+							//efx of breaking armor
+							//give scrap item? --phase 2
+							BG_RemoveItemStack(ent, it - ent->inventory->begin());	//destroy the item
+							break;	//get out of loop
+						}
+						
+						//adjust item appearance to appear heavily damaged
+						//draw crumble/dust efx
+						trap->SendServerCommand(ent - g_entities, va("chat 100 \"^1Warning:^7 %s is severely damaged, repair immediately (^10/%d^7)!\"", it->id->displayName, it->id->maxDurability));
+						trap->SendServerCommand(ent - g_entities, va("notify 1 \"Low durability!\""));
+					}*/
+				}
+				else
+					break;	//terminate loop early, no durability damage
+				
+			}
+			break;
+		}
+	}
+	return playDurabilitySnd;
+}
+
+
 /*
  *	Modifies the damage based on the location where it hit and also the armor equipped at that location (if any)
     Returns true if a headshot, false if anything else.
  */
-bool G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int dflags, int *damage, meansOfDamage_t* means)
+bool G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int dflags, int *damage, meansOfDamage_t* means, float penetration)
 {
+	///////////////////////////////////////
+	//
+	//	1. Check the hit location
+	//	2. Adjust damage based on hit location
+	//	3. Adjust damage based on resistances on equipped armor to means of damage
+	//	4. Check for armor penetration
+	//	5. Adjust damage based on equipped armor at hit location
+	//	6. Adjust damage based on durability
+
 	int hitLoc = -1;
 	int armorSlot = 0;
 	qboolean headshot = false;
+	float modifier = 1.0f;	//how much to modify damage by
+	int take = *damage;		//keep track of original damage
 
 	if (!g_locationBasedDamage.integer)
 	{ //then leave it alone
@@ -3897,7 +4137,7 @@ bool G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 
 		if (hitSurface[0])
 		{
-			G_GetHitLocFromSurfName(ent, hitSurface, &hitLoc, point, vec3_origin, vec3_origin, MOD_UNKNOWN);
+			G_GetHitLocFromSurfName(ent, hitSurface, &hitLoc, point, vec3_origin, vec3_origin, mod);
 		}
 	}
 
@@ -3906,6 +4146,7 @@ bool G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 		hitLoc = G_GetHitLocation( ent, point );
 	}
 
+	//note: neck, robe, implants don't have hit locations assigned (yet) and thus can't offer armor protection (or take durability damage)
 	switch (hitLoc)
 	{
 	case HL_FOOT_RT:
@@ -3919,18 +4160,16 @@ bool G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 		*damage *= bgConstants.damageModifiers.legModifier;
 		break;
 	case HL_WAIST:
-		armorSlot = ARMSLOT_LEGS;
-		*damage *= bgConstants.damageModifiers.torsoModifier;
-		break;
 	case HL_BACK_RT:
 	case HL_BACK_LT:
 	case HL_BACK:
+		//todo: check if jetpack equipped, if so short it out/add emp debuff
 	case HL_CHEST_RT:
 	case HL_CHEST_LT:
 	case HL_CHEST:
 		armorSlot = ARMSLOT_TORSO;
 		*damage *= bgConstants.damageModifiers.torsoModifier;
-		break; //normal damage
+		break;
 	case HL_ARM_RT:
 	case HL_ARM_LT:
 		armorSlot = ARMSLOT_SHOULDER;
@@ -3949,18 +4188,76 @@ bool G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 	default:
 		break; //do nothing then
 	}
-
-	if (ent->client && (ent - g_entities) < MAX_CLIENTS && !means->modifiers.ignoreArmor) {
-		// Remove damage based on armor
+	
+	//adjust for armor
+	if (ent->client && (ent - g_entities) < MAX_CLIENTS) 
+	{
 		int armor = ent->client->ps.armor[armorSlot];
-		if (armor--) {
-			armorData_t* pArm = &armorTable[armor];
-			int armor = pArm->armor;
-			float modifier = (ent->client->ps.stats[STAT_MAX_HEALTH] / (float)(ent->client->ps.stats[STAT_MAX_HEALTH] + armor));
 
-			modifier *= means->modifiers.armor;
+		if (!means->modifiers.ignoreArmor)
+		{
+			qboolean hasDurability = qfalse;
+			if (jkg_durability.integer > 0)
+			{
+				//check if we have armor equipped that has durability left
+				for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
+				{
+					if (it->equipped && it->id->armorData.pArm->slot == armorSlot)
+					{
+						if (it->durability > 0)
+						{
+							hasDurability = qtrue;
+							break;
+						}
+					}
+				}
+			}
+			else
+				hasDurability = qtrue;
 
-			*damage *= modifier;
+			if (hasDurability)
+			{
+				//we wearin armor?
+				if (armor--)
+				{
+					armorData_t* pArm = &armorTable[armor];
+					//remove damage based on resistances
+					for (auto const& i : pArm->resistances)
+					{
+						//MOD matches our armor's resistance type
+						if (mod == i.first)
+						{
+							modifier = i.second; //resistance to apply, eg 0.5
+							*damage *= modifier;
+							break;
+						}
+					}
+
+					//calculate penetration (reduction of armor)
+					int ehp = pArm->armor;
+					if (means->modifiers.armorPenetration > 0.0f && means->modifiers.armorPenetration <= 1.0f || (penetration > 0.0f && penetration <= 1.0f))
+					{
+						ehp = ehp - ((means->modifiers.armorPenetration + penetration) * pArm->armor);	//if penetration is 0.25 (25%), 25 == 19
+
+						if (ehp < 0)
+							ehp = 0;
+					}
+
+					// apply damage reduction based on armor value
+					modifier = (ent->client->ps.stats[STAT_MAX_HEALTH] / (float)(ent->client->ps.stats[STAT_MAX_HEALTH] + ehp)); // calculate damage resistance based on value of armor
+					modifier *= means->modifiers.armor;
+					*damage *= modifier;
+				}
+			}
+			//calculate durability
+			if (G_ArmorDurabilityModifier(ent, damage, take, armorSlot))
+			{
+				// Play the effect for durability damage
+				gentity_t* durEvent;
+				durEvent = G_TempEntity(point, EV_DURABILITY_DMG);
+				durEvent->s.clientNum = ent->s.clientNum;
+				VectorCopy(ent->s.origin, durEvent->s.origin);
+			}
 		}
 	}
 
@@ -3974,6 +4271,7 @@ bool G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 rww - end dismemberment/lbd
 ===================================
 */
+
 
 #define PLAYER_KNOCKDOWN_HOLD_EXTRA_TIME 0
 
@@ -4085,9 +4383,11 @@ void G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t pushDir, fl
 ===================================
 //Evasion Mechanics
 JKG_EvaluateEvasion()
+
+//Allow clients to reduce damage done to them by rolling.
 ===================================
 */
-int G_EvaluateEvasion(gentity_s* targ, gentity_s* attacker, int take)
+int JKG_EvaluateEvasion(gentity_s* targ, gentity_s* attacker, int take)
 {
 	/*
 			Note:
@@ -4151,6 +4451,237 @@ int G_EvaluateEvasion(gentity_s* targ, gentity_s* attacker, int take)
 		return take;
 }
 
+
+/*
+===================================
+//EMP Damage Effects
+JKG_ApplyEMPDamageEffects()
+
+Apply EMP effects from electric damage (disable jetpacks, remove jetfuel based on damage taken, etc)
+===================================
+*/
+void JKG_ApplyEMPDamageEffects(gentity_t* target, meansOfDamage_t* means, const int take)
+{
+	//ensure there was actually emp damage done
+	if (take && target->client && means->modifiers.isEMP)
+	{
+		//=== Handle Jetpacks ===
+		// Futuza: note that a better version of disabling EMP effects is available through the standard-emp debuff, this only shorts stuff out briefly and removes jetfuel
+		// see how it interacts with jetpacks in jkg_equip.cpp ItemUse_Jetpack()
+
+		//short out jetpacks
+		if (target->client->ps.eFlags & EF_JETPACK_ACTIVE)
+			Jetpack_Off(target);
+
+		//remove jetfuel (don't apply jetfuel 'damage' from sources less than 2, such as emp debuffs)
+		if (take > 1)
+		{
+			target->client->ps.jetpackFuel > 0 ? target->client->ps.jetpackFuel -= take : target->client->ps.jetpackFuel = 0;
+
+			if (target->client->ps.jetpackFuel <= 0)
+				target->client->ps.jetpackFuel = 0;
+
+
+		}
+		//=== Handle Other Equipment ===
+		/*
+			todo: other effects for other equipment here
+			eg: short out cloaking devices, specific types of shields, etc
+		  */
+	}
+}
+
+/*
+===================================
+//Reduce Damage if Shielded
+JKG_ApplyShieldProtection()
+
+Shields act as a scapegoat to protect a shielded client from damage before it is applied to the target's hp directly
+===================================
+*/
+void JKG_ApplyShieldProtection(gentity_t* targ, meansOfDamage_t* means, int *ssave, int *take, const int dflags, vec3_t dir, int *knockback, int mod, qboolean blocked)	//ssave and take are pointers to ints in the main combat function so we can modify these values
+{
+	// check if shield nulls damage completely
+	if (targ->client && means->modifiers.shieldBlocks && targ->client->ps.stats[STAT_SHIELD] > 0)
+	{
+		*ssave = 1;	//setting to 1 for now, to indicate immunity since we can't display 0's or characters with plums yet
+		*take = 0;
+		ShieldHitEffect(targ, dir, *ssave);
+		*knockback = 0;
+	}
+	else  //or save some from shield
+	{
+		*ssave = CheckShield(targ, *take, dflags, means, blocked);
+		if (*ssave)
+		{
+			if (targ->client) 
+			{
+				// absorb all damage by the shield, and don't take any, shield protects completely from knockback
+				if (targ->client->ps.stats[STAT_SHIELD] > *ssave) 
+				{
+					
+					targ->client->ps.stats[STAT_SHIELD] -= *ssave;
+					*take = 0;
+
+					//apply knockback anyway if this is acp damage
+					if (mod == JKG_GetMeansOfDamageIndex("MOD_ACP"))
+					{
+						*knockback = static_cast<int>(*knockback * 0.75f);
+					}
+					else
+						*knockback = 0;
+				}
+
+				//special exception for when damage ties shield charge
+				else if (targ->client->ps.stats[STAT_SHIELD] > 0)
+				{
+					
+					if (static_cast<int>(*take * means->modifiers.shield) == targ->client->ps.stats[STAT_SHIELD])
+					{
+						targ->client->ps.stats[STAT_SHIELD] = 0;
+						*take = 0;
+						*knockback = 0;
+
+						if (mod == JKG_GetMeansOfDamageIndex("MOD_ACP"))
+						{
+							*knockback = static_cast<int>(*knockback * 0.75f);
+						}
+						else
+							*knockback = 0;
+					}
+
+					// we have some shield charge but some damage will break through
+					else
+					{
+						*take -= targ->client->ps.stats[STAT_SHIELD];
+						targ->client->ps.stats[STAT_SHIELD] = 0;
+
+						if (*take < 1)			//this isn't just safety checking, in the event that the means does extra damage to shields, ssave will be > take, so we'd end up a negative spill over.
+							*take = -*take;	  //eg: 27 shield, 26 take (multipled to 41 shield dmg reduced to 27) == 26-27 == -1, uh oh!  no worries, math is still correct, just reverse the negative
+
+						*knockback = static_cast<int>(*knockback * 0.75f);	//shield reduces knockback by 25%
+					}
+
+				}
+			}
+			ShieldHitEffect(targ, dir, *ssave);
+		}
+	}
+	if (*knockback < 0)
+		*knockback = 0;
+}
+
+
+/*
+===================================
+//check if mods were overriden
+JKG_IsShieldModOverriden()
+
+Shields can be overridden to disallow/allow means to bypass the shield.
+===================================
+*/
+qboolean JKG_IsShieldModOverriden(gentity_t* ent, int mod, shieldData_t *shield, std::vector<int> &list)  //entity wearing the shield, the means of damage, which list to check
+{
+	qboolean overridden = qfalse;
+
+	//has shield equipped
+	if (shield != nullptr)
+	{
+		if (list.data() == shield->blockedMODs.data())
+		{
+			//if we got at least 1 item on the block list
+			if (shield->blockedMODs.size() > 0)
+			{
+				//search block list
+				for (auto it : shield->blockedMODs)
+				{
+					if (mod == it)
+					{
+						overridden = qtrue;	//this shield blocks this mod and is special
+						break;
+					}
+				}
+			}
+		}
+		else if (list.data() == shield->allowedMODs.data())
+		{
+			if (shield->allowedMODs.size() > 0)
+			{
+				//search allowed list
+				for (auto it : shield->allowedMODs)
+				{
+					if (mod == it)
+					{
+						overridden = qtrue;	//this shield permits this mod to pass through the shield and is special
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			Com_Printf(S_COLOR_RED "Passed an illegal vector to JKG_IsShieldModOverriden()\n");
+			overridden = qfalse;
+		}
+	}
+
+	return overridden;
+}
+
+
+/*
+===================================
+//apply knockback
+JKG_ApplyKnockback()
+
+Figure momentum add from knockback, even if the damage won't be taken
+===================================
+*/
+void JKG_ApplyKnockback(int knockback, int mod, gentity_t* targ, gentity_t* attacker, vec3_t dir)
+{
+	// figure momentum add, even if the damage won't be taken
+	if (knockback && targ->client && !targ->client->pmfreeze) {
+		vec3_t	kvel;
+		float	mass;
+
+		mass = 200;
+
+		if (mod == MOD_SABER)
+		{
+			float saberKnockbackScale = g_saberDmgVelocityScale.value;
+			VectorScale(dir, (g_knockback.value * (float)knockback / mass) * saberKnockbackScale, kvel);
+		}
+		else
+		{
+			VectorScale(dir, g_knockback.value * (float)knockback / mass, kvel);
+		}
+		VectorAdd(targ->client->ps.velocity, kvel, targ->client->ps.velocity);
+
+		if (attacker && attacker->client && attacker != targ)
+		{
+			float dur = 5000;
+			float dur2 = 100;
+			targ->client->ps.otherKiller = attacker->s.number;
+			targ->client->ps.otherKillerTime = level.time + dur;
+			targ->client->ps.otherKillerDebounceTime = level.time + dur2;
+		}
+		// set the timer so that the other client can't cancel
+		// out the movement immediately
+		if (!targ->client->ps.pm_time && (g_saberDmgVelocityScale.integer || mod != MOD_SABER)) {
+			int		t;
+
+			t = knockback * 2;
+			if (t < 50) {
+				t = 50;
+			}
+			if (t > 200) {
+				t = 200;
+			}
+			targ->client->ps.pm_time = t;
+			targ->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
+		}
+	}
+}
 
 
 /*
@@ -4230,6 +4761,19 @@ void G_Heal(gentity_t* target, gentity_t* inflictor, gentity_t* healer,
 		return;
 	}
 
+	//they're dead Jim
+	if (!JKG_ClientAlive(target))
+	{
+		//check if this means is allowed to bring people back from the dead
+		if (!means->modifiers.canRevive)
+			return;
+
+		//check if we're past the expiration date
+		if (target->client->deathcamTime && level.time > target->client->deathcamTime)
+			return;
+	
+	}
+
 	//if we have less than max health we can be healed!
 	if (target->client->ps.stats[STAT_HEALTH] < target->client->ps.stats[STAT_MAX_HEALTH])
 	{
@@ -4303,10 +4847,12 @@ void GLua_NPCEV_OnPain(gentity_t *self, gentity_t *attacker, int damage);
 void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 			   vec3_t dir, vec3_t point, int damage, int dflags, int mod ) {
 	gclient_t	*client;
-	int			take;
-	int			ssave;
-	int			knockback;
+	int			take = 0;	//how much damage we actually take
+	int			ssave = 0;	//shield save
+	int			directDmg = 0; //direct damage (bypasses shield from ACP weaponry)
+	int			knockback = 0;
 	qboolean	isHeadShot = false;
+	qboolean	isCC = false;
 	meansOfDamage_t* means = JKG_GetMeansOfDamage(mod);
 
 
@@ -4471,49 +5017,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	if ( dflags & DAMAGE_NO_KNOCKBACK ) {
 		knockback = 0;
 	}
+	//knockback will be applied later after we check for other protections (like shields)
 
-	// figure momentum add, even if the damage won't be taken
-	if ( knockback && targ->client && !targ->client->pmfreeze) {
-		vec3_t	kvel;
-		float	mass;
-
-		mass = 200;
-
-		if (mod == MOD_SABER)
-		{
-			float saberKnockbackScale = g_saberDmgVelocityScale.value;
-			VectorScale (dir, (g_knockback.value * (float)knockback / mass)*saberKnockbackScale, kvel);
-		}
-		else
-		{
-			VectorScale (dir, g_knockback.value * (float)knockback / mass, kvel);
-		}
-		VectorAdd (targ->client->ps.velocity, kvel, targ->client->ps.velocity);
-
-		if (attacker && attacker->client && attacker != targ)
-		{
-			float dur = 5000;
-			float dur2 = 100;
-			targ->client->ps.otherKiller = attacker->s.number;
-			targ->client->ps.otherKillerTime = level.time + dur;
-			targ->client->ps.otherKillerDebounceTime = level.time + dur2;
-		}
-		// set the timer so that the other client can't cancel
-		// out the movement immediately
-		if ( !targ->client->ps.pm_time && (g_saberDmgVelocityScale.integer || mod != MOD_SABER ) ) {
-			int		t;
-
-			t = knockback * 2;
-			if ( t < 50 ) {
-				t = 50;
-			}
-			if ( t > 200 ) {
-				t = 200;
-			}
-			targ->client->ps.pm_time = t;
-			targ->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
-		}
-	}
 
 	// check for completely getting out of the damage
 	if ( !(dflags & DAMAGE_NO_PROTECTION) ) {
@@ -4621,14 +5126,32 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	}
 	take = damage;  //from this point on want to know diff between damage received and what is actually taken (things like shields, armor, evasion all will reduce it)
 
-	//if roll dodges are allowed (on by default)
+/////////////////////////////////////////
+//	JKG DAMAGE CALCULATIONS
+/////////////////////////////////////////
+//
+//	0. Make sure godmode isn't applicable & 1/2 self damage (see above)
+//	1. Check for evasion (roll dodges)
+//	2. Check & calculate direct damage (shield will be bypassed: ACP etc)
+//	3. Reduce damage by shield amount (shields can also reduced knockback)
+//	4. Apply direct damage (from step 2)
+//	5. Modify damage by special debuffs
+//	6. Modify damage by location based modifier
+//	7. Check for resistances on armor
+//	8. Apply knockback 
+//	9. Reduce damage by armor reduction
+//	10. Modify damage by client type (eg: organic, droid)
+//	11. Apply EMP Effects (eg: disable jetpack, etc)
+
+
+	//calculate roll dodge/evasion reduction
 	if (jkg_allowDodge.integer > 0 && take > 0 && means->modifiers.dodgeable && targ->client)
 	{
-		take = G_EvaluateEvasion(targ, attacker, take); //calculate roll dodge reduction
+		take = JKG_EvaluateEvasion(targ, attacker, take); 
 	}
 
-	int directDmg = 0; //direct damage that bypasses shield from ACP weaponry
-	if (mod == JKG_GetMeansOfDamageIndex("MOD_ACP") ) //handle division of ACP type damage
+	//handle division of ACP type damage
+	if (mod == JKG_GetMeansOfDamageIndex("MOD_ACP") ) 
 	{
 		const weaponData_t* weaponData;
 		weaponData = GetWeaponData(attacker->client->ps.weapon, attacker->client->ps.weaponVariation);
@@ -4650,69 +5173,78 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 			directDmg = 1;
 	}
 
-	///////////////////////////////////////
-	//
-	//	1. Reduce damage by shield amount
-	//	2. Modify damage by location based modifier
-	//	3. Reduce damage by armor reduction
-
-	// save some from shield
-	if (targ->client && means->modifiers.shieldBlocks && targ->client->ps.stats[STAT_SHIELD] > 0)
+	//see if shields protect target
+	if (client && client->ps.stats[STAT_SHIELD] > 0)
 	{
-		// this damage is -completely avoided- because we're wearing a shield
-		ssave = 1;	//setting to 1 for now, to indicate immunity since we can't display 0's or characters with plums yet
-		take = 0;
-		ShieldHitEffect(targ, dir, ssave);
+		//check for special shield properties:
+		//todo: use JKG_IsShieldModOverriden() to move this all into
+		bool modIsBlocked = qfalse, //if the mod is blocked by this shield
+			modIsAllowed = qfalse,	//if the mod bypasses this shield 
+			standardShield = qtrue;	//if the shield is normal
 
-	}
-	else
-	{
-		ssave = CheckShield(targ, take, dflags, means);
-		if (ssave)
+		//look for shield items
+		std::string shield_name = ""; //in case we need to report an error
+		if(client->shieldEquipped)
 		{
-			if (targ->client) {
-				if (targ->client->ps.stats[STAT_SHIELD] > ssave) {
-					// absorb all damage by the shield, and don't take any
-					targ->client->ps.stats[STAT_SHIELD] -= ssave;
-					take = 0;
-				}
-				else if (targ->client->ps.stats[STAT_SHIELD] > 0)
+			shieldData_t* shield = nullptr;
+			for (auto it = targ->inventory->begin(); it != targ->inventory->end(); ++it)
+			{
+				if (it->equipped && it->id->itemType == ITEM_SHIELD)
 				{
-					//special exception for when damage ties shield charge
-					if (static_cast<int>(take*means->modifiers.shield) == targ->client->ps.stats[STAT_SHIELD])
-					{
-						targ->client->ps.stats[STAT_SHIELD] = 0;
-						take = 0;
-					}
-
-					// we have some shield charge but some damage will break through
-					else
-					{
-						take -= targ->client->ps.stats[STAT_SHIELD];
-						targ->client->ps.stats[STAT_SHIELD] = 0;
-
-						if (take < 1)			//this isn't just safety checking, in the event that the means does extra damage to shields, ssave will be > take, so we'd end up a negative spill over.
-							take = -take;	  //eg: 27 shield, 26 take (multipled to 41 shield dmg reduced to 27) == 26-27 == -1, uh oh!  no worries, math is still correct, just reverse the negative
-					}
-					
+					shield = it->id->shieldData.pShieldData;
+					shield_name = it->id->displayName;
+					break;
 				}
 			}
-			ShieldHitEffect(targ, dir, ssave);
+			assert(shield);
+			modIsBlocked = JKG_IsShieldModOverriden(targ, mod, shield, shield->blockedMODs);
+			modIsAllowed = JKG_IsShieldModOverriden(targ, mod, shield, shield->allowedMODs);
 		}
+
+		if(modIsAllowed)
+			standardShield = qfalse;
+
+		//warn them the item file is malformed and default it to a standardShield
+		if (modIsBlocked && modIsAllowed)
+		{
+			Com_Printf(S_COLOR_RED "Invalid Shield: means of damage is on both the block & allow list of %s.\n", shield_name);
+			modIsBlocked = qfalse;
+			modIsAllowed = qfalse;
+			standardShield = qtrue;
+		}
+
+		//shield blocks this damage type!
+		if(modIsBlocked || standardShield)
+			JKG_ApplyShieldProtection(targ, means, &ssave, &take, dflags, dir, &knockback, mod, modIsBlocked);	//ssave, take, and knockback are modified
 	}
 
-	take = take + directDmg;	//apply direct damage in case the shield was bypassed
+	//apply direct damage in case the shield was bypassed
+	take = take + directDmg;	
 
+	//save some from buff resistance (eg: carbonite protects)
+	if (client && take > 0 && JKG_HasResistanceBuff(targ->playerState))
+	{
+		take *= 0.5; //reduce damage by 1/2
+		if (take < 1)
+			take = 1;
+	}
 
+	//see if we should modify it by damage location/reduce by worn armor
 	if (take > 0 && !(dflags&DAMAGE_NO_HIT_LOC))
-	{//see if we should modify it by damage location
-		if (targ->client &&
-			attacker->inuse && attacker->client)
-		{ //check for location based damage stuff.
-			isHeadShot = G_LocationBasedDamageModifier(targ, point, mod, dflags, &take, means);
+	{
+		if (client &&
+			attacker->inuse)
+		{ //check for headshot, location based modifiers, resistances, armor, and durability changes
+			isHeadShot = G_LocationBasedDamageModifier(targ, point, mod, dflags, &take, means, inflictor->armorPenetration);
 			if (targ->health < 0)
 				isHeadShot = qfalse;	//don't notify about headshots on corpses
 		}
+	}
+
+	// apply knockback
+	if (knockback)
+	{
+		JKG_ApplyKnockback(knockback, mod, targ, attacker, dir);
 	}
 
 	// modify it by the organic or structural modifier for this means
@@ -4727,28 +5259,18 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		}
 	}
 
-	// save some from being resistant (eg: carbonite protects us)
-	if (targ->client && take > 0 && JKG_HasResistanceBuff(targ->playerState))
-	{
-		take = take / 2; //reduce damage by 1/2
-		if (take < 1)
-			take = 1;
-	}
-
 	//apply EMP effects from electric damage
-	if (take && targ->client && means->modifiers.isEMP)
-	{
-		//short out jetpacks
-		if (targ->client->ps.eFlags & EF_JETPACK_ACTIVE)
-			Jetpack_Off(targ);
+	JKG_ApplyEMPDamageEffects(targ, means, take); 
 
-		//--Futuza: note that a better version of EMP is available through the standard-emp debuff, this only shorts stuff out once
-		//see how it interacts with jetpacks in jkg_equip.cpp ItemUse_Jetpack()
-	}
+	// note, Force Protect doesn't do anything (eez removed the code)
+
+	//does this count as crowd control?
+	if ( knockback > 32 || (means->modifiers.isCC && take > 0))
+		isCC = qtrue;
 
 #ifndef FINAL_BUILD
 	if ( g_debugDamage.integer ) {
-		trap->Print( "%i: client:%i health:%i damage:%i armor:%i\n", level.time, targ->s.number,
+		trap->Print( "%i: client:%i health:%i damage:%i shield:%i\n", level.time, targ->s.number,
 			targ->health, take, ssave );
 	}
 #endif
@@ -4783,7 +5305,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		}
 	}
 
-	// See if it's the player hurting the emeny flag carrier
+	// See if it's the player hurting the enemy flag carrier
 	if( level.gametype == GT_CTF ) {
 		Team_CheckHurtCarrier(targ, attacker);
 	}
@@ -4793,8 +5315,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		targ->client->lasthurt_client = attacker->s.number;
 		targ->client->lasthurt_mod = mod;
 	}
-
-	// note, Force Protect doesn't do anything (I removed the code)
 
 	if (( ssave || take ) && targ->client && !targ->NPC )
 	{
@@ -4909,10 +5429,33 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 
 					else
 					{
-						trap->SendServerCommand(targ - g_entities, va("chat 100 \"Killed by %s^7's head blow!\"", attacker->client->pers.netname));
+						if(attacker->client) //make sure a nonclient didn't kill them
+							trap->SendServerCommand(targ - g_entities, va("chat 100 \"Killed by %s^7's head blow!\"", attacker->client->pers.netname));
+						else
+							trap->SendServerCommand(targ - g_entities, va("chat 100 \"Killed by a head blow!\""));
+
+						//tell the attacker they got a headshot
 						trap->SendServerCommand(attacker - g_entities, va("notify 1 \"Head blow!\""));
 					}
 				}
+
+				//check for dismemberment for players --futuza: todo check wtf is going on with armor when dismemberment happens
+				if (targ->s.eType == ET_PLAYER)
+				{
+					if ((means->dismemberment.canDismember || means->dismemberment.blowChunks)
+						&& take > 2 && !(dflags & DAMAGE_NO_DISMEMBER))
+					{
+						if (means->dismemberment.canDismember)
+						{
+							G_CheckForDismemberment(targ, attacker, targ->pos1, take, targ->client->ps.torsoAnim, qtrue);
+						}
+						if (means->dismemberment.blowChunks)
+						{
+							G_CheckForBlowingUp(targ, attacker, targ->pos1, take, targ->client->ps.torsoAnim, qtrue);
+						}
+					}
+				}
+				
 			}
 			else if (targ->s.eType == ET_NPC)
 			{ //g2animent
@@ -4947,6 +5490,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 					G_CheckForDismemberment(targ, attacker, targ->pos1, take, targ->client->ps.torsoAnim, qtrue);
 				}
 			}
+
+
 
 			targ->enemy = attacker;
 			targ->die (targ, inflictor, attacker, take, mod);
@@ -4991,13 +5536,14 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		if(targ->client && !targ->NPC && !OnSameTeam(attacker, targ))
 		{
 			// Add an assist to the records
-			entityHitRecord_t hitrecord{ attacker, level.time, take };
+			entityHitRecord_t hitrecord{ attacker, level.time, take, isCC };
 			qboolean bAdded = qfalse;
 
 			// If we have an assist record by this person already, then we need to add the damage
 			for (auto it = targ->assists->begin(); it != targ->assists->end(); ++it) {
 				if (it->entWhoHit == attacker) {
 					it->damageDealt += take;
+					it->isCC = (it->isCC || isCC);	//if they did cc before or now, it still counts as cc
 					bAdded = qtrue;
 					break;
 				}

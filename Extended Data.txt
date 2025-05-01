@@ -8,12 +8,13 @@ Jedi Knight Galaxies is easily the most moddable mod for Jedi Academy in existen
 2. Understanding treasure classes
 3. Global tables
 4. Item fields
-5. Armor fields
-6. Weapon fields
-7. Ammo fields
-8. Jetpack fields
-9. Teams ("Gang Wars") fields
-10. Lightsabers - Hilts and Stances
+5. Shield fields
+6. Armor fields
+7. Weapon fields
+8. Ammo fields
+9. Jetpack fields
+10. Teams ("Gang Wars") fields
+11. Lightsabers - Hilts and Stances
 
 
 ## UNDERSTANDING THE DATA STRUCTURES
@@ -87,7 +88,8 @@ Each object, whose name is the buff linkage (example, "standard-fire": {} can be
   - waterRemoval (boolean): If true, swimming in water will remove the buff.
   - rollRemoval (boolean): If true, rolling removes this buff.
   - shieldRemoval (boolean): If true, if an active shield is equipped (with at least 1 charge) will remove this buff.
-  - filterRemoval (boolean): If true, if armor with the filter property is equipped will remove this buff.
+  - filterRemoval (boolean): If true, if armor with the filter property is equipped will prevent this buff from being applied.
+  - antitoxRemoval (boolean): If true, if armor with the antitox property is equipped will prevent this buff from being applied and actively remove it.
   - cancelOther (array of objects): Cancels out buffs in other categories when this buff is applied. Each object in this array contains the following data:
    - category (string): The category to cancel out.
    - priority (integer): Won't cancel anything in this category unless this priority number is >= that buff's priority number.
@@ -135,7 +137,7 @@ Defines several constants. These could be cvars, but I decided not to, in order 
  - ironsightsMoveSpeed (float): Controls how fast players move when they are using ironsights
  - blockingModeMoveSpeed (float): Controls how fast players move when they are using sabers in Blocking or Projectile Blocking mode.
 
-The following modify movement speed
+The following modify movement speed:
  - backwardsSpeedModifier (float): Modifies the player's speed when they are walking backwards.
  - strafeSpeedModifier (float): Modifies the player's speed when they are moving side-to-side.
  - baseSpeedModifier (float): Modifies the run speed.
@@ -143,6 +145,10 @@ The following modify movement speed
  - minimumSpeedModifier (float): Adds up the modifiers. If all of the modifiers fall below this value, they are capped to being this.
  - sprintSpeedModifier (float): Modifies the sprint speed
  - backwardsDiagonalSpeedModifier (float): Modifies the backwards, diagonal movement speed. 
+ 
+The following are miscellaneous modifiers:
+ - consumableTime (int): How many ms clients have to wait between using consumables (default 3000ms)
+ - fallDamageDelta (float): how much fall dmg is reduced by (see ClientEvents() in g_active.cpp for implementation details)
 
  - stamina(object):
   - lossFromRolling (integer): How much stamina is lost from rolling.
@@ -170,14 +176,19 @@ It contains a series of means of damage, each one has the following fields:
  - disintegrate (boolean): If true, this damage type will disintegrate people when it kills them.
 
  - modifiers (object):
-  - dodgeable (boolean): If true, this damage type may be reduced with an evade skill (eg: rolling)
-  - ignoreArmor (boolean): If true, this damage type ignores armor
-  - ignoreShield (boolean): If true, this damage type ignores shields
-  - isEMP (boolean): If true, this damage type can trigger special EMP effects, such as disabling jetpacks.  These effects are defined in game\g_combat.cpp within the G_Damage() function.  These only occur if the target actually takes damage (if a shield protects the target nothing is triggered).
+  - dodgeable (boolean, default false): If true, this damage type may be reduced with an evade skill (eg: rolling)
+  - ignoreArmor (boolean, default false): If true, this damage type ignores armor. 
+  - ignoreShield (boolean, default false): If true, this damage type ignores shields. 
+  - isEMP (boolean, default false): If true, this damage type can trigger special EMP effects, such as disabling jetpacks.  These effects are defined in game\g_combat.cpp within the G_Damage() function.  These only occur if the target actually takes damage (if a shield protects the target nothing is triggered).
+  - shieldBlocks (boolean, default false): If true, this damage type is blocked entirely by shields (shields take 0 dmg from this damage type).
+  - shieldProtects (boolean, default false): if true, this damage type cannot be applied as a debuff while protected by a shield (shields still take damage from this damage type).
+  - isCC (boolean, default false): If true, this damage type counts as crowd control and will award assists based on applying crowd control. Note: doing knockback will also count as cc.
+  - canRevive (boolean, default false): If true, this damage type can bring the dead back to life!
   - armor (float, default 1.0): Controls how much damage this type does against armor
   - shield (float, default 1.0): Controls how much damage this type does against shields
   - organic (float, default 1.0): Controls how much damage this type does against soft targets
   - droid (float, default 1.0): Controls how much damage this type does against droids
+  - armorPenetration (float, default 0.0): How much % of equipped armor should this damage type ignore (eg: 1.0 ignores all of the target's armor, 0.5 ignores 50% of the armor, 0.1 ignores 10% of the armor)
 
  - dismemberment (object):
   - canDismember (boolean): If true, this damage type can dismember people.
@@ -193,9 +204,9 @@ It contains a series of means of damage, each one has the following fields:
 
  - plums (object):
   - hide (boolean): If true, damage numbers will not show up for this damage type
-  - damageColor (array of float): RGB color of damage numbers when a target is damaged by this damage type
-  - lowDamageColor (array of float): RGB color of damage numbers when a target is barely damaged (< 25% of base damage) by this damage type
-  - shieldDamageColor (array of float): RGB color of damage numbers when a target's shields are damaged by this damage type
+  - damageColor (array of float): RGB color of damage numbers when a target is damaged by this damage type; default: 255, 17, 17 (red)
+  - lowDamageColor (array of float): RGB color of damage numbers when a target is barely damaged (< 25% of base damage) by this damage type; default: 255, 255, 17 (yellow)
+  - shieldDamageColor (array of float): RGB color of damage numbers when a target's shields are damaged by this damage type; default: 17, 255, 255 (cyan)
 
 
 ## ITEM FIELDS
@@ -209,13 +220,13 @@ Each .itm file contains one item, which can have the following fields:
  - id (integer): Assigns a specific internal item ID number to this item. Not recommended to use this except in special circumstances.
  - itemIcon (string): The item icon shader as it appears in the inventory
  - itemtype (special): The type of the item. Can be the following: armor, weapon, clothing, consumable, shield, jetpack, ammo, tool.
- - tier (integer): Which tier of item the item is (0 - scrap, 1 - common, 2 - refined, 3 - elite, 4 - superior, 5 - legendary). Default: Common
- - weight (float): Unused, cannot be less than 0.    Default: 1.0
- - cost (integer): How much the item costs from the vendor.  Default: 100
- - maxStack (integer): How many of this item can be carried in a stack.
- - tradeable (boolean): If true, the item can be traded/sold/etc.  Not yet fully implemented.  Default: true. (Note: defaults to true if tier is 5)
- - segregated (boolean): If true, the item does not show up/take up space in the normal inventory (for things like quest items etc).  Default: false.
- - droppable (boolean): If true, the item can be dropped/destroyed.  Not yet fully implemented.  Default: true ((Note: defaults to true if tier is 5)
+ - tier (integer, default 1): Which tier of item the item is (0 - scrap, 1 - common, 2 - refined, 3 - elite, 4 - superior, 5 - legendary).
+ - weight (float, default 1.0): Unused, cannot be less than 0.
+ - cost (integer, default 100): How much the item costs from the vendor.
+ - maxStack (integer, default true): How many of this item can be carried in a stack.
+ - tradeable (boolean, default true): If true, the item can be traded/sold/etc.  Not yet fully implemented.  Note: defaults to true if tier is 5
+ - segregated (boolean, default false): If true, the item does not show up/take up space in the normal inventory (for things like quest items etc). 
+ - droppable (boolean, default true): If true, the item can be dropped/destroyed.  Not yet fully implemented.  Note: defaults to true if tier is 5
  - itemDescription (string): A description of the item up to 250 characters in length.  Longer descriptions are forcibly truncated.
 
 The following contains information specific to WEAPON items:
@@ -238,19 +249,32 @@ The following contains information specific to CONSUMABLE items:
  - consumeAmount (string): The number to consume when consuming.
  - partHealthReq (boolean, default false): if set to true, the item can only be consumed if hp < maxhealth
  - partStaminaReq (boolean, default false): if set to true, the item only be consumed if stamina < maxstamina
+ - bingeable (boolean, default false): if set to true, the item can ignore the cooldown for consumables
 
 The following contains information specific to SHIELD items:
+ - shield (string): The reference to the shield.  (Note: most shield functions have now been moved to their own file as of 10/22/2024)
 
- - capacity (integer, default 25): How much shield this item has when equipped
+
+The following contains information specific to JETPACK items:
+
+ - jetpack (string): The reference to the jetpack
+
+
+## SHIELD FIELDS
+Each .shield file contains data for one shield.  They may contain the following fields:
+ - ref (string): The internal name of this armor.
+ - capacity (integer, default 25): How much shield this item has when equipped.
  - cooldown (integer, default 10000): How long, in milliseconds, between the last time the shield was hit and when it will start recharging.
  - regenrate (integer, default 100): How long, in milliseconds, it takes for the shield to recharge one unit.
  - rechargeSoundEffect (string): The sound effect that is played when the shield starts recharging.
  - brokenSoundEffect (string): The sound effect that is played when the shield loses all of its charge
  - equippedSoundEffect (string): The sound effect that is played when the shield is equipped to the ACI.
-
-The following contains information specific to JETPACK items:
-
- - jetpack (string): The reference to the jetpack
+ - malfunctionSoundEffect (string): The sound effect that is played when the shield malfunctions (not yet implemented).
+ - overloadScript (string): The lua script to call when the shield takes damage that would overload it (bring its charge to 0). To add a script, include it in JKGalaxies/glua/resources/shields/init.lua and add the lua script itself in JKGalaxies/glua/resources/shields/
+ - blockedMODs (array of strings): List of means of damage (eg: ["MOD_SLUGTHROWER", "MOD_BLEEDING"]) this shield can block in addition to standard means of damage types.
+ - allowedMODs (array of strings): List of means of damage (eg: ["MOD_BLASTER", "MOD_ION"]) this shield is no longer able to protect from.
+ - type (string, default "shell"): What type of physical shape the shield takes.  eg: shell, bubble, handheld, unknown
+ - activatable (boolean, default false): If the shield has an effect that can be activated from ACI/use item.
 
 
 ## ARMOR FIELDS
@@ -259,11 +283,15 @@ Each .arm file contains data for one piece of armor. They have the following fie
 
  - ref (string): The internal name of this armor
  - slot (special): Which "slot" this armor belongs to. Can be: head, neck, torso, robe, legs, gloves, boots, shoulder, implant
- - ehp (integer): "Effective Hit Points" for this piece of armor. Example, if the player's base health pool is 100 hit points, and this piece of armor provides 100 ehp, it is equivalent to a 50% reduction in damage. If EHP is 200, it's equivalent to a 66% reduction in damage.
- - hp (integer): How much to increase the player's total health pool by when this piece of armor is equipped.
- - stamina (interger): How much to increase the player's total stamina/forcePower pool by when this piece of armor is equipped (note this feature is incomplete).
- - filter (boolean): If true, the armor has a filter that protects the wearer from toxins.
- - movemodifier (float): How much to modify a player's movement speed by with their equipped armor. This is subject to movement modifiers (see constants.json, above)
+ - armor (integer, default 0): Your "Effective Hit Points" for this piece of armor. Example, if the player's base health pool is 100 hit points, and this piece of armor provides 100 EHP it is equivalent to a 50% reduction in damage. If EHP is 200, it's equivalent to a 66% reduction in damage.
+ - hp (integer, default 0): How much to increase the player's total health pool by when this piece of armor is equipped.
+ - stamina (interger, default 0): How much to increase the player's total stamina/forcePower pool by when this piece of armor is equipped.
+ - filter (boolean, default false): If true, the armor has a filter that protects the wearer from toxins.
+ - antitoxin (boolean, default false): If true, the armor has a mechanism that both protects the wearer from toxins and actively removes them.
+ - movemodifier (float, default 1.0): How much to modify a player's movement speed by with their equipped armor. This is subject to movement modifiers (see constants.json, above)
+ - resistances (array of objects): Contains the following fields:
+  - means (string): the means of damage this armor is resistant against (eg: "MOD_BLASTER", "MOD_FALLING", etc. see meansOfDamage.json for options). "MOD_UNKNOWN" is not allowed.
+  - resistance (float, default 1.0): measures how extra resistant the armor is to the above means, damage is multiplied by this amount (eg: 0.75 reduces incoming damage by 25%), values above 1.0 will result in the armor being vulnerable and taking extra damage from that method of damage.
  - visuals (object): Contains the following fields:
   - equippedSound (string): The sound that is played when the piece of armor is equipped.
   - model (string): Which player model to use for the appearance. Anything after the * is the skin name.
@@ -340,7 +368,9 @@ The .wpn file contains one field for each firing mode, starting with 0.
   - shotsperburst (integer): How many shots are fired per burst. Should be 0 for full automatic weapons, 1 for semi automatic, and higher for more shots in a burst.
   - burstshotdelay (integer): How many milliseconds between firing each round in a burst.
   - firedelay (integer): How long the player waits (in milliseconds) before firing each round.
+  - armorPiercing (float, default 0.0): Overrides the % of armor ignored by this weapon.
   - range (float): How long the projectile shot by the weapon goes (or the hitscan line traces for), in map units.
+  - decayRate (float, default: 0.25): The rate the weapon's damage decays when fired beyond the maximum range (default 0.25). Set to 0, to interpret range as the absolute max  range.  Range can only be extended up to 10x the value of range using decayRate.
   - splashrange (float): For non-complex damage areas, this details how far to spread the damage.
   - recoil (float): How much to tilt the camera when a player shoots this firing mode.
   - heatGenerated (float, default 0): How much heat is generated when this weapon fires. When your "heat" value exceeds maxHeat, you cannot fire this weapon anymore.
@@ -497,6 +527,7 @@ Each object in the ammo file is the linkage name for it, and they can contain th
   - means (string): Sets the means of damage on the weapon.
   - splashmeans (string): Sets the splash means of damage on the weapon.
   - damage (complexAmmoInteger): Overrides the damage done.
+  - armorPiercing (complexAmmoFloat): Overrides the % of armor ignored by this weapon.
   - projectiles (complexAmmoInteger): Overrides the projectile count.
   - splashRange (complexAmmoFloat): Overrides the splash radius.
   - collisionSize (complexAmmoFloat): Overrides the projectile size.
@@ -510,6 +541,8 @@ Each object in the ammo file is the linkage name for it, and they can contain th
   - buffs (special): Allows you to override buffs in an ammo type. See the Buff Fields below for more information. 
   - hitscan (integer): If 1, this ammo type converts the weapon into a hitscan weapon.
   - speed (complexAmmoFloat): The projectile speed of the weapon.
+  - armorPenetration (complexAmmoFloat): the % of armor that this damage ignores/penetrates through
+  - heatGenerated (complexAmmoFloat): the amount of heat generated by firing a shot
   - usesGravity (integer): If 1, this ammo type makes projectiles use gravity. If 0, the weapon fires in a straight line.
   - visuals (object): Overrides the visual effects on the weapon. Contains the following field:
    - crosshairShader (string): Overrides the crosshair shader that is in use.
@@ -555,6 +588,7 @@ Each .jet file contains information about one jetpack. The "ref" field links thi
  - thrustConsumption (float): How fast to consume fuel while thrusting DO NOT set this to 0.
  - fuelRegeneration (float): How fast to regenerate fuel. DO NOT set this to 0.
  - movement (object): Contains the following fields:
+  - cooldown (int): How many ms to wait before the jetpack can be reactivated, (can be switched off immediately). Default: 200
   - thrustAllowed (boolean): Whether or not the jetpack is allowed to use thrust.
   - fwdThrustAllowed (boolean): Whether the jetpack is allowed to use forward thrust (sprinting)
   - hoverGravity (float): How much to move the player while in air. Defaults to -1.0.

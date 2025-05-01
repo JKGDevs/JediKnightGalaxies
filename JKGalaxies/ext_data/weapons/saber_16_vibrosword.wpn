@@ -1,0 +1,54 @@
+{
+    "name":             "@JKG_ITEMS_weapon_saber",
+    "type":             "WP_SABER",
+    "variation":        16,
+    "classname":        "vibro_mosquito",
+    "description":      "@JKG_ITEMS_weapon_saber",
+    
+    "visual": {
+        "hudicon":          "models/weapons/vibroblades/blade_mosquito/icon_default.tga",
+        "hudnaicon":        "models/weapons/vibroblades/blade_mosquito/icon_default.tga",
+		"worldmodel":	    "models/weapons/vibroblades/Blade_Mosquito/model.glm",
+		"barrelCount":		0,
+    
+        "firemode0": {
+            "type":         "blaster"
+        },
+        
+        "firemode1": {
+            "type":         "blaster"
+        }
+    },
+    
+    "stats": {
+        "slot":         0,
+        "flags":        [ "roll" ],
+        "speed":        1.1
+    },
+
+    "saberdata": {
+	"hilt":		"vibrosword",
+	"crystal":	""
+    },
+    
+    "firemode0": {
+        "meansofdeath": "MOD_SABER"
+    },
+    
+    "firemode1": {
+        "meansofdeath": "MOD_SABER"
+    },
+    
+    "playeranims": {
+        "idle":         { "torso": "BOTH_IDLE1", "legs": "BOTH_IDLE1" },
+        "reload":       { "torso": "TORSO_DROPWEAP1" },
+        "ready":        { "torso": "BOTH_STAND1" },
+        "firing":       { "torso": "BOTH_STAND1" }
+    },
+    
+    "weaponanims": {
+        "ready":        "READY",   
+        "reload":       "RELOAD",
+        "firing":       "FIRING"
+    }
+}

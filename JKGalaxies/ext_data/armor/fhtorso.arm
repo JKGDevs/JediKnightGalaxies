@@ -1,0 +1,83 @@
+{
+	/////////////////////////////////////////
+	// 
+	// Jedi Knight Galaxies - Armor File
+	// Template (Stormtrooper Body Armor)
+	//
+	/////////////////////////////////////////
+
+	"ref":		"fhtorso",		// The reference that links this to the .itm file
+	"slot":		"torso",		// Which slot this goes in
+	"armor":		50,			// Effective hit points - "Armor" in the GUI
+	"movemodifier":	0.925,			// How much to modify the movement speed by
+
+	// Visuals - all done on the client
+	"visuals": {
+		// To specify a skin, use a * and the skin name. Here, it uses model_default.skin.
+		// modelGroup specifies which model group this armor belongs to - it won't load the same model twice.
+		"model":	"models/players/foxhunter_outfit/model.glm*default",
+		"modelGroup":	"foxhunter_outfit",
+
+		// armorOnSurfaces tells which surfaces we should -only- show on the armor.
+		"armorOnSurfaces": [
+			"torso",
+			"torso_armor",
+			"torso_r_shoulder",
+			"torso_l_shoulder",
+			"r_arm",
+			"r_hand",
+			"l_arm",
+			"l_hand"
+		],
+
+		// bodyOffSurfaces says which surfaces to turn off on the player.
+		"bodyOffSurfaces": [
+			"torso",
+			"torso_holster",
+			"torso_strap",
+			"torso_bandolier",
+			"torso_body_augment",
+			"torso_waist",
+			"torso_augment",
+			"torso_shoulder_pad",
+			"hips_torso",
+			"hips_belt",
+			"r_arm_shoulder",
+			"r_arm",
+			"r_arm_sleeve",
+			"r_hand_wrist",
+			"r_hand",
+			"r_hand_plate",
+			"l_arm",
+			"l_arm_shoulder",
+			"l_arm_sleeve",
+			"l_hand_wrist",
+			"l_hand",
+			"l_hand_plate",
+			"torso_body",
+			"torso_collar",
+			"torso_pauldron",
+			"l_arm_a",
+			"l_arm_b",
+			"l_arm_c",
+			"l_arm_d",
+			"l_arm_e",
+			"l_arm_f",
+			"l_arm_g",
+			"r_arm_a",
+			"r_arm_b",
+			"r_arm_c",
+			"r_arm_d",
+			"r_arm_e",
+			"r_arm_f",
+			"r_arm_g",
+			"torso_l_shoulder",
+			"torso_r_shoulder",
+			"torso_vest",
+			"torso_armor",
+			"l_arm_pocket",
+			"l_arm_key",
+			"torso_cowelbase"
+		]
+	}
+}

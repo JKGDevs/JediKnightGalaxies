@@ -1,0 +1,10 @@
+{
+	"name":         "Sunguard Chestplate ",
+	"internal":     "torso_sunguard",
+	"itemtype":     "armor",
+	"armor":		"sgtorso",
+	"weight":		"5",
+	"cost":			"450",
+	"itemIcon":		"gfx/item_icons/sunguard_torso.tga",
+	"itemDescription": "This torso armor is both ceremonial and functional, marking the wearer as a member of the Sun Guard, a Thyrsian mercenary company cult in service to Emperor Palpatine."
+}

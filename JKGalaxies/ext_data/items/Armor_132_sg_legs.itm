@@ -1,0 +1,10 @@
+{
+	"name":        "Sunguard Gambesson Trousers",
+	"internal":     "legs_sunguard",
+	"itemtype":     "armor",
+	"armor":		"sglegs",
+	"weight":		"2",
+	"cost":			"350",
+	"itemIcon":		"gfx/item_icons/sunguard_legs.tga",
+	"itemDescription": "These armor leggins are both ceremonial and functional, marking the wearer as a member of the Sun Guard, a Thyrsian mercenary company cult in service to Emperor Palpatine."
+}

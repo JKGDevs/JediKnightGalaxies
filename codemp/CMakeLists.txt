@@ -1,11 +1,13 @@
 #============================================================================
 # Copyright (C) 2013 - 2015, OpenJK contributors
-# 
-# This file is part of the OpenJK source code.
+# Copyright (C) 2009 - 2024, JKG Team
+#
+# This file is part of the OpenJK/JKG source code.
 # 
 # OpenJK is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# published by the Free Software Foundation.  JKG is based partially
+# on this project and has the same license terms as OpenJK.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -16,12 +18,12 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
 
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 3.2.0...3.30.5)
 
 # Make sure the user is not executing this script directly
-if(NOT InOpenJK)
+if(NOT InJKG)
 	message(FATAL_ERROR "Use the top-level cmake script!")
-endif(NOT InOpenJK)
+endif(NOT InJKG)
 
 # Create the file which has git hash and branch
 set(git_cmd "git")
@@ -29,17 +31,34 @@ set(git_rev_parse "rev-parse")
 set(git_branch_arg "--abbrev-ref")
 set(git_hash_arg "HEAD")
 
-execute_process(COMMAND ${git_cmd} ${git_rev_parse} ${git_branch_arg} "HEAD"
+#Check that git is available and generate git.h for versioning
+execute_process(
+	COMMAND ${git_cmd} "--version"
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	RESULT_VARIABLE git_installed
+)
+if(git_installed GREATER 0)
+	message("git is not installed or available on the path!")
+endif()
+
+execute_process(
+	COMMAND ${git_cmd} ${git_rev_parse} ${git_branch_arg} ${git_hash_arg}
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	OUTPUT_VARIABLE git_branch
-	OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${git_cmd} ${git_rev_parse} ${git_hash_arg}
+	OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+message("git branch: " ${git_branch})
+execute_process(
+	COMMAND ${git_cmd} ${git_rev_parse} ${git_hash_arg}
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	OUTPUT_VARIABLE git_hash
-	OUTPUT_STRIP_TRAILING_WHITESPACE)
+	OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+message("git SHA1: " ${git_hash})
 
 set(git_file "./git.h")
-file(WRITE ${git_file} "\#define GIT_BRANCH \"${git_branch}\"\n#define GIT_HASH \"${git_hash}\"\n")
+file(WRITE ${git_file} "//git.h is auto-generated, do not modify directly. See /codemp/CMakeLists.txt\n\#define GIT_BRANCH \"${git_branch}\"\n#define GIT_HASH \"${git_hash}\"\n")
+message("Generated " ${git_file})
 
 set(MPSharedDefines ${SharedDefines})
 
@@ -166,7 +185,7 @@ if(BuildMPEngine OR BuildMPDed)
 	add_library(${MPBotLib} STATIC ${MPBotlibFiles})
 
 	# Hide symbols not explicitly marked public.
-	set_property(TARGET ${MPBotLib} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+	set_property(TARGET ${MPBotLib} APPEND PROPERTY COMPILE_OPTIONS ${JKG_VISIBILITY_FLAGS})
 
 	set_target_properties(${MPBotLib} PROPERTIES COMPILE_DEFINITIONS "${MPBotlibDefines}")
 	set_target_properties(${MPBotLib} PROPERTIES INCLUDE_DIRECTORIES "${MPBotlibIncludeDirectories}")
@@ -181,7 +200,7 @@ if(BuildMPEngine OR BuildMPDed)
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} "winmm" "wsock32")
 	endif(WIN32)
 	# Include directories
-	set(MPEngineAndDedIncludeDirectories ${MPDir} ${SharedDir} ${OpenJKLibDir}) # codemp folder, since includes are not always relative in the files
+	set(MPEngineAndDedIncludeDirectories ${MPDir} ${SharedDir} ${JKGLibDir}) # codemp folder, since includes are not always relative in the files
 
 	# Transparently use our bundled minizip.
 	list(APPEND MPEngineAndDedIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
@@ -230,6 +249,8 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/cm_trace.cpp"
 		"${MPDir}/qcommon/cmd.cpp"
 		"${MPDir}/qcommon/common.cpp"
+		"${MPDir}/qcommon/cppStringHelp.cpp"
+		"${MPDir}/qcommon/cppStringHelp.h"
 		"${MPDir}/qcommon/cvar.cpp"
 		"${MPDir}/qcommon/disablewarnings.h"
 		"${MPDir}/qcommon/files.cpp"
@@ -360,7 +381,7 @@ if(BuildMPEngine)
 		if(UseInternalOpenAL)
 			# There's a libs/OpenAL32.lib
 			# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
-			find_library(OpenALLibrary NAMES OpenAL32 PATHS ${OpenJKLibDir}/openal)
+			find_library(OpenALLibrary NAMES OpenAL32 PATHS ${JKGLibDir}/openal)
 			if(NOT OpenALLibrary)
 				message(FATAL_ERROR "UseInternalOpenAL enabled, but lib/OpenAL32.lib not found!")
 			endif(NOT OpenALLibrary)
@@ -376,20 +397,20 @@ if(BuildMPEngine)
 		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 			set(MPEngineLibraries
 				${MPEngineLibraries}
-				${OpenJKLibDir}/SDL2/lib/x86/SDL2main.lib
-				${OpenJKLibDir}/SDL2/lib/x86/SDL2.lib
+				${JKGLibDir}/SDL2/lib/x86/SDL2main.lib
+				${JKGLibDir}/SDL2/lib/x86/SDL2.lib
 				)
 		else()
 			set(MPEngineLibraries
 				${MPEngineLibraries}
-				${OpenJKLibDir}/SDL2/lib/x64/SDL2main.lib
-				${OpenJKLibDir}/SDL2/lib/x64/SDL2.lib
+				${JKGLibDir}/SDL2/lib/x64/SDL2main.lib
+				${JKGLibDir}/SDL2/lib/x64/SDL2.lib
 				)
 		endif()
 		
 		set(MPEngineIncludeDirectories
 			${MPEngineIncludeDirectories}
-			${OpenJKLibDir}/SDL2/include
+			${JKGLibDir}/SDL2/include
 			)
 	else()
 		find_package(SDL2 REQUIRED)
@@ -467,36 +488,36 @@ if(BuildMPEngine)
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineRavlFiles})
 
 	set(MPEngineMp3Files
-		"${OpenJKLibDir}/mp3code/cdct.c"
-		"${OpenJKLibDir}/mp3code/config.h"
-		"${OpenJKLibDir}/mp3code/csbt.c"
-		"${OpenJKLibDir}/mp3code/csbtb.c"
-		"${OpenJKLibDir}/mp3code/csbtl3.c"
-		"${OpenJKLibDir}/mp3code/cup.c"
-		"${OpenJKLibDir}/mp3code/cupini.c"
-		"${OpenJKLibDir}/mp3code/cupl1.c"
-		"${OpenJKLibDir}/mp3code/cupl3.c"
-		"${OpenJKLibDir}/mp3code/cwin.c"
-		"${OpenJKLibDir}/mp3code/cwinb.c"
-		"${OpenJKLibDir}/mp3code/cwinm.c"
-		"${OpenJKLibDir}/mp3code/htable.h"
-		"${OpenJKLibDir}/mp3code/hwin.c"
-		"${OpenJKLibDir}/mp3code/jdw.h"
-		"${OpenJKLibDir}/mp3code/l3.h"
-		"${OpenJKLibDir}/mp3code/l3dq.c"
-		"${OpenJKLibDir}/mp3code/l3init.c"
-		"${OpenJKLibDir}/mp3code/mdct.c"
-		"${OpenJKLibDir}/mp3code/mhead.c"
-		"${OpenJKLibDir}/mp3code/mhead.h"
-		"${OpenJKLibDir}/mp3code/mp3struct.h"
-		"${OpenJKLibDir}/mp3code/msis.c"
-		"${OpenJKLibDir}/mp3code/port.h"
-		"${OpenJKLibDir}/mp3code/small_header.h"
-		"${OpenJKLibDir}/mp3code/tableawd.h"
-		"${OpenJKLibDir}/mp3code/towave.c"
-		"${OpenJKLibDir}/mp3code/uph.c"
-		"${OpenJKLibDir}/mp3code/upsf.c"
-		"${OpenJKLibDir}/mp3code/wavep.c"
+		"${JKGLibDir}/mp3code/cdct.c"
+		"${JKGLibDir}/mp3code/config.h"
+		"${JKGLibDir}/mp3code/csbt.c"
+		"${JKGLibDir}/mp3code/csbtb.c"
+		"${JKGLibDir}/mp3code/csbtl3.c"
+		"${JKGLibDir}/mp3code/cup.c"
+		"${JKGLibDir}/mp3code/cupini.c"
+		"${JKGLibDir}/mp3code/cupl1.c"
+		"${JKGLibDir}/mp3code/cupl3.c"
+		"${JKGLibDir}/mp3code/cwin.c"
+		"${JKGLibDir}/mp3code/cwinb.c"
+		"${JKGLibDir}/mp3code/cwinm.c"
+		"${JKGLibDir}/mp3code/htable.h"
+		"${JKGLibDir}/mp3code/hwin.c"
+		"${JKGLibDir}/mp3code/jdw.h"
+		"${JKGLibDir}/mp3code/l3.h"
+		"${JKGLibDir}/mp3code/l3dq.c"
+		"${JKGLibDir}/mp3code/l3init.c"
+		"${JKGLibDir}/mp3code/mdct.c"
+		"${JKGLibDir}/mp3code/mhead.c"
+		"${JKGLibDir}/mp3code/mhead.h"
+		"${JKGLibDir}/mp3code/mp3struct.h"
+		"${JKGLibDir}/mp3code/msis.c"
+		"${JKGLibDir}/mp3code/port.h"
+		"${JKGLibDir}/mp3code/small_header.h"
+		"${JKGLibDir}/mp3code/tableawd.h"
+		"${JKGLibDir}/mp3code/towave.c"
+		"${JKGLibDir}/mp3code/uph.c"
+		"${JKGLibDir}/mp3code/upsf.c"
+		"${JKGLibDir}/mp3code/wavep.c"
 		)
 	source_group("mp3code" FILES ${MPEngineMp3Files})
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineMp3Files})
@@ -519,7 +540,7 @@ if(BuildMPEngine)
 		set(MPEngineWin32Files
 			"${MPDir}/win32/icon.ico"
 			"${MPDir}/win32/resource.h"
-			"${MPDir}/win32/openjk.rc"
+			"${MPDir}/win32/JKG.rc"
 			)
 
 		set(MPEngineFiles ${MPEngineFiles} ${MPEngineWin32Files})
@@ -545,7 +566,7 @@ if(BuildMPEngine)
 		set(MACOSX_BUNDLE_BUNDLE_NAME ${MPEngine})
 		set(MACOSX_BUNDLE_DISPLAY_NAME ${MPEngine})
 		set(MACOSX_BUNDLE_ICON_FILE OpenJK.icns)
-		set_source_files_properties(${MPDir}/macosx/OpenJK.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+		set_source_files_properties(${MPDir}/macosx/OpenJKicns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 		set(MPEngineFiles ${MPEngineFiles} ${MPDir}/macosx/OpenJK.icns)
 		set_source_files_properties(${MPDir}/macosx/English.lproj/InfoPlist.strings PROPERTIES MACOSX_PACKAGE_LOCATION Resources/English.lproj)
 		set(MPEngineFiles ${MPEngineFiles} ${MPDir}/macosx/English.lproj/InfoPlist.strings)
@@ -556,11 +577,11 @@ if(BuildMPEngine)
 		if(UseInternalSDL2)
 			if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 				set(MPEngineExtraInstallFiles
-					${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
+					${JKGLibDir}/SDL2/bin/x86/SDL2.dll
 					)
 			else()
 				set(MPEngineExtraInstallFiles
-					${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
+					${JKGLibDir}/SDL2/bin/x64/SDL2.dll
 					)
 			endif()
 		endif()
@@ -599,7 +620,7 @@ if(BuildMPEngine)
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS "${MPEngineDefines}")
 
 	# Hide symbols not explicitly marked public.
-	set_property(TARGET ${MPEngine} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+	set_property(TARGET ${MPEngine} APPEND PROPERTY COMPILE_OPTIONS ${JKG_VISIBILITY_FLAGS})
 
 	set_target_properties(${MPEngine} PROPERTIES INCLUDE_DIRECTORIES "${MPEngineIncludeDirectories}")
 	set_target_properties(${MPEngine} PROPERTIES PROJECT_LABEL "MP Client (jkgalaxies.x86.exe)")
@@ -647,7 +668,7 @@ if(BuildMPDed)
 	set(MPDedFiles ${MPDedFiles} ${MPDedNullFiles})
 	if(WIN32)
 		set(MPDedWin32Files
-			"${MPDir}/win32/openjkded.rc"
+			"${MPDir}/win32/JKGded.rc"
 			)
 		source_group("win32" FILES ${MPDedWin32Files})
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
@@ -692,7 +713,7 @@ if(BuildMPDed)
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS "${MPDedDefines}")
 
 	# Hide symbols not explicitly marked public.
-	set_property(TARGET ${MPDed} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+	set_property(TARGET ${MPDed} APPEND PROPERTY COMPILE_OPTIONS ${JKG_VISIBILITY_FLAGS})
 
 	set_target_properties(${MPDed} PROPERTIES INCLUDE_DIRECTORIES "${MPDedIncludeDirectories}")
 	set_target_properties(${MPDed} PROPERTIES PROJECT_LABEL "MP Dedicated Server (jkgalaxiesded.x86.exe)")

@@ -3,6 +3,24 @@
 	"slot":		"legs",
 	"armor":		65,
 	"movemodifier":	0.95,
+	"resistances": [            //armor has resistance(s) against specific means/MOD
+        {
+            "means": "MOD_LAVA",
+            "resistance": 0.75	//25% resistant to lava damage, etc.
+        },
+        {
+            "means": "MOD_FIRE",
+            "resistance": 0.75
+        },
+        {
+            "means": "MOD_IGNITED",
+            "resistance": 0.75
+        },
+		{
+			"means": "MOD_EXPLOSION",
+			"resistance": 0.75
+		}
+    ],
 
 	"visuals": {
 		"model":	"models/players/glightarmor/model.glm*default",

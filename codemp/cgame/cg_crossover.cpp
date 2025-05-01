@@ -62,6 +62,8 @@ static void CO_InventoryAttachToACI ( int itemNum, int slot, int attach )
 		JKG_CG_ClearACISlot(slot);
 	}
 }
+//cgImports->SendClientCommand(va("unequip %d", pItems[nSelected].first)); --futuza: <--implement something like this above?
+//cgImports->SendClientCommand(va("equip %d", pItems[nSelected].first));
 
 /*
  *	Performs a UI -> CG request for inventory and container UIs
@@ -89,6 +91,16 @@ static void *CO_InventoryDataRequest ( jkgInventoryRequest_e data, int extra )
 			return itemLookupTable;
 		case INVENTORYREQUEST_ICONSHADER:
 			return (*cg.playerInventory)[extra].id->visuals.itemIcon;
+		case INVENTORYREQUEST_DURABILITY:
+			//do a sanity check
+			if(extra > cg.playerInventory->size() || extra < 0)
+			{
+				Com_Printf(va("print \"Requested item (%i) is not in your inventory.\n\"", extra));
+				tempSize = MAX_DEFAULT_DURABILITY;
+				return &tempSize;
+			}
+			tempSize = (*cg.playerInventory)[extra].durability;
+			return &tempSize;
         default:
             return NULL;
     }

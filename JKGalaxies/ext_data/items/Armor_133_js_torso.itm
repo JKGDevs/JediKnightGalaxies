@@ -1,0 +1,10 @@
+{
+	"name":         "Jensaarai Chestplate ",
+	"internal":     "torso_jensaarai",
+	"itemtype":     "armor",
+	"armor":		"jstorso",
+	"weight":		"5",
+	"cost":			"450",
+	"itemIcon":		"gfx/item_icons/sunguard_torso.tga",
+	"itemDescription": "Missing Description."
+}

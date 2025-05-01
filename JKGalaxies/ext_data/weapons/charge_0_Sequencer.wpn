@@ -24,6 +24,7 @@
             "g2radius":     100,
             "firesound":    "sound/weapons/detpack/fire.wav",
             "miss":         { "sticksound": "sound/weapons/detpack/stick.wav" },
+            "explodefx":    "explosives/demosmall",
 	    "displayName":  "Place"
         },
         

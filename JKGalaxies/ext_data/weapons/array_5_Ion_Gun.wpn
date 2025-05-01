@@ -1,0 +1,99 @@
+{
+    "name":             "@JKG_ITEMS_array_Ion_Gun",
+    "type":             "WP_FLECHETTE",
+    "variation":        5,
+    "classname":        "array_Ion",
+    "description":      "@JKG_ITEMS_array_Ion_Gunerial",
+    
+    "visual": {
+        "viewmodel":        "models/weapons/Ion_Gun/viewmodel.md3",
+        "worldmodel":       "models/weapons/Ion_Gun/model.glm",
+        "hudicon":          "models/weapons/Ion_Gun/icon_default",
+        "hudnaicon":        "models/weapons/Ion_Gun/icon_default",
+        "selectsound":      "sound/weapons/select_carbine.wav",
+        
+        "gunposition":      "14.0 -4.0 -8.0",
+        "ironsightsposition": "13.0 0.0 -4.6",
+        "ironsightsfov": "70",
+		"barrelCount":	"0",
+    
+        "firemode0": {
+            "type":         "blaster",
+            
+            "muzzlefx":     "blasters/muzzleflash_arccaster",
+            "firesound":    [
+                "sound/weapons/blasters/arc_caster1.mp3",
+                "sound/weapons/blasters/arc_caster2.mp3",
+                "sound/weapons/blasters/arc_caster3.mp3",
+                "sound/weapons/blasters/arc_caster4.mp3"
+            ],
+            "chargingfx":   "weapons/charge_samus",
+            "chargingsound": "sound/weapons/charge_arccaster.wav",
+            "projectilefx": "blasters/shot_electricity",
+            "runsound":     "sound/effects/energy_crackle.wav",
+            "miss":         { "impactfx": "blasters/electric_impactmedium" },
+            "hit":          { "impactfx": "blasters/electric_impactmedium" },
+            "deathFx":    "saber/ignitionflare_blue",
+	    "displayName": "Charge"
+        }
+	},
+    
+    "stats": {
+        "slot":         1,
+        "reloadtime":   1500,
+        "flags":        [ "roll" ],
+        "reloadmodifier": 0.7
+    },
+    
+    "firemode0": {
+        "damage": {
+                    "damage":       4,
+            		"buffs": [
+					{
+						"buff": "standard-emp",
+						"duration": 4000
+					}
+				    ]
+        },
+        "ammocost":     1,
+        "maxchargetime": 1250,
+        "chargedamage": 1.5,
+        "chargedelay":  300,
+        "collisionsize": 5.0,
+        "firedelay":    2400,
+        "firingtype":   "semi",
+        "range":        1600.0,
+        "recoil":       1.1,
+        "spread":       0.6,
+        "projectilespeed": 7000.0,
+        "projectileclass": "blaster_proj",
+        "meansofdeath": "MOD_ELECTRICAL",
+	"ammobase": "AMMO_ARC_POWERPACK",
+	"ammodefault": "AMMO_ARC_POWERPACK",
+        "clipSize":              80,
+        "accuracy": {
+        	"accuracyRating": 20,
+        	"accuracyRatingPerShot": 12,
+        	"msToDrainAccuracy": 150,
+        	"maxAccuracyAdd": 56
+        }
+    },
+    
+    "playeranims": {
+        "idle":         { "torso": "BOTH_IDLE1", "legs": "BOTH_IDLE1" },
+  //      "reload":       { "torso": "TORSO_DROPWEAP1" },
+        "reload":       { "torso": "BOTH_RIFLERELOADR" },
+        "sights":        { "torso": "TORSO_WEAPONREADY3", "legs": "BOTH_STAND1" },
+        "sightsFiring":       { "torso": "BOTH_ATTACK3" },
+	"sprint":	{ "torso": "BOTH_RIFLERUN" },
+	"ready":	{ "torso": "BOTH_BASE_RIFLESTANCE", "legs": "BOTH_STAND1" },
+	"firing":	{ "torso": "BOTH_BASE_RIFLESHOOT" },
+        "sprintStyle": "17"
+    },
+    
+    "weaponanims": {
+        "ready":        "READY",   
+        "reload":       "RELOAD",
+        "firing":       "FIRING"
+    }
+}

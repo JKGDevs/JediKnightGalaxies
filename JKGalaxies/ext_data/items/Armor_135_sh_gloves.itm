@@ -1,0 +1,10 @@
+{
+	"name":         "Shoretrooper Gauntlets",
+	"internal":      "gloves_shoretrooper",
+	"itemtype":     "armor",
+	"armor":		"shgloves",
+	"weight":		"1",
+	"cost":			"60",
+	"itemIcon":		"gfx/item_icons/shoretrooper_gloves.tga",
+	"itemDescription": "Based on standard issue Imperial Stormtrooper gloves, these gloves have been adopted for use in tropical environments and are issued to coastal defender stormtroopers, also called shoretroopers. Tan plastoid alloys protect the wearer's hands."
+}

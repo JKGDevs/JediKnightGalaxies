@@ -14,7 +14,7 @@
                 
         "gunposition":      "9.0 -4.5 -7.0",
         "ironsightsposition": "4.0 0.0 -2.755",
-        "ironsightsfov": "70",
+        "ironsightsfov": "50",
 		"barrelCount": "3",
     
         "firemode0": {

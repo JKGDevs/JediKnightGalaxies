@@ -1,0 +1,10 @@
+{
+	"name":         "Sunguard Boots",
+	"internal":		"boots_sunguard",
+	"itemtype":		"armor",
+	"armor":		"sgboots",
+	"weight":		"2",
+	"cost":			"350",
+	"itemIcon":		"gfx/item_icons/sunguard_boots.tga",
+	"itemDescription": "These boots are both ceremonial and functional, marking the wearer as a member of the Sun Guard, a Thyrsian mercenary company cult in service to Emperor Palpatine."
+}

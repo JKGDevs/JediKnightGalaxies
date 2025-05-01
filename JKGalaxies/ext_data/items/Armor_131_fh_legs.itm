@@ -1,0 +1,11 @@
+{
+	"name":             "Diplomat Outfit (Pants)",
+	"internal":             "legs_foxhunter",
+	"itemtype":             "armor",
+	"armor":		"fhlegs",
+	"weight":		"1",
+	"cost":			"375",
+	"tier":			2,
+	"itemIcon":		"gfx/item_icons/foxhunter_pants.tga",
+	"itemDescription": "These leggings offer both comfort, style, and protection for the modern politician or businessman with a sense of adventure. Perfect for when you're expecting negotiations to involve both a blaster and a meal with an Imperial Senator."
+}

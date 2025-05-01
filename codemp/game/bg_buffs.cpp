@@ -162,8 +162,8 @@ void JKG_CheckRollRemoval(playerState_t* ps)
 	}
 }
 
-//Removes all buffs that have the filterRemoval flag set
-void JKG_CheckFilterRemoval(playerState_t* ps)
+//Removes all buffs that have the filterBlocking flag set
+void JKG_CheckFilterBlocking(playerState_t* ps)
 {
 	if (!ps->buffsActive)
 		return;
@@ -173,11 +173,31 @@ void JKG_CheckFilterRemoval(playerState_t* ps)
 		if (ps->buffsActive & (1 << i))
 		{
 			jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
-			if (pBuff->cancel.filterRemoval)
+			if (pBuff->cancel.filterBlocking)
 			{
 				pBuff->remove_f = true;
 				//ps->buffsActive &= ~(1 << i); //--futuza: Old unsafe way of removing buff, it could have unintended consequences.
 												//Instead set remove_f to true to flag it for safe removal.
+				return;
+			}
+		}
+	}
+}
+
+//Removes all buffs that have the antitox flag set
+void JKG_CheckAntitoxRemoval(playerState_t* ps)
+{
+	if (!ps->buffsActive)
+		return;
+
+	for (int i = 0; i < PLAYERBUFF_BITS; i++)
+	{
+		if (ps->buffsActive & (1 << i))
+		{
+			jkgBuff_t* pBuff = &buffTable[ps->buffs[i].buffID];
+			if (pBuff->cancel.antitoxRemoval)
+			{
+				pBuff->remove_f = true;
 				return;
 			}
 		}
@@ -268,8 +288,11 @@ static qboolean JKG_ParseBuffCanceling(cJSON* json, jkgBuff_t* pBuff)
 	child = cJSON_GetObjectItem(json, "shieldRemoval");
 	pBuff->cancel.shieldRemoval = cJSON_ToBooleanOpt(child, false);
 
-	child = cJSON_GetObjectItem(json, "filterRemoval");
-	pBuff->cancel.filterRemoval = cJSON_ToBooleanOpt(child, false);
+	child = cJSON_GetObjectItem(json, "filterBlocking");
+	pBuff->cancel.filterBlocking = cJSON_ToBooleanOpt(child, false);
+
+	child = cJSON_GetObjectItem(json, "antitoxRemoval");
+	pBuff->cancel.antitoxRemoval = cJSON_ToBooleanOpt(child, false);
 
 	child = cJSON_GetObjectItem(json, "cancelOther");
 	if (child)

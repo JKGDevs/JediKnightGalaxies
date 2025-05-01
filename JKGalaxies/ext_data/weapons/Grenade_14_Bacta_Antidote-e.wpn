@@ -8,8 +8,8 @@
     "visual": {
         "viewmodel":        "models/weapons/Grenade_Bacta/viewmodel.md3",
         "worldmodel":       "models/weapons/Grenade_Bacta/model.glm",
-        "hudicon":          "gfx/Item_Icons/default",
-        "hudnaicon":        "gfx/Item_Icons/default",
+        "hudicon":          "models/weapons/Grenade_Bacta/icon_default",
+        "hudnaicon":        "models/weapons/Grenade_Bacta/icon_default",
         "selectsound":      "sound/weapons/select_grenade.wav",
         
 
@@ -28,14 +28,15 @@
             ],
             "chargingsound": "sound/weapons/grenade_cook.wav",
             "projectilemodel": "models/weapons/Grenade_Bacta/projectile.md3",
+			"projectilefx": "weapons/bactaglow_teal",
 			"runsound": "sound/weapons/helpfulnade_loop.wav",
 			"miss": {
-				"impactfx": "weapons/watergun_impact_big",
-				"shockwavefx": "weapons/watergun_impact_small"
+				"impactfx": "weapons/bactagun_impact_big",
+				"shockwavefx": "weapons/bactagun_impact_small"
 			},
 			"hit": {
-				"impactfx": "weapons/watergun_impact_big",
-				"shockwavefx": "weapons/watergun_impact_small"
+				"impactfx": "weapons/bactagun_impact_big",
+				"shockwavefx": "weapons/bactagun_impact_small"
 			},
 			"bouncesound": ["sound/weapons/grenade_bounce1.wav", "sound/weapons/grenade_bounce2.wav"],
 			"displayName":  "Throw"
@@ -52,14 +53,15 @@
             ],
             "chargingsound": "sound/weapons/grenade_cook.wav",
             "projectilemodel": "models/weapons/Grenade_Bacta/projectile.md3",
+			"projectilefx": "weapons/bactaglow_teal",
 			"runsound": "sound/weapons/helpfulnade_loop.wav",
             "miss": {
-                "impactfx": "weapons/watergun_impact_big",
-                "shockwavefx": "weapons/watergun_impact_small"
+                "impactfx": "weapons/bactagun_impact_big",
+                "shockwavefx": "weapons/bactagun_impact_small"
             },
             "hit": {
-                "impactfx": "weapons/watergun_impact_big",
-                "shockwavefx": "weapons/watergun_impact_small"
+                "impactfx": "weapons/bactagun_impact_big",
+                "shockwavefx": "weapons/bactagun_impact_small"
            },
             "bouncesound":  [ "sound/weapons/grenade_bounce1.wav", "sound/weapons/grenade_bounce2.wav" ],
 			"displayName":  "Roll"

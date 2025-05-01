@@ -1,0 +1,10 @@
+{
+	"name":         "Sunguard Gauntlets",
+	"internal":      "gloves_sunguard",
+	"itemtype":     "armor",
+	"armor":		"sggloves",
+	"weight":		"1",
+	"cost":			"60",
+	"itemIcon":		"gfx/item_icons/sunguard_gloves.tga",
+	"itemDescription": "These gloves are both ceremonial and functional, marking the wearer as a member of the Sun Guard, a Thyrsian mercenary company cult in service to Emperor Palpatine."
+}

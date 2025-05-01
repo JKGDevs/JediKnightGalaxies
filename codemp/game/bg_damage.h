@@ -36,11 +36,18 @@ struct meansOfDamage_t {
 		qboolean ignoreShield;	// if true, this damage types goes through shields
 		qboolean dodgeable;		// if true, this damage type can be dodged
 		qboolean shieldBlocks;	// if true, this damage type is blocked entirely by shields
-		qboolean isEMP;	// if true, this damage is electric based (can effect electric equipment)
+		qboolean shieldProtects;// if true, this damage type cannot be applied as a debuff while protected by a shield (can still damage shields tho)
+		qboolean isEMP;			// if true, this damage is electric based (can effect electric equipment)
+		qboolean isCC;			// if true, this damage is considered crowd control
+		qboolean canRevive;		// if true, this damage can bring back ents from death
+
+		//multiply damage to specific types (eg: 1.0 == normal damage, 1.25 shield == +25% extra damage to shields)
 		float armor;
 		float shield;
 		float organic;
 		float droid;
+
+		float armorPenetration;	//how much % of total armor is ignored
 	} modifiers;
 
 	struct {

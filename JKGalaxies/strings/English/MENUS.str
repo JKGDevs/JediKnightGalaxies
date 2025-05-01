@@ -225,6 +225,14 @@ REFERENCE           JEDI_SPANKI6B
 NOTES               "For character menu"
 LANG_ENGLISH        "JediCustomization6B"
 
+REFERENCE           JEDI_HUMAN_MALE
+NOTES               "For character menu"
+LANG_ENGLISH        "Human Male"
+
+REFERENCE           JEDI_HUMAN_FEMALE
+NOTES               "For character menu"
+LANG_ENGLISH        "Human Female"
+
 REFERENCE           CHARACTER_CREATION
 NOTES               "For character menu"
 LANG_ENGLISH        "CHARACTER CREATION"

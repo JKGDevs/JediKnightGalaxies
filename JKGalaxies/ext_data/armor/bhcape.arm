@@ -1,9 +1,8 @@
 {
-	"ref":		"bhcape",		// The reference that links this to the .itm file
-	"slot":		"neck",			// Which slot this goes in
-	"armor":		90,			// Effective hit points - "Armor" in the GUI
-	"movemodifier":	1.0,			// How much to modify the movement speed by
-
+	"ref":		"bhcape",		
+	"slot":		"neck",			// neck slot isn't a hit location yet :(
+	"movemodifier":	1.0,		
+	
 	// Visuals - all done on the client
 	"visuals": {
 		"model":	"models/players/bounty_hunter/model.glm*default",

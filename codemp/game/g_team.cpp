@@ -228,6 +228,47 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 ) {
 	return qfalse;
 }
 
+int IsMyTeamWinning(gentity_t* ent)
+{
+	//return guide:
+	//-2 == team is invalid/you tried to check a nonplayer
+	//-1 == team is losing
+	//0 == team is tied
+	//1 == team is winning
+
+	//not a valid player
+	if (!ent || ent == nullptr || !ent->client || ent->s.eType != ET_PLAYER)
+	{
+		return -2;
+	}
+
+	//not a team game
+	if (level.gametype < GT_TEAM)
+	{
+		return -2;
+	}
+
+	//who is currently winning?
+	auto my_team = ent->client->sess.sessionTeam;
+	int curr_winner = -1;
+
+	if (level.teamScores[TEAM_RED] > level.teamScores[TEAM_BLUE])
+		curr_winner = TEAM_RED;
+	else if (level.teamScores[TEAM_RED] < level.teamScores[TEAM_BLUE])
+		curr_winner = TEAM_BLUE;
+	else
+		curr_winner = -1;	//tie
+
+
+	if (curr_winner == -1)
+		return 0;
+
+	if (my_team == curr_winner && curr_winner != -1)
+		return 1;	//our team is winning
+	else
+		return -1;	//our team is losing
+}
+
 static char ctfFlagStatusRemap[] = { '0', '1', '*', '*', '2' };
 
 void Team_SetFlagStatus( int team, flagStatus_t status ) {

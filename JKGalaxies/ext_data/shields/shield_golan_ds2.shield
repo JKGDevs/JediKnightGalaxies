@@ -1,0 +1,11 @@
+{
+    "ref":			"shield_golan_ds2",
+    "capacity":	40,
+	"cooldown":	1500,
+	"regenrate":	67,
+
+	"rechargeSoundEffect":	"sound/shield/shield_recharge5",
+	"brokenSoundEffect":	"sound/shield/shield_broken6",
+	"equippedSoundEffect":	"sound/shield/shield_equipped3",
+	"chargedSoundEffect":	"sound/shield/shield_charged4"
+}

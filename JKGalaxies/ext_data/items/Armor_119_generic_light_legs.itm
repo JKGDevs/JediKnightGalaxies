@@ -6,5 +6,5 @@
 	"weight":		"2",
 	"cost":			"150",
 	"itemIcon":		"gfx/item_icons/klesh_legs.tga",
-	"itemDescription": "A simple lightweight armor designed to protect the legs and feet. The armor implements kelsh components which provides minimal protection from blasters."
+	"itemDescription": "A simple lightweight armor designed to protect the legs and feet. The armor implements kelsh components which provides minimal protection from blasters. Fire & explosion resistant."
 }

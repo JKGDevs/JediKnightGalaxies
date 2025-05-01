@@ -4,9 +4,6 @@
 #include "jkg_inventory.h"
 #include <algorithm>
 
-
-using namespace std;
-
 /* Global variables */
 static bool bLeftSelected = false;		/* Is the left side (or the right side) selected */
 static int nSelected = -1;				/* The currently selected element */
@@ -16,46 +13,66 @@ static size_t nNumberShopItems;			/* The number of shop items */
 static size_t nNumberUnfilteredIItems;	/* The total number of inventory items before filtering */
 static size_t nNumberUnfilteredSItems;	/* The total number of shop items before filtering */
 
-static vector<pair<int, itemInstance_t*>> vInventoryItems;	/* The inventory items, after filtering */
-static vector<pair<int, itemInstance_t*>> vShopItems;		/* The shop items, after filtering */
-static vector<std::string> vShopItemDesc;					/* The description of the currently selected shop item */
-static vector<pair<int, int>> vPriceCheckedAmmo;			/* Price check of ammo on items in inventory */
+static std::vector<std::pair<int, itemInstance_t*>> vInventoryItems;	/* The inventory items, after filtering */
+static std::vector<std::pair<int, itemInstance_t*>> vShopItems;		/* The shop items, after filtering */
+static std::vector<std::string> vShopItemDesc;					/* The description of the currently selected shop item */
+static std::vector<std::pair<int, int>> vPriceCheckedAmmo;			/* Price check of ammo on items in inventory */
+static std::vector<std::pair<int, int>> vPriceCheckedDurability;	/* Price check the cost of durability repairs on armor in inventory */
 
 static size_t nInventoryScroll = 0;		// How far we've scrolled in the menu
 static size_t nShopScroll = 0;			// How far we've scrolled in the menu
 static bool bPriceCheckComplete = false;// Whether or not we've completed the ammo price check
+static bool bPriceCheckDurComplete = false;	//Whether or not we've completed the armor durability price check
 static int nPriceCheckCost = -1;
+static int nPriceCheckDurCost = -1;
 static bool bExamineMenuOpen = false;	// Whether we are examining things
 
-// This function updates the status of price checking. Only called when bPriceCheckComplete is false.
-void JKG_Shop_UpdatePriceCheck()
+// This function updates the status of price checking. Only called when bPriceCheckComplete or bPriceCheckDurComplete is false.
+void JKG_Shop_UpdatePriceCheck(int type)
 {
 	int id = vInventoryItems[nSelected].first;
 
-	if (vInventoryItems[nSelected].second->id->itemType != ITEM_WEAPON)
+	if (vInventoryItems[nSelected].second->id->itemType != type)
 	{
-		return;	// don't worry about price checking something that isn't a weapon
+		return;	// don't worry about price checking something that isn't the specified type
 	}
 
-	//check if the gun we're getting ammo for is the starting weapon
-	char info[MAX_INFO_VALUE];
-	trap->GetConfigString(CS_SERVERINFO, info, sizeof(info));
-	if (!Q_stricmp(vInventoryItems[nSelected].second->id->internalName, Info_ValueForKey(info, "jkg_startingGun")))
+	if (type == ITEM_WEAPON)
 	{
-		bPriceCheckComplete = true;
-		nPriceCheckCost = 0;	//its free!
-		return;
-	}
-
-	for (auto it = vPriceCheckedAmmo.begin(); it != vPriceCheckedAmmo.end(); ++it)
-	{
-		if (it->first == id)
+		//check if the gun we're getting ammo for is the starting weapon
+		char info[MAX_INFO_VALUE];
+		trap->GetConfigString(CS_SERVERINFO, info, sizeof(info));
+		if (!Q_stricmp(vInventoryItems[nSelected].second->id->internalName, Info_ValueForKey(info, "jkg_startingGun")))
 		{
 			bPriceCheckComplete = true;
-			nPriceCheckCost = it->second;
+			nPriceCheckCost = 0;	//its free!
 			return;
 		}
+
+		for (auto it = vPriceCheckedAmmo.begin(); it != vPriceCheckedAmmo.end(); ++it)
+		{
+			if (it->first == id)
+			{
+				bPriceCheckComplete = true;
+				nPriceCheckCost = it->second;
+				return;
+			}
+		}
 	}
+
+	if (type == ITEM_ARMOR || type == ITEM_CLOTHING)
+	{
+		for (auto it = vPriceCheckedDurability.begin(); it != vPriceCheckedDurability.end(); ++it)
+		{
+			if (it->first == id)
+			{
+				bPriceCheckDurComplete = true;
+				nPriceCheckDurCost = it->second;
+				return;
+			}
+		}
+	}
+
 }
 
 // This function constructs both the inventory and shop lists
@@ -64,8 +81,11 @@ void JKG_ConstructShopLists() {
 	vShopItems.clear();
 	vShopItemDesc.clear();
 	vPriceCheckedAmmo.clear();
+	vPriceCheckedDurability.clear();
 	bPriceCheckComplete = false;
 	nPriceCheckCost = -1;
+	bPriceCheckDurComplete = false;
+	nPriceCheckDurCost = -1;
 
 	if (cgImports == nullptr) {
 		// This gets called when the game starts, because ui_inventoryFilter gets modified
@@ -110,7 +130,7 @@ void JKG_ConstructShopLists() {
 			else if (ui_inventoryFilter.integer == JKGIFILTER_MISC) {
 				continue; // FIXME
 			}
-			vInventoryItems.push_back(make_pair(i, pThisItem));
+			vInventoryItems.push_back(std::make_pair(i, pThisItem));
 		}
 
 		//
@@ -119,7 +139,7 @@ void JKG_ConstructShopLists() {
 		if (ui_inventorySortMode.integer == 0) {
 			// If it's 0, then we're sorting by item name
 			sort(vInventoryItems.begin(), vInventoryItems.end(),
-				[](const pair<int, itemInstance_t*>& a, const pair<int, itemInstance_t*>& b) -> bool {
+				[](const std::pair<int, itemInstance_t*>& a, const std::pair<int, itemInstance_t*>& b) -> bool {
 				if (ui_inventorySortType.integer) {
 					return Q_stricmp(UI_GetStringEdString2(a.second->id->displayName), UI_GetStringEdString3(b.second->id->displayName)) > 0;
 				}
@@ -131,7 +151,7 @@ void JKG_ConstructShopLists() {
 		else if (ui_inventorySortMode.integer == 1) {
 			// If it's 1, then we're sorting by price
 			sort(vInventoryItems.begin(), vInventoryItems.end(),
-				[](const pair<int, itemInstance_t*>& a, const pair<int, itemInstance_t*>& b) -> bool {
+				[](const std::pair<int, itemInstance_t*>& a, const std::pair<int, itemInstance_t*>& b) -> bool {
 				if (ui_inventorySortType.integer) {
 					return a.second->id->baseCost * a.second->quantity > b.second->id->baseCost * b.second->quantity;
 				}
@@ -174,7 +194,7 @@ void JKG_ConstructShopLists() {
 			else if (ui_inventoryFilter.integer == JKGIFILTER_MISC) {
 				continue;
 			}
-			vShopItems.push_back(make_pair(i, pThisItem));
+			vShopItems.push_back(std::make_pair(i, pThisItem));
 		}
 
 		//
@@ -183,7 +203,7 @@ void JKG_ConstructShopLists() {
 		if (ui_shopSortMode.integer == 0) {
 			// If it's 0, then we're sorting by item name
 			sort(vShopItems.begin(), vShopItems.end(),
-				[](const pair<int, itemInstance_t*>& a, const pair<int, itemInstance_t*>& b) -> bool {
+				[](const std::pair<int, itemInstance_t*>& a, const std::pair<int, itemInstance_t*>& b) -> bool {
 				if (ui_shopSortType.integer) {
 					return Q_stricmp(UI_GetStringEdString2(a.second->id->displayName), UI_GetStringEdString3(b.second->id->displayName)) > 0;
 				}
@@ -195,7 +215,7 @@ void JKG_ConstructShopLists() {
 		else if (ui_shopSortMode.integer == 1) {
 			// If it's 1, then we're sorting by price
 			sort(vShopItems.begin(), vShopItems.end(),
-				[](const pair<int, itemInstance_t*>& a, const pair<int, itemInstance_t*>& b) -> bool {
+				[](const std::pair<int, itemInstance_t*>& a, const std::pair<int, itemInstance_t*>& b) -> bool {
 				if (ui_shopSortType.integer) {
 					return a.second->id->baseCost > b.second->id->baseCost;
 				}
@@ -217,7 +237,7 @@ void JKG_ConstructShopLists() {
 	}
 	else if (!bLeftSelected)
 	{
-		JKG_ConstructItemDescription(vShopItems[nSelected].second, vShopItemDesc);
+		JKG_ConstructItemDescription(vShopItems[nSelected].second, vShopItemDesc, nSelected);
 	}
 
 	if (nInventoryScroll >= nNumberInventoryItems) {
@@ -435,6 +455,8 @@ void JKG_Shop_InventoryItemCost(itemDef_t* item, int nOwnerDrawID) {
 		return; // There isn't an item in this slot.
 	}
 	itemInstance_t* pItem = vInventoryItems[nInventoryScroll + nOwnerDrawID].second;
+	vec4_t color;	//color of sales text
+	VectorCopy4(colorWhite, color);	//default to white
 
 	char info[MAX_INFO_VALUE];
 	trap->GetConfigString(CS_SERVERINFO, info, sizeof(info));
@@ -442,12 +464,41 @@ void JKG_Shop_InventoryItemCost(itemDef_t* item, int nOwnerDrawID) {
 	if (!Q_stricmp(pItem->id->internalName, Info_ValueForKey(info, "jkg_startingGun")) && nNumberInventoryItems > 1)		//selling our starting gun is worth only one credit
 		sprintf(item->text, "%i", 1);
 	
-	else // we only get 1/2 the cost back
+	// we only get 1/2 the cost back
+	else 
 	{
-		sprintf(item->text, "%i", pItem->id->baseCost / 2 * pItem->quantity);
+		//if there's durability damage its reduced further
+		if (pItem->durability < pItem->id->maxDurability)
+		{
+			//durability damage gives us 1/4th the cost + whatever % of 1/4 is left based on durability out of maxdurability
+			int usedCost = pItem->id->baseCost *0.25;	
+			float depreciation = static_cast<float>(pItem->durability) / static_cast<float>(pItem->id->maxDurability);
+			usedCost = usedCost * depreciation;
+			if (pItem->durability > 0)
+			{
+				usedCost = (pItem->id->baseCost * 0.25) + usedCost;
+				VectorCopy4(colorYellow, color);
+			}
+			else
+			{
+				usedCost = pItem->id->baseCost * 0.1;	//broken only nets us 10% of original cost
+				VectorCopy4(colorRed, color);
+			}
+
+			//must be at least 1 credit
+			if (usedCost < 1)
+				usedCost = 1;
+
+			int percent = (static_cast<float>(pItem->durability) / pItem->id->maxDurability) * 100;
+			sprintf(item->text, "(%i%% durability) %i", percent, usedCost * pItem->quantity);
+		}
+		else
+			sprintf(item->text, "%i", pItem->id->baseCost / 2 * pItem->quantity);
 	}
-		
-	Item_Text_Paint(item);
+	
+	JKG_LightenTextColor(color);	//make it legible
+	item->window.flags |= WINDOW_TEXTCOLOR; //override color
+	Item_Text_Paint(item, color);
 }
 
 void JKG_Shop_ShopItemCost(itemDef_t* item, int nOwnerDrawID) {
@@ -478,10 +529,40 @@ void JKG_Shop_ShopAmmoCost(itemDef_t* item)
 		return;
 	}
 
-	JKG_Shop_UpdatePriceCheck();
+	JKG_Shop_UpdatePriceCheck(ITEM_WEAPON);
 	if (bPriceCheckComplete)
 	{
 		sprintf(item->text, "%i", nPriceCheckCost);
+	}
+	else
+	{
+		sprintf(item->text, "...");
+	}
+
+	Item_Text_Paint(item);
+}
+
+void JKG_Shop_ShopDuraCost(itemDef_t* item)
+{
+	if (!bLeftSelected)
+	{
+		return;
+	}
+	else if (nSelected < 0 || nSelected >= nNumberInventoryItems)
+	{
+		return;
+	}
+
+	itemInstance_t* pItem = vInventoryItems[nSelected].second;
+	if (pItem->id->itemType != ITEM_ARMOR && pItem->id->itemType != ITEM_CLOTHING)		//--futuza: for now check if its armor, but eventually all items will be able to be repaired
+	{
+		return;
+	}
+
+	JKG_Shop_UpdatePriceCheck(pItem->id->itemType);
+	if (bPriceCheckDurComplete)
+	{
+		sprintf(item->text, "%i", nPriceCheckDurCost);
 	}
 	else
 	{
@@ -538,10 +619,30 @@ char* JKG_ShopAmmoPriceText() {
 		return nullptr;
 	}
 
-	JKG_Shop_UpdatePriceCheck();
+	JKG_Shop_UpdatePriceCheck(ITEM_WEAPON);
 	if (bPriceCheckComplete)
 	{
 		return va("%i", nPriceCheckCost);
+	}
+	else
+	{
+		return "...";
+	}
+}
+
+char* JKG_ShopDuraPriceText() {
+	if (nSelected < 0 || nSelected >= nNumberInventoryItems || !bLeftSelected) {
+		return nullptr;
+	}
+	itemInstance_t* pItem = vInventoryItems[nSelected].second;
+	if (pItem->id->itemType != ITEM_ARMOR && pItem->id->itemType != ITEM_CLOTHING) {
+		return nullptr;
+	}
+
+	JKG_Shop_UpdatePriceCheck(pItem->id->itemType);
+	if (bPriceCheckComplete)
+	{
+		return va("%i", nPriceCheckDurCost);
 	}
 	else
 	{
@@ -585,6 +686,9 @@ void JKG_Shop_SelectLeft(char** args) {
 		return;
 	}
 
+	Menu_ShowGroup(Menus_FindByName("jkg_shop"), "shop_ammobuttons", qfalse);
+	Menu_ShowGroup(Menus_FindByName("jkg_shop"), "shop_repairbuttons", qfalse);
+
 	if (vInventoryItems[nSelected].second->id->itemType == ITEM_WEAPON)
 	{
 		Menu_ShowGroup(Menus_FindByName("jkg_shop"), "shop_ammobuttons", qtrue);
@@ -603,9 +707,23 @@ void JKG_Shop_SelectLeft(char** args) {
 		// Perform a price check on this item
 		cgImports->SendClientCommand(va("ammopricecheck %i silent", vInventoryItems[nSelected].first));
 	}
-	else
+	if (vInventoryItems[nSelected].second->id->itemType == ITEM_ARMOR || vInventoryItems[nSelected].second->id->itemType == ITEM_CLOTHING)
 	{
-		Menu_ShowGroup(Menus_FindByName("jkg_shop"), "shop_ammobuttons", qfalse);
+		Menu_ShowGroup(Menus_FindByName("jkg_shop"), "shop_repairbuttons", qtrue);
+
+		// Do a price check if we haven't cached one yet
+		for (auto it = vPriceCheckedDurability.begin(); it != vPriceCheckedDurability.end(); ++it)
+		{
+			if (it->first == vInventoryItems[nSelected].first)
+			{
+				bPriceCheckDurComplete = true;
+				nPriceCheckDurCost = it->second;
+				break;
+			}
+		}
+
+		// Perform a price check on this item
+		cgImports->SendClientCommand(va("durapricecheck %i silent", vInventoryItems[nSelected].first));
 	}
 }
 
@@ -624,10 +742,11 @@ void JKG_Shop_SelectRight(char** args) {
 	vShopItemDesc.clear();
 
 	Menu_ShowGroup(Menus_FindByName("jkg_shop"), "shop_ammobuttons", qfalse);
+	Menu_ShowGroup(Menus_FindByName("jkg_shop"), "shop_repairbuttons", qfalse);
 
 	if (nSelected >= 0 && nSelected < vShopItems.size())
 	{
-		JKG_ConstructItemDescription(vShopItems[nSelected].second, vShopItemDesc);
+		JKG_ConstructItemDescription(vShopItems[nSelected].second, vShopItemDesc, nSelected);
 	}
 }
 
@@ -710,7 +829,7 @@ void JKG_Shop_SortSelectionPrice(itemDef_t* item, int ownerDrawID) {
 void JKG_Shop_BuyItem(char** args) {
 	if (bLeftSelected) {
 		return; // Can't buy an item from your inventory
-	}
+	}	
 	if (nSelected < 0 || nSelected >= nNumberShopItems) {
 		return; // Invalid selection
 	}
@@ -737,6 +856,16 @@ void JKG_Shop_BuyAmmo(char** args) {
 	cgImports->SendClientCommand(va("buyammo %i", vInventoryItems[nSelected].first));
 }
 
+void JKG_Shop_BuyRepair(char** args) {
+	if (!bLeftSelected) {
+		return; // Can't buy ammo for something that we don't own
+	}
+	if (nSelected < 0 || nSelected >= nNumberInventoryItems) {
+		return; // Invalid selection
+	}
+	cgImports->SendClientCommand(va("buyrepair %i", vInventoryItems[nSelected].first));
+}
+
 void JKG_Shop_Closed(char** args) {
 	cgImports->SendClientCommand("closeVendor");
 }
@@ -753,22 +882,38 @@ void JKG_ShopNotify(jkgShopNotify_e msg)
 }
 
 // Performed when a price check is returned by the server
-void JKG_Shop_PriceCheckComplete(int nInventoryID, int nPrice)
+void JKG_Shop_PriceCheckComplete(int nInventoryID, int nPrice, int type)
 {
 	std::pair<int, int> pair = std::make_pair(nInventoryID, nPrice);
 
-	// Remove the old cost record, if it exists
-	for (auto it = vPriceCheckedAmmo.begin(); it != vPriceCheckedAmmo.end(); ++it)
+	if (type == PRICECHECK_APC)
 	{
-		if (it->first == nInventoryID)
+		// Remove the old cost record, if it exists
+		for (auto it = vPriceCheckedAmmo.begin(); it != vPriceCheckedAmmo.end(); ++it)
 		{
-			it = vPriceCheckedAmmo.erase(it);
-			bPriceCheckComplete = false;
-			break;
+			if (it->first == nInventoryID)
+			{
+				it = vPriceCheckedAmmo.erase(it);
+				bPriceCheckComplete = false;
+				break;
+			}
 		}
+		vPriceCheckedAmmo.push_back(pair);
 	}
 
-	vPriceCheckedAmmo.push_back(pair);
+	if (type == PRICECHECK_DPC)
+	{
+		for (auto it = vPriceCheckedDurability.begin(); it != vPriceCheckedDurability.end(); ++it)
+		{
+			if (it->first == nInventoryID)
+			{
+				it = vPriceCheckedDurability.erase(it);
+				bPriceCheckDurComplete = false;
+				break;
+			}
+		}
+		vPriceCheckedDurability.push_back(pair);
+	}
 }
 
 // Ownerdraw: Draw the shop description line indicated

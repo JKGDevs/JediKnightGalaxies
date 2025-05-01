@@ -28,6 +28,9 @@
 			"ammocost": {
 				"multiply": 2
 			},
+			"armorPenetration": {
+				"add": 0.15
+			},
 			"meansofdeath": "MOD_DISRUPTOR",
         	"splashmeansofdeath": "MOD_EXPLOSION",
 			"visuals": 

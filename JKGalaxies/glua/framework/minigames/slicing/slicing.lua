@@ -375,7 +375,7 @@ function SlicingGame:__Victory()
 		self:__IntrusionAbort()
 	end
 	self:__LockField(true)
-	self:__ShowDialog(2, "Your have successfully obtained the highest security clearance!", self.__DlgVictoryCallback, nil)
+	self:__ShowDialog(2, "You have successfully obtained the highest security clearance!", self.__DlgVictoryCallback, nil)
 	self:__NetTransmit()
 end
 
@@ -444,7 +444,7 @@ function SlicingGame:__StopSlicing()
 		self:__ShowDialog(2, "As you haven't been able to obtain full security clearance\nthe intrusion detection has activated the alarm.", self.__DlgStoppedCallback, nil)
 	else
 		if (self.UnlockLevel > 0) then
-			self:__ShowDialog(2, "Your have successfully obtained security clearance level " .. self.UnlockLevel .. "!", self.__DlgStoppedCallback, nil)
+			self:__ShowDialog(2, "You have successfully obtained security clearance level " .. self.UnlockLevel .. "!", self.__DlgStoppedCallback, nil)
 		else
 			self:__ShowDialog(2, "You haven't been able to obtain any security clearance.", self.__DlgStoppedCallback, nil)
 		end		

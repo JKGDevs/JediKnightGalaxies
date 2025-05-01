@@ -1,0 +1,39 @@
+{
+	"ref":		"shboots",
+	"slot":		"boots",
+	"armor":		100,
+	"movemodifier":	0.925,
+
+	"visuals": {
+		"model":	"models/players/shoretrooper/model.glm*default",
+		"modelGroup":	"shoretrooper",
+
+		"armorOnSurfaces": [
+			"r_leg_foot",
+			"l_leg_foot",
+			"r_leg",
+			"l_leg"
+		],
+
+		"bodyOffSurfaces": [
+			"r_leg_foot",
+			"l_leg_foot",
+			"r_lega",
+			"r_legb",
+			"r_legc",
+			"r_legd",
+			"r_lege",
+			"r_legf",
+			"r_legg",
+			"l_lega",
+			"l_legb",
+			"l_legc",
+			"l_legd",
+			"l_lege",
+			"l_legf",
+			"l_legg",
+			"r_leg",
+			"l_leg"
+		]
+	}
+}

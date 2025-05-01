@@ -1244,7 +1244,7 @@ static void CG_RegisterGraphics( void ) {
 	cgs.effects.mSaberBloodSparksMid = trap->FX_RegisterEffect("saber/blood_sparks_50_mp.efx");
 	cgs.effects.mBlasterDeflect = trap->FX_RegisterEffect("blaster/deflect.efx");
 	cgs.effects.mBlasterSmoke = trap->FX_RegisterEffect("blaster/smoke_bolton");
-	cgs.effects.mForceConfusionOld = trap->FX_RegisterEffect("effects/force/confusion_old.efx");
+	cgs.effects.mForceConfusionOld = trap->FX_RegisterEffect("effects/force/confusion.efx"); //effects/force/confusion_old.efx
 
 	cgs.effects.forceLightning		= trap->FX_RegisterEffect( "effects/force/lightning.efx" );
 	cgs.effects.forceLightningWide	= trap->FX_RegisterEffect( "effects/force/lightningwide.efx" );
@@ -2439,9 +2439,9 @@ void JKG_WeaponIndicators_Init();
 
 #include "jkg_chatcmds.h"
 
-/*static void CG_OpenPartyManagement( void ) {
-	uiImports->PartyMngtNotify( 10 );
-}*/
+static void CG_OpenPartyManagement( void ) {
+	uiImports->PartyMngtNotify(PARTYNOTIFY_OPEN);
+}
 
 static void CG_OpenInventory ( void )
 {
@@ -2449,8 +2449,14 @@ static void CG_OpenInventory ( void )
 }
 
 void CG_SetupChatCmds() {
-	//CCmd_AddCommand("party", CG_OpenPartyManagement);
+	CCmd_AddCommand("party", CG_OpenPartyManagement);
 	CCmd_AddCommand ("inventory", CG_OpenInventory);
+}
+
+void CG_UnsetChatCmds()
+{
+	CCmd_RemoveCommand("party");
+	CCmd_RemoveCommand("inventory");
 }
 
 extern void CG_InitializeCrossoverAPI( void );
@@ -2564,6 +2570,7 @@ Ghoul2 Insert End
 	cg.ourTradeItems = new std::vector<itemInstance_t>();
 	cg.otherTradeItems = new std::vector<itemInstance_t>();
 
+	JKG_LoadShields();
 	JKG_LoadArmor();
 	BG_InitItems();
 	BG_LoadDefaultWeaponItems();
@@ -2800,6 +2807,7 @@ void CG_Shutdown( void )
 	trap->CO_Shutdown();
 
 	JKG_UnloadArmor();
+	CG_UnsetChatCmds();
 
 //	Com_Printf("... FX System Cleanup\n");
 	trap->FX_FreeSystem();

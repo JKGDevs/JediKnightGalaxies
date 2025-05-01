@@ -288,6 +288,7 @@ static void SV_MapRestart_f( void ) {
 
 
 	//todo: clear out any armor so it doesn't stick around like skins do
+	//see g_main.cpp void ExitLevel(), for now we will just turn them to spectators on timelimit hit
 
 	// toggle the server bit so clients can detect that a
 	// map_restart has happened

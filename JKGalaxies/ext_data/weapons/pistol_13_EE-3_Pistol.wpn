@@ -11,10 +11,14 @@
         "hudicon":          "models/weapons/ee-3_pistol/icon_default",
         "hudnaicon":        "models/weapons/ee-3_pistol/icon_default",
         "selectsound":      "sound/weapons/select_carbine.wav",
+		
+        "indicators": {
+            "ammo":         [ "models/weapons/EE-3_Rifle/numbers3", "models/weapons/EE-3_Rifle/numbers2", "models/weapons/EE-3_Rifle/numbers1" ]
+        },
         
-//        "gunposition":      "11.0 -2.5 -7.0",
-        "gunposition":      "9.0 -3.0 -4.5",
-        "ironsightsposition": "8.0 -0.2 -5.5",
+//        "gunposition":      "11.0 -4.0 -7.0",
+        "gunposition":      "12.0 -4.0 -6.0",
+        "ironsightsposition": "7.0 0 -2.61",
         "ironsightsfov": "75",
     
         "firemode0": {
@@ -63,31 +67,31 @@
     "firemode0": {
         "damage":       22,
         "ammocost":     1,
-	    "burstshotdelay": 120,
-        "firedelay":    800,
+	    "burstshotdelay": 80,
+        "firedelay":    400,
         "firingtype":   "burst",
         "range":        4500.0,
-        "recoil":       0.5,
+        "recoil":       1.5,
 		"shotsperburst": 3,
-        "spread":       0.5,
-        "projectilespeed": 5000.0,
+        "spread":       0.9,
+        "projectilespeed": 5500.0,
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_BLASTER",
         "splashmeansofdeath": "MOD_BLASTER",
 		"ammobase": "AMMO_POWERPACK_S",
 		"ammodefault": "AMMO_POWERPACK_S",
         "clipSize":              30,
-        "heatGenerated": 4.5,
-        "maxHeat": 40
+		"heatGenerated": 4,
+		"maxHeat": 50
     },
 	
     "firemode1": {
-        "damage":       22,
+        "damage":       25,
         "ammocost":     1,
         "firedelay":    150,
         "firingtype":   "semi",
         "range":        4500.0,
-        "recoil":       0.8,
+        "recoil":       0.9,
         "spread":       0.3,
         "projectilespeed": 5000.0,
         "projectileclass": "blaster_proj",
@@ -96,13 +100,13 @@
 		"ammobase": "AMMO_POWERPACK_S",
 		"ammodefault": "AMMO_POWERPACK_S",
         "clipSize":              30,
-        "heatGenerated": 3,
-        "maxHeat": 40
+		"heatGenerated": 3,
+		"maxHeat": 50
     },
     
 	"playeranims": {
         "idle":         { "torso": "BOTH_IDLE1", "legs": "BOTH_IDLE1" },
-        "reload":       { "torso": "TORSO_DROPWEAP1" },
+        "reload":       { "torso": "BOTH_RIFLERELOADB" },
         "sights":        { "torso": "TORSO_WEAPONREADY2", "legs": "BOTH_STAND1" },
         "sightsFiring":       { "torso": "BOTH_ATTACK2" },
 	"ready":	{ "torso": "BOTH_BASE_PISTOLSTANCE", "legs": "BOTH_STAND1" },

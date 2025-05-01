@@ -923,9 +923,18 @@ qboolean JKG_ClientAlive(gentity_t* ent)
 		return qfalse;
 	}
 
-	if (ent->client->deathcamTime && level.time > ent->client->deathcamTime) {
+	if (ent->client->deathcamTime) {
 		return qfalse;
 	}
+	
+	if (ent->client->ps.eFlags & EF_DEAD) {
+		return qfalse;
+	}
+
+	//removing since we may want to be able to make living clients ragdoll temporarily but not count as dead?
+	/*if (ent->client->ps.pm_type == PM_DEAD) { 
+		return qfalse;
+	}*/
 
 	return qtrue;
 }
@@ -1824,6 +1833,8 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	client->pers.maxStamina = maxStamina;
 	client->ps.stats[STAT_MAX_STAMINA] = client->pers.maxStamina; //force and stamina are the same thing in JKG
 
+	client->ps.buffAntitoxActive = client->ps.buffFilterActive = qfalse;		//set initial state for filter & antitox (no protection)
+
 	if (level.gametype >= GT_TEAM) {
 		s = Info_ValueForKey( userinfo, "teamoverlay" );
 		if ( ! *s || atoi( s ) != 0 ) {
@@ -2125,6 +2136,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	trap->SendServerCommand(clientNum, "pInv clr");
 	ent->client->ps.credits = 0;
 	//ent->client->ps.spent = 0;
+	ent->client->ps.buffFilterActive = qfalse;
 	if ((ent->r.svFlags & SVF_BOT) && g_gametype.integer >= GT_TEAM)
 	{
 		if (allowTeamReset)
@@ -2644,7 +2656,7 @@ void ClientSpawn(gentity_t *ent, qboolean respawn) {
 	int					index;
 	vec3_t				spawn_origin, spawn_angles;
 	gclient_t			*client;
-	int					i;
+	unsigned int		i;
 	clientPersistant_t	saved;
 	clientSession_t		savedSess;
 	int					persistant[MAX_PERSISTANT];
@@ -3063,6 +3075,8 @@ void ClientSpawn(gentity_t *ent, qboolean respawn) {
 	// clear entity values
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
 	client->ps.stats[STAT_MAX_STAMINA] = client->pers.maxStamina;
+	client->ps.buffFilterActive = qfalse;
+	client->ps.buffAntitoxActive = qfalse;
 
 	client->ps.eFlags = flags;
 	client->mGameFlags = gameFlags;
@@ -3134,9 +3148,9 @@ void ClientSpawn(gentity_t *ent, qboolean respawn) {
 				if(!haveItem && ent->inventory->size() < 1)
 				{
 					// Don't have any sort of item in our inventory
-					if(ent->client->ps.credits < jkg_startingCredits.integer)
+					if(ent->client->ps.credits < static_cast<unsigned int>(jkg_startingCredits.integer))
 					{
-						itemInstance_t item = BG_ItemInstance(itemID, 1);
+						itemInstance_t item = BG_ItemInstance(itemID, 1, MAX_DEFAULT_DURABILITY);
 						ent->client->ps.credits = jkg_startingCredits.integer;
 						//ent->client->ps.spent = 0;
 
@@ -3387,18 +3401,27 @@ void ClientSpawn(gentity_t *ent, qboolean respawn) {
 	}
 
 	// UQ1: Again, use an event :)
+	//if not a bot, reset the deathcam
 	if (!(ent->r.svFlags & SVF_BOT))
+	{
 		trap->SendServerCommand(ent->s.number, "dcr");
+		ent->client->deathcamTime = 0;
+	}
 
 	// Iterate through all items in the inventory and reequip stuff that might have been unequipped by clearing out the client data
 	if (ent->inventory) {
-		for (i = 0; i < ent->inventory->size(); i++) {
+		for (i = 0; i < ent->inventory->size(); i++) 
+		{
 			auto it = ent->inventory->begin() + i;
 			if (it->equipped && it->id->itemType == ITEM_SHIELD) {
 				JKG_ShieldEquipped(ent, i, qfalse);
 			}
 			else if (it->equipped && it->id->itemType == ITEM_JETPACK) {
 				JKG_JetpackEquipped(ent, i);
+			}
+			else if (it->equipped && (it->id->itemType == ITEM_ARMOR || it->id->itemType == ITEM_CLOTHING)) //--futuza: not quite done, shouldn't re-equip armor if it wasn't equipped before
+			{
+				JKG_EquipItem(ent, i);
 			}
 			else if (it->id->itemType == ITEM_WEAPON) {
 				// It's a weapon, automatically reload us
@@ -3421,20 +3444,32 @@ void ClientSpawn(gentity_t *ent, qboolean respawn) {
 					}
 				}
 			}
+			trap->SendServerCommand(ent - g_entities, va("durability_update %i %i", i, it->durability)); //update the client's durability
 		}
 	}
 
+	//fill special items to capacity on spawn
 	if (ent->client->shieldEquipped)
 	{
 		ent->client->ps.stats[STAT_SHIELD] = ent->client->ps.stats[STAT_MAX_SHIELD];
 	}
 
 	if (ent->client->jetpackEquipped)
-		ent->client->ps.jetpackFuel = jetpackTable[ent->client->ps.jetpack - 1].fuelCapacity;	//fill jetpack to capacity when spawned
+		ent->client->ps.jetpackFuel = jetpackTable[ent->client->ps.jetpack - 1].fuelCapacity;	
 
 	/*if (client->ps.jetpack) {
-		client->ps.jetpackFuel = jetpackTable[client->ps.jetpack - 1].fuelCapacity;		//fill jetpack
+		client->ps.jetpackFuel = jetpackTable[client->ps.jetpack - 1].fuelCapacity;		//fill jetpack --Futuza: old jka way
 	}*/
+
+	if (ent->client->filterEquipped)
+	{
+		ent->client->ps.buffFilterActive = qtrue;
+	}
+
+	if (ent->client->antitoxEquipped)
+	{
+		ent->client->ps.buffAntitoxActive = qtrue;
+	}
 
 	ent->client->ps.heat = 0.0f;		//set initial heat on spawn
 	ent->client->ps.overheated = false;

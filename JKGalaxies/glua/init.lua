@@ -19,6 +19,7 @@ include("entcmds.lua")
 
 print("Loading item functions...")
 include "resources/items/init.lua"
+include "resources/shields/init.lua"
 
 print("Loading quests manager...")
 include ("resources/quests/questManager.lua")

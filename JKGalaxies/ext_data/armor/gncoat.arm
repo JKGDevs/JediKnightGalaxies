@@ -1,6 +1,6 @@
 {
 	"ref":		"gncoat",
-	"slot":		"torso, gloves",
+	"slot":		"torso",
 	"armor":		30,
 	"movemodifier":	1.0,
 

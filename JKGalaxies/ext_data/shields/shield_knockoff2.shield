@@ -1,0 +1,11 @@
+{
+    "ref":			"shield_knockoff2",
+    "capacity":	17,
+	"cooldown":	7285,
+	"regenrate":	1337,
+
+	"brokenSoundEffect":	"sound/shield/shield_broken7",
+	"equippedSoundEffect":	"sound/shield/shield_equipped_junk",
+	"rechargeSoundEffect":	"sound/shield/shield_recharge6",
+	"chargedSoundEffect":	"sound/shield/shield_charged6"
+}

@@ -191,6 +191,7 @@ typedef struct {
 	gentity_t *entWhoHit;
 	int timeHit;
 	int damageDealt;
+	qboolean isCC;	//is the assist crowd control?
 } entityHitRecord_t;
 
 typedef struct {
@@ -410,6 +411,7 @@ struct gentity_s {
 	int			splashRadius;
 	int			methodOfDeath;
 	int			splashMethodOfDeath;
+	float		armorPenetration;		//% of how much armor is ignored
 
 	int			locationDamage[HL_MAX];		// Damage accumulated on different body locations
 
@@ -527,6 +529,7 @@ struct gentity_s {
 	/////////////////////////////////////////
 	// 
 	// EVERYTHING ABOVE THIS POINT MUST BE POD
+	// Futuza: probably not necessary since C++11
 	//
 	/////////////////////////////////////////
 	std::vector<itemInstance_t>* inventory;
@@ -1026,6 +1029,8 @@ struct gclient_s {
 	qboolean	shieldRecharging;	// to make sure that the shield sound doesn't play twice
 	qboolean	jetpackEquipped;	//is there a jetpack equipped?
 	itemJetpackData_t* pItemJetpack;
+	qboolean	filterEquipped;		//Whether client is protected against 'filterable' buffs (eg: poison/toxin), see also ps.buffFilterActive
+	qboolean	antitoxEquipped;	//Whether client is protected & detoxed against antitox buffs (eg: poison/toxin)
 
 	unsigned short ammoTable[MAX_AMMO_TYPES];		// Max ammo indices increased to JKG_MAX_AMMO_INDICES
 
@@ -1345,6 +1350,7 @@ void Cmd_EngageDuel_f(gentity_t *ent);
 void Cmd_Reload_f(gentity_t *ent);
 
 void JKG_BindChatCommands( void );
+void JKG_UnbindChatCommands(void);
 void CCmd_Cleanup();
 
 //
@@ -1354,6 +1360,7 @@ void CCmd_Cleanup();
 void Jetpack_Off(gentity_t *ent);
 void Jetpack_On(gentity_t *ent);
 void ItemUse_Jetpack(gentity_t *ent);
+void ItemUse_Shield(gentity_t* ent);
 
 void G_CheckTeamItems( void );
 void G_RunItem( gentity_t *ent );
@@ -1453,6 +1460,7 @@ Ghoul2 Insert End
 //
 qboolean CanDamage (gentity_t *targ, vec3_t origin);
 void G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t pushDir, float strength, qboolean breakSaberLock );
+qboolean JKG_IsShieldModOverriden(gentity_t* ent, int mod, shieldData_t* shield, std::vector<int>& list);
 void G_Damage (gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod);
 qboolean G_RadiusDamage (vec3_t origin, gentity_t *attacker, float damage, float radius, gentity_t *ignore, gentity_t *missile, int mod);
 void body_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath );
@@ -1548,6 +1556,7 @@ int			 WP_GetWeaponSplashMOD( gentity_t *ent, int firemode );
 float		 WP_GetWeaponRange( gentity_t *ent, int firemode );
 float		 WP_GetWeaponDecayRate(gentity_t* ent, int firemode);
 float		 WP_GetWeaponSpeed( gentity_t *ent, int firemode );
+float		 WP_GetWeaponArmorPenetration(gentity_t* ent, int firemode);
 double		 WP_GetWeaponSplashRange( gentity_t *ent, int firemode );
 
 void SnapVectorTowards( vec3_t v, vec3_t to );
@@ -1629,6 +1638,7 @@ void G_RunClient			( gentity_t *ent );
 // g_team.c
 //
 qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 );
+int IsMyTeamWinning(gentity_t* ent);	//-2 == team invalid, -1 == team is losing, 0 == teams tied, 1 == team is winning
 void Team_CheckDroppedItem( gentity_t *dropped );
 
 //
@@ -1707,7 +1717,7 @@ void ForceTelepathy(gentity_t *self);
 qboolean NPC_Humanoid_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, int hitLoc );
 void WP_DeactivateSaber( gentity_t *self, qboolean clearLength );
 void WP_ActivateSaber( gentity_t *self );
-void JKG_NetworkSaberCrystals( playerState_t *ps, int invId, int weaponId );
+void JKG_NetworkSaberCrystals( playerState_t *ps, std::size_t invId, int weaponId );
 void JKG_DoubleCheckWeaponChange( usercmd_t *cmd, playerState_t *ps );
 
 // wp_melee.cpp
@@ -1827,7 +1837,7 @@ void		TeamPartyCommandDisband( int clientNum );										// Disbands the party, 
 void		TeamPartyCommandDismiss( int clientNum, int iID );								// Dismisses the target member from the party. The identifier is the slot!
 void		TeamPartyCommandInvite( int clientNum, char *parm );							// Invites a player to join your party. The parameter can be a identifier or name.
 void		TeamPartyCommandLeave( int clientNum, qboolean forceClient );					// Leave your current party. This may not be performed by the leader.
-void		TeamPartyListRefresh( int clientNum, int iTime );								// Refreshes the 'seeking party list', where people register to look for a party.
+void		TeamPartyListRefresh( int clientNum, unsigned int iTime );								// Refreshes the 'seeking party list', where people register to look for a party.
 void		TeamPartyListRegister( int clientNum, char *message );							// Register yourself on the seeking list!
 void		TeamPartyListUnregister( int clientNum, qboolean forcedUpdate );				// Unregister yourself from the seeking list!
 void		TeamPartyCommandReject( int clientNum, int iID );								// Rejects the party invitation in the provided slot.

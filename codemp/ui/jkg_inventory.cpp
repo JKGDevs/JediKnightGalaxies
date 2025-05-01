@@ -6,8 +6,8 @@ static std::vector<std::pair<int, itemInstance_t*>> pItems;	// list of items
 static int nPosition = 0;					// position in the item list (changed with arrow buttons)
 static int nSelected = -1;					// selected item in the list (-1 for no selection)
 static std::vector<std::string> vItemDescLines;	// item description
+const int MAX_LENGTH_INV_LINE = 40; //max length of a line in the inventory/shop description
 
-void JKG_ConstructItemDescription(itemInstance_t* pItem, std::vector<std::string>& vDescLines);
 
 void JKG_ConstructInventoryList() {
 	itemInstance_t* pAllItems = nullptr;
@@ -60,7 +60,7 @@ void JKG_ConstructInventoryList() {
 	}
 
 	if (nSelected < pItems.size() && nSelected >= 0) {
-		JKG_ConstructItemDescription(pItems[nSelected].second, vItemDescLines);
+		JKG_ConstructItemDescription(pItems[nSelected].second, vItemDescLines, nSelected);
 	}
 }
 
@@ -132,6 +132,34 @@ static QINLINE void JKG_ConstructItemTierDescription(itemTier_t tier, std::vecto
 	default:
 		vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TIER"), "Unknown", static_cast<int>(tier)));
 		break;
+	}
+}
+
+
+void JKG_ConstructItemDurabilityDescription(itemInstance_t* pItem, std::vector<std::string>& vDescLines, int nItemNum)
+{
+
+	if (nItemNum >= pItems.size() || nItemNum < 0) {
+		return;
+	}
+
+	if (pItem->id->itemType != ITEM_AMMO && pItem->id->itemTier != TIER_LEGENDARY)
+	{
+		//grab current durability
+		int durability = *static_cast<int*>(cgImports->InventoryDataRequest(INVENTORYREQUEST_DURABILITY, nItemNum)); //note: anytime durability is adjusted from server need to send cmd to client with trap->SendServerCommand(ent - g_entities, va("durability_update
+		float percent = (static_cast<float>(durability) / pItem->id->maxDurability)*100.0f;
+		if (durability < 1)
+		{
+			vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_DURABILITY"), va("^1"), durability, pItem->id->maxDurability, 0.0f));
+		}
+		else if (durability <= pItem->id->maxDurability * 0.25f)
+		{
+			vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_DURABILITY"), va("^3"), durability, pItem->id->maxDurability, percent));
+		}
+		else
+		{
+			vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_DURABILITY"), va("^7"), durability, pItem->id->maxDurability, percent ));
+		}
 	}
 }
 
@@ -248,6 +276,25 @@ const char* JKG_GetArmorSlotString(armorData_t* pData) {
 	return "";
 }
 
+const char* JKG_GetShieldProtection(shieldData_t* pData) {
+	if(pData->standard)
+		return UI_GetStringEdString3("@JKG_INVENTORY_SHIELD_STANDARD");
+	else
+		return UI_GetStringEdString3("@JKG_INVENTORY_SHIELD_MODIFIED");
+}
+
+const char* JKG_GetShieldTypeString(shieldData_t* pData) {
+	switch (pData->type) {
+	case SHIELDTYPE_SHELL:
+		return UI_GetStringEdString3("@JKG_INVENTORY_SHIELDTYPE_SHELL");
+	case SHIELDTYPE_BUBBLE:
+		return UI_GetStringEdString3("@JKG_INVENTORY_SHIELDTYPE_BUBBLE");
+	case SHIELDTYPE_HANDHELD:
+		return UI_GetStringEdString3("@JKG_INVENTORY_SHIELDTYPE_HANDHELD");
+	}
+	return UI_GetStringEdString3("@JKG_INVENTORY_SHIELDTYPE_UNKNOWN");;
+}
+
 // Create a jetpack item's description
 static void JKG_ConstructJetpackDescription(itemInstance_t* pItem, std::vector<std::string>& vDescLines) {
 	// Jetpack
@@ -256,7 +303,11 @@ static void JKG_ConstructJetpackDescription(itemInstance_t* pItem, std::vector<s
 	// Thrusting Fuel Consumption: ###
 	// Fuel Regeneration: ###
 	// Hover Gravity: ###
-	vDescLines.push_back(UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_JETPACK"));
+	std::string typeDescription = "";
+	typeDescription = UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TYPE");
+	typeDescription = typeDescription + UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_JETPACK");
+
+	vDescLines.push_back(typeDescription);
 	JKG_ConstructItemTierDescription(pItem->id->itemTier, vDescLines);
 	if (pItem->id->weight > 0.0f)
 	{
@@ -272,18 +323,100 @@ static void JKG_ConstructJetpackDescription(itemInstance_t* pItem, std::vector<s
 // Create a shield item's description
 static void JKG_ConstructShieldDescription(itemInstance_t* pItem, std::vector<std::string>& vDescLines) {
 	// Shield Item
+	// Tier:
+	// Protection: standard/abnormal
+	// Shield Type: shell/bubble/etc
 	// Capacity: ###
 	// Recharge Time: ### seconds
 	// Regeneration: # shields per second
-	vDescLines.push_back(UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_SHIELD"));
+	std::string typeDescription = "";
+	typeDescription = UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TYPE");
+	typeDescription += UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_SHIELD");
+	vDescLines.push_back(typeDescription);
 	JKG_ConstructItemTierDescription(pItem->id->itemTier, vDescLines);
+	typeDescription = va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_PROTECTION_TYPE"), JKG_GetShieldProtection(pItem->id->shieldData.pShieldData));
+	vDescLines.push_back(typeDescription);
+	typeDescription = va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_TYPE"), JKG_GetShieldTypeString(pItem->id->shieldData.pShieldData));
+	vDescLines.push_back(typeDescription);
+	
+
 	if (pItem->id->weight > 0.0f)
 	{
 		vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_ITEM_WEIGHT"), pItem->id->weight));
 	}
-	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_CAPACITY"), pItem->id->shieldData.capacity));
-	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_RECHARGE"), pItem->id->shieldData.cooldown / 1000.0f));
-	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_REGEN"), 1000.0f / pItem->id->shieldData.regenrate));
+	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_CAPACITY"), pItem->id->shieldData.pShieldData->capacity));
+	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_RECHARGE"), pItem->id->shieldData.pShieldData->cooldown / 1000.0f));
+	vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_REGEN"), 1000.0f / pItem->id->shieldData.pShieldData->regenrate));
+
+	//we have shield overrides, show them
+	if(!pItem->id->shieldData.pShieldData->standard)
+	{ 
+		meansOfDamage_t* means;
+
+		//list blocked MODs
+		if (pItem->id->shieldData.pShieldData->blockedMODs.size() > 0)
+		{
+			std::string list = UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_BLOCKS");
+			for (int i = 0; i < pItem->id->shieldData.pShieldData->blockedMODs.size(); i++)
+			{
+				means = JKG_GetMeansOfDamage(pItem->id->shieldData.pShieldData->blockedMODs.at(i));
+				list += va(UI_GetStringEdString2(means->inventoryName));
+
+				if (i == pItem->id->shieldData.pShieldData->blockedMODs.size() - 1)
+					list += " ";
+				else
+					list += ", ";
+
+				if (list.size() < MAX_LENGTH_INV_LINE-2) //still room on the line
+				{
+					if (i == pItem->id->shieldData.pShieldData->blockedMODs.size() - 1)
+					{
+						vDescLines.push_back(list);
+						list.clear();
+					}
+					else
+						continue;
+				}
+				else
+				{
+					vDescLines.push_back(list);
+					list.clear();
+				}
+			}
+		}
+
+		//list allowed MODs
+		if (pItem->id->shieldData.pShieldData->allowedMODs.size() > 0)
+		{
+			std::string list = UI_GetStringEdString2("@JKG_INVENTORY_SHIELD_ALLOWS");
+			for (int i = 0; i < pItem->id->shieldData.pShieldData->allowedMODs.size(); i++)
+			{
+				means = JKG_GetMeansOfDamage(pItem->id->shieldData.pShieldData->allowedMODs.at(i));
+				list += va(UI_GetStringEdString2(means->inventoryName));
+
+				if (i == pItem->id->shieldData.pShieldData->allowedMODs.size() - 1)
+					list += " ";
+				else
+					list += ", ";
+
+				if (list.size() < MAX_LENGTH_INV_LINE-2) //still room on the line
+				{
+					if (i == pItem->id->shieldData.pShieldData->allowedMODs.size() - 1)
+					{
+						vDescLines.push_back(list);
+						list.clear();
+					}
+					else
+						continue;
+				}
+				else
+				{
+					vDescLines.push_back(list);
+					list.clear();
+				}
+			}
+		}
+	}
 }
 
 // Create an armor item's description
@@ -295,7 +428,11 @@ static void JKG_ConstructArmorDescription(itemInstance_t* pItem, std::vector<std
 	// Maximum Health: (+)%i
 	armorData_t* pArmorData = pItem->id->armorData.pArm;
 
-	vDescLines.push_back(UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_ARMOR"));
+	std::string typeDescription = "";
+	typeDescription = UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TYPE");
+	typeDescription = typeDescription + UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_ARMOR");
+
+	vDescLines.push_back(typeDescription);
 	JKG_ConstructItemTierDescription(pItem->id->itemTier, vDescLines);
 	if (pItem->id->weight > 0.0f)
 	{
@@ -353,9 +490,50 @@ static void JKG_ConstructArmorDescription(itemInstance_t* pItem, std::vector<std
 		}
 	}
 
-	if (pArmorData->filter)
+	if (pArmorData->antitoxin)
+	{
+		vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_ARM_ANTITOXIN")));
+	}
+
+	if (pArmorData->filter)	//note, can't have filter if antitoxin is present, as filter is an inferior version
 	{
 		vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_ARM_FILTER")));
+	}
+
+	//Resistances: fire(-25%), ice(-20%)
+	if (pArmorData->resistances.size() > 0)
+	{
+		std::string rList = va(UI_GetStringEdString2("@JKG_INVENTORY_ARM_RESISTANCES")); 
+		meansOfDamage_t* means;
+		for (auto it = pArmorData->resistances.begin(); it != pArmorData->resistances.end(); ++it)
+		{
+			std::string sign = "-";
+			means = JKG_GetMeansOfDamage(it->first);
+			rList += va(UI_GetStringEdString2(means->inventoryName));
+			int percent = 100 - (it->second * 100);
+
+			if (percent < 0)
+				sign = "+";
+
+			rList += "(" + sign + std::to_string(percent) + "%)";
+			if (it == pArmorData->resistances.end() - 1)
+				rList += " ";
+			else
+				rList += ", ";
+
+			if (rList.size() < 31) //still room on the line
+			{
+				if (it == pArmorData->resistances.end()-1)
+					vDescLines.push_back(rList);
+				else
+					continue;
+			}
+			else
+			{
+				vDescLines.push_back(rList);
+				rList.clear();
+			}
+		}
 	}
 }
 
@@ -366,7 +544,7 @@ static QINLINE float JKG_UnitsToFeet(float units) {
 
 // Convert units into meters (metres if you're bad at spelling)
 static QINLINE float JKG_UnitsToMeters(float units) {
-	return units * 0.305f; // according to ensiform
+	return units * 0.305f; // according to ensiform, note that there are strings\English\jkg_inventory.str that document it as 36.5f, so maybe slightly off?
 }
 
 // Add information about a weapon's firing mode
@@ -424,25 +602,46 @@ static void JKG_ConstructFiringModeDescription(weaponData_t* pWP, int firemode, 
 		}
 	}
 
-	if (pWP->weaponBaseIndex != WP_TRIP_MINE && pWP->weaponBaseIndex != WP_DET_PACK && pWP->weaponBaseIndex != WP_THERMAL && pFM->baseDamage > 0) {
-		// Damage
-		char* szDamageTag = JKG_GetDamageTag(pWP, firemode);
+	if (pWP->weaponBaseIndex != WP_TRIP_MINE && pWP->weaponBaseIndex != WP_DET_PACK && pWP->weaponBaseIndex != WP_THERMAL && (pFM->baseDamage > 0 || pFM->primary.damage > 0))
+	{
+		//	basic damage
+		if (pFM->baseDamage > 0)
+		{
 
-		if (pFM->rangeSplash) {
-			if (pFM->shotCount > 1) {
-				vDescLines.push_back(va(UI_GetStringEdString3("@JKG_INVENTORY_WEP_BDAMAGE_SCATTERGUN"), pFM->baseDamage, pFM->shotCount, szDamageTag));
+			char* szDamageTag = JKG_GetDamageTag(pWP, firemode);
+
+			if (pFM->rangeSplash) {
+				if (pFM->shotCount > 1) {
+					vDescLines.push_back(va(UI_GetStringEdString3("@JKG_INVENTORY_WEP_BDAMAGE_SCATTERGUN"), pFM->baseDamage, pFM->shotCount, szDamageTag));
+				}
+				else {
+					vDescLines.push_back(va(UI_GetStringEdString3("@JKG_INVENTORY_WEP_BDAMAGE"), pFM->baseDamage, szDamageTag));
+				}
+				vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_WEP_BRADIUS"),
+					(int)pFM->rangeSplash, JKG_UnitsToFeet(pFM->rangeSplash), JKG_UnitsToMeters(pFM->rangeSplash)));
+			}
+			else if (pFM->shotCount > 1) {
+				vDescLines.push_back(va(UI_GetStringEdString3("@JKG_INVENTORY_WEP_DAMAGE_SCATTERGUN"), pFM->baseDamage, pFM->shotCount, szDamageTag));
 			}
 			else {
-				vDescLines.push_back(va(UI_GetStringEdString3("@JKG_INVENTORY_WEP_BDAMAGE"), pFM->baseDamage, szDamageTag));
+				vDescLines.push_back(va(UI_GetStringEdString3("@JKG_INVENTORY_WEP_DAMAGE"), pFM->baseDamage, szDamageTag));
 			}
-			vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_WEP_BRADIUS"), 
-				(int)pFM->rangeSplash, JKG_UnitsToFeet(pFM->rangeSplash), JKG_UnitsToMeters(pFM->rangeSplash)));
 		}
-		else if (pFM->shotCount > 1) {
-			vDescLines.push_back(va(UI_GetStringEdString3("@JKG_INVENTORY_WEP_DAMAGE_SCATTERGUN"), pFM->baseDamage, pFM->shotCount, szDamageTag));
+		
+		if (pFM->primary.damage > 0)
+		{
+			char* szDamageTag = JKG_GetDamageTag(pWP, firemode);
+			vDescLines.push_back(va(UI_GetStringEdString3("@JKG_INVENTORY_WEP_DAMAGE"), pFM->primary.damage, szDamageTag));
+
+			//todo other complex damage checking, including debuffs, radius damage etc.
 		}
-		else {
-			vDescLines.push_back(va(UI_GetStringEdString3("@JKG_INVENTORY_WEP_DAMAGE"), pFM->baseDamage, szDamageTag));
+
+		if (pFM->armorPenetration > 0.0f || JKG_GetMeansOfDamage(pFM->weaponMOD)->modifiers.armorPenetration > 0.0f)
+		{
+			int percent = (pFM->armorPenetration+ JKG_GetMeansOfDamage(pFM->weaponMOD)->modifiers.armorPenetration) * 100;
+			if (percent > 100)
+				percent = 100;
+			vDescLines.push_back(va(UI_GetStringEdString3("@JKG_INVENTORY_WEP_ARMOR_PEN"), percent));
 		}
 
 		// Accuracy rating
@@ -470,6 +669,29 @@ static void JKG_ConstructFiringModeDescription(weaponData_t* pWP, int firemode, 
 				vDescLines.push_back(UI_GetStringEdString2("@JKG_INVENTORY_WEP_TAG_BURST"));
 				break;
 		}
+
+		// Range
+		if (pFM->range > 0)
+		{
+			std::string rangeDescription = "";
+			int rangeMeters = static_cast<int>(JKG_UnitsToMeters(pFM->range));
+
+			rangeDescription = va(UI_GetStringEdString2("@JKG_INVENTORY_WEP_RANGE"), rangeMeters);
+
+			if (rangeMeters < 80)
+			{
+				rangeDescription += UI_GetStringEdString2("@JKG_INVENTORY_WEP_RANGE_SHORT");
+			}
+			else if (rangeMeters >= 80 && rangeMeters < 220)
+			{
+				rangeDescription += UI_GetStringEdString2("@JKG_INVENTORY_WEP_RANGE_MEDIUM");
+			}
+			else
+			{
+				rangeDescription += UI_GetStringEdString2("@JKG_INVENTORY_WEP_RANGE_LONG");
+			}
+			vDescLines.push_back(rangeDescription);
+		}
 	}
 	else if (pFM->baseDamage > 0) {
 		char* szDamageTag = JKG_GetDamageTag(pWP, firemode);
@@ -478,7 +700,7 @@ static void JKG_ConstructFiringModeDescription(weaponData_t* pWP, int firemode, 
 			(int)pFM->rangeSplash, JKG_UnitsToFeet(pFM->rangeSplash), JKG_UnitsToMeters(pFM->rangeSplash)));
 	}
 
-	vDescLines.push_back(""); // Add a blank line at the end because formatting is good (TM)
+	//vDescLines.push_back(""); // Add a blank line at the end because formatting is good (TM)
 }
 
 // Create a weapon item's description
@@ -490,7 +712,43 @@ static void JKG_ConstructWeaponDescription(itemInstance_t* pItem, std::vector<st
 	// Fire mode
 	weaponData_t* wp = cgImports->GetWeaponDatas(pItem->id->weaponData.weapon, pItem->id->weaponData.variation);
 
-	vDescLines.push_back(UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_WEAPON"));
+	//determine specific type of weapon
+	std::string weaponType = " - ";
+	switch(wp->weaponBaseIndex)
+	{
+		case WP_SABER:
+			weaponType += UI_GetStringEdString2("@JKG_INVENTORY_MOD_SABER");
+			break;
+		case WP_BRYAR_PISTOL:
+		case WP_BLASTER:
+		case WP_DISRUPTOR:
+		case WP_BOWCASTER:
+		case WP_REPEATER:
+		case WP_DEMP2:
+		case WP_FLECHETTE:
+		case WP_CONCUSSION:
+		case WP_ROCKET_LAUNCHER:
+		case WP_BRYAR_OLD:
+			weaponType += UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TYPE_GUN");
+			break;
+		case WP_STUN_BATON:
+			weaponType += UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TYPE_MELEE");
+			break;
+		case WP_THERMAL:
+		case WP_TRIP_MINE:
+		case WP_DET_PACK:
+			weaponType += UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TYPE_EXPLOSIVE");
+			break;
+
+		default:
+			weaponType = "";	//unknown type, no comment necessary
+	}
+	std::string typeDescription = "";
+	typeDescription = UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TYPE");
+	typeDescription = typeDescription + UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_WEAPON");
+	typeDescription = typeDescription + weaponType;
+
+	vDescLines.push_back(typeDescription);
 	JKG_ConstructItemTierDescription(pItem->id->itemTier, vDescLines);
 	if (pItem->id->weight > 0.0f)
 	{
@@ -536,7 +794,7 @@ static void JKG_ConstructWeaponDescription(itemInstance_t* pItem, std::vector<st
 	}
 
 	else
-	{ 
+	{
 		for (int i = 0; i < wp->numFiringModes; i++) {
 			JKG_ConstructFiringModeDescription(wp, i, vDescLines);
 		}
@@ -545,7 +803,11 @@ static void JKG_ConstructWeaponDescription(itemInstance_t* pItem, std::vector<st
 
 //create an ammo item's description
 static void JKG_ConstructAmmoDescription(itemInstance_t* pItem, std::vector<std::string>& vDescLines) {
-	vDescLines.push_back(UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_AMMO"));
+	std::string typeDescription = "";
+	typeDescription = UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TYPE");
+	typeDescription = typeDescription + UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_AMMO");
+
+	vDescLines.push_back(typeDescription);
 	JKG_ConstructItemTierDescription(pItem->id->itemTier, vDescLines);
 	if (pItem->id->weight > 0.0f)
 	{
@@ -555,7 +817,11 @@ static void JKG_ConstructAmmoDescription(itemInstance_t* pItem, std::vector<std:
 
 // Create a tool item's description
 static void JKG_ConstructToolDescription(itemInstance_t* pItem, std::vector<std::string>& vDescLines) {
-	vDescLines.push_back(UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_TOOL"));
+	std::string typeDescription = "";
+	typeDescription = UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TYPE");
+	typeDescription = typeDescription + UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_TOOL");
+
+	vDescLines.push_back(typeDescription);
 	JKG_ConstructItemTierDescription(pItem->id->itemTier, vDescLines);
 	if (pItem->id->weight > 0.0f)
 	{
@@ -565,7 +831,10 @@ static void JKG_ConstructToolDescription(itemInstance_t* pItem, std::vector<std:
 
 // Create a consumable item's description
 static void JKG_ConstructConsumableDescription(itemInstance_t* pItem, std::vector<std::string>& vDescLines) {
-	vDescLines.push_back(UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_CONSUMABLE"));
+	std::string typeDescription = "";
+	typeDescription = UI_GetStringEdString2("@JKG_INVENTORY_ITEM_TYPE");
+	typeDescription = typeDescription + UI_GetStringEdString2("@JKG_INVENTORY_ITYPE_CONSUMABLE");
+	vDescLines.push_back(typeDescription);
 	JKG_ConstructItemTierDescription(pItem->id->itemTier, vDescLines);
 	if (pItem->id->weight > 0.0f)
 	{
@@ -573,56 +842,89 @@ static void JKG_ConstructConsumableDescription(itemInstance_t* pItem, std::vecto
 	}
 }
 
-//a stupid simple line splitter for descriptions
-void JKG_SplitDescriptionLines(const std::string& s, std::vector<std::string>& vDescLines)
+//simple line splitter for item descriptions (max 250 chars)
+void JKG_SplitDescriptionLines(const std::string& info, std::vector<std::string>& vDescLines)
 {
 	//these 'consts' might need to be calculated based on inventory width of the current screen
-	const int MAXLENGTH = 39; //max length of a line
-	const int MAXFIRSTLINE = 33; //max length with "info: " preceeding the text
+	const int MAXFIRSTLINE = MAX_LENGTH_INV_LINE - 6; //max length with "info: " preceeding the text
 	bool multiline = true;	//for determing if we need to handle multiple lines of description or a single line
+
+	std::string s = removeExtraSpacesInString(info); //clean up extra spaces
 	int length = s.length();
-	
-	if (length - MAXFIRSTLINE < MAXLENGTH)
+
+	if (length < MAXFIRSTLINE )
 	{
-		vDescLines.push_back(s.c_str());
+		vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_ITEM_DESCRIPTION"), s.c_str()));
 		multiline = false;
 	}
-	
-	if(multiline)
+
+	if (multiline)
 	{
-		//if the last part of the line is not a alphanumeric, don't add a dash
-		if (!std::isalnum(s[MAXFIRSTLINE - 1]))
-			vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_ITEM_DESCRIPTION"), s.substr(0, MAXFIRSTLINE).c_str()));
+		//print first line
+		int firstline_space = findLastSpaceInString(s.substr(0, MAXFIRSTLINE));
+		if(firstline_space != -1)
+		{
+			vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_ITEM_DESCRIPTION"), s.substr(0, firstline_space).c_str()));
+		}
 		else
-			vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_ITEM_DESCRIPTION"), (s.substr(0, MAXFIRSTLINE) + "-").c_str()));
+		{
+			firstline_space = MAXFIRSTLINE;
+			vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_ITEM_DESCRIPTION"), (s.substr(0, firstline_space) + "-").c_str())); //break up no space strings with dashes
+		}
 
-		length = length - MAXFIRSTLINE; //subtrack first line from length
-		int start = MAXFIRSTLINE; //where to start the line
 
-		//loop through the description and break it up into lines
+		length = length - firstline_space+1; //subtract first line from length
+		int start = firstline_space+1; //where to start the line
+		
+
+		//loop through the rest of the description and break it up into lines on the last space of each line
 		while (length > 0)
 		{
-			if( (length - MAXLENGTH) < 1)
+
+			//if it is the last line
+			if ((length - MAX_LENGTH_INV_LINE) < 1)
 			{
-				vDescLines.push_back(s.substr(start, MAXLENGTH).c_str()); //if it is the last line
+				vDescLines.push_back(s.substr(start, s.length()).c_str());
+				break;
 			}
 			else
 			{
-				//no dash please, it's not a number or letter
-				if (!std::isalnum(s[start+MAXLENGTH-1]))
-					vDescLines.push_back(s.substr(start, MAXLENGTH).c_str()); 
+				//find the last space in the string
+				std::string line = s.substr(start, MAX_LENGTH_INV_LINE);
+				int last_space = findLastSpaceInString(line);
+
+				//string ends in a space, put the whole line up
+				if (last_space == line.length() - 1)
+				{
+					vDescLines.push_back(s.substr(start, MAX_LENGTH_INV_LINE).c_str());
+					start = start + MAX_LENGTH_INV_LINE;
+					length = length - MAX_LENGTH_INV_LINE;
+				}
+
+				//no spaces in string, break it up with a dash
+				else if (last_space == -1)
+				{
+					vDescLines.push_back((s.substr(start, MAX_LENGTH_INV_LINE) + "-").c_str());
+
+					start = start + MAX_LENGTH_INV_LINE;
+					length = length - MAX_LENGTH_INV_LINE;
+				}
+
+				//go until the last word
 				else
-					vDescLines.push_back((s.substr(start, MAXLENGTH) + "-").c_str()); //add dash
+				{
+					vDescLines.push_back(s.substr(start, last_space).c_str());
+					start = start + last_space+1;
+					length = length - last_space+1;
+				}
 			}
 			
-			start = start + MAXLENGTH;
-			length = length - MAXLENGTH;
 		}
 	}
 }
 
 // Construct each type of item description
-void JKG_ConstructItemDescription(itemInstance_t* pItem, std::vector<std::string>& vDescLines) {
+void JKG_ConstructItemDescription(itemInstance_t* pItem, std::vector<std::string>& vDescLines, int invNum) {
 	vDescLines.clear();
 
 	if (pItem == nullptr) {
@@ -632,27 +934,33 @@ void JKG_ConstructItemDescription(itemInstance_t* pItem, std::vector<std::string
 	switch (pItem->id->itemType) {
 		case ITEM_JETPACK:
 			JKG_ConstructJetpackDescription(pItem, vDescLines);
+			//JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);	
 			break;
 		case ITEM_SHIELD:
 			JKG_ConstructShieldDescription(pItem, vDescLines);
+			//JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			break;
 		case ITEM_ARMOR:
 			JKG_ConstructArmorDescription(pItem, vDescLines);
+			JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);		//only print armor durability until other durability mechanics are finished
 			break;
 		case ITEM_WEAPON:
 			JKG_ConstructWeaponDescription(pItem, vDescLines);
+			//JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			break;
 		case ITEM_AMMO:
 			JKG_ConstructAmmoDescription(pItem, vDescLines);
 			break;
 		case ITEM_TOOL:
 			JKG_ConstructToolDescription(pItem, vDescLines);
+			//JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			break;
 		case ITEM_CONSUMABLE:
 			JKG_ConstructConsumableDescription(pItem, vDescLines);
 			break;
 		default:
 			JKG_ConstructItemTierDescription(pItem->id->itemTier, vDescLines);
+			//JKG_ConstructItemDurabilityDescription(pItem, vDescLines, invNum);
 			if (pItem->id->weight > 0.0f)
 			{
 				vDescLines.push_back(va(UI_GetStringEdString2("@JKG_INVENTORY_ITEM_WEIGHT"), pItem->id->weight));
@@ -735,11 +1043,12 @@ void JKG_Inventory_OwnerDraw_ItemName(itemDef_t* item, int ownerDrawID) {
 		return;
 	}
 	itemInstance_t* pItem = pItems[nItemNum].second;
-	strcpy(item->text, pItem->id->displayName);
+	Q_strncpyz(item->text, pItem->id->displayName, sizeof(item->text));
 
 	//figure out color based on item tier
 	vec4_t color;
 	JKG_SetTierColor(pItem->id->itemTier, color);
+	item->window.flags |= WINDOW_TEXTCOLOR; //we're overriding the color
 	Item_Text_Paint(item, color);
 }
 
@@ -949,12 +1258,12 @@ void JKG_Inventory_SelectItem(char** args) {
 		nSelected = -1;
 		Menu_ShowItemByName(Menus_FindByName("jkg_inventory"), "shop_preview", qfalse);
 		
-		JKG_ConstructItemDescription(nullptr, vItemDescLines);
+		JKG_ConstructItemDescription(nullptr, vItemDescLines, nPosition+nWhich);
 	} else {
 		nSelected = nPosition + nWhich;
 		Menu_ShowItemByName(Menus_FindByName("jkg_inventory"), "shop_preview", qtrue);
 
-		JKG_ConstructItemDescription(pItems[nSelected].second, vItemDescLines);
+		JKG_ConstructItemDescription(pItems[nSelected].second, vItemDescLines, nSelected);
 	}
 }
 
@@ -1131,9 +1440,11 @@ qboolean JKG_Inventory_HandleKey(int key)
 	switch (key)
 	{
 		case A_MWHEELDOWN:
+		case A_CAP_S:
 			JKG_Inventory_ArrowDown(nullptr);
 			return qtrue;
 		case A_MWHEELUP:
+		case A_CAP_W:
 			JKG_Inventory_ArrowUp(nullptr);
 			return qtrue;
 		case A_0:

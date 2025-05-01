@@ -59,7 +59,9 @@
 		"ammobase": "AMMO_SS_POWERPAK",
 		"ammodefault": "AMMO_SS_POWERPAK",
 		"clipSize": 20,
-		"heatGenerated": 6.75
+		"heatGenerated": 3,
+		"maxHeat": 35,
+		"reloadClearHeat": 10
 	},
 
     "playeranims": {

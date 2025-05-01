@@ -81,6 +81,7 @@
 		
 		"damage":
 		{
+			"means": "MOD_STUNNED",
 			"deadly": false
 		},
 
@@ -111,6 +112,7 @@
 		
 		"damage":
 		{
+			"means": "MOD_STUNNED",
 			"deadly": false
 		},
 
@@ -151,6 +153,10 @@
 			"movemodifier" : 0.9,
 			"maxstacks" : 5
 		},
+
+		"damage": {
+			"means": "MOD_STUNNED"
+		},
 		
 		"visuals":
 		{
@@ -180,6 +186,10 @@
 		"passive": {
 			"movemodifier" : 0.8,
 			"maxstacks" : 4
+		},
+
+		"damage": {
+			"means": "MOD_STUNNED"
 		},
 		
 		"visuals":
@@ -221,12 +231,19 @@
 	//emp gear restriction, prevents activation of jetpacks (and more to come later, maybe disable hud?)
 	"standard-emp":
 	{
-		"category": "electric",
+		"category": "emp",
 
 		"canceling": {
 			"noBuffStack": true,
-			"noCategoryStack": true
-		},
+			"noCategoryStack": true,
+			"cancelOther": 
+				[
+					{
+						"category": "repair",
+						"priority": 50
+					}
+				]
+			},
 
 		"passive": {
 			"empstaggered": true
@@ -308,7 +325,8 @@
 
 		"canceling": {
 			"noBuffStack": true,
-			"filterRemoval": true,
+			"filterBlocking": true,
+			"antitoxRemoval": true,
 			"noCategoryStack": true
 		},
 
@@ -336,6 +354,7 @@
 		}
 	},
 	
+	//removes poison & heals
 	"standard-antidote":
 	{
 		"category": "heal",
@@ -361,6 +380,7 @@
 		}
 	},
 	
+	//removes bleed & heals
 	"standard-heal":
 	{
 		"category": "heal",
@@ -380,7 +400,7 @@
 		"damage":
 		{
 			"damage": -2,
-			"means": "MOD_CURED",
+			"means": "MOD_HEAL",
 			"damagerate": 1000,
 			"deadly": false
 		}
@@ -414,7 +434,85 @@
 			"damagerate": 850,
 			"deadly": false
 		}
+	},
+
+	//removes poison, bleeding and slow (best version of buff)
+	"super-heal":
+	{
+		"category": "heal",
+		"priority": 90,
+		
+		"canceling":
+		{
+			"noBuffStack": false,
+			"cancelOther": [
+				{
+					"category": "bleed",
+					"priority": 90
+				},
+				{
+					"category": "poison",
+					"priority": 90
+				},
+				{
+					"category": "haste",
+					"priority": 90
+				}
+			]
+		},
+		
+		"damage":
+		{
+			"damage": -4,
+			"means": "MOD_CURED",
+			"damagerate": 800,
+			"deadly": false
+		}
+	},
+
+	//heals droids/objects etc
+	"standard-repair": 
+	{
+		"category": "repair",
+		"priority": 50,
+		"canceling": 
+		{
+			"noBuffStack": true
+		},
+		"damage": 
+		{
+			"damage": -2,
+			"means": "MOD_REPAIR",
+			"damagerate": 1000,
+			"deadly": false
+		}
+	},
+
+	//removes emp & heals droids/objects etc
+	"refined-repair": 
+	{
+		"category": "repair",
+		"priority": 75,
+		"canceling": 
+		{
+			"noBuffStack": true,
+			"cancelOther": 
+			[
+				{
+					"category": "emp",
+					"priority": 75
+				}
+			]
+		},
+		"damage": 
+		{
+			"damage": -3,
+			"means": "MOD_REPAIR",
+			"damagerate": 850,
+			"deadly": false
+		}
 	}
+
 
 	// movement speed modifier is not implemented yet
 	//"standard-cold": {

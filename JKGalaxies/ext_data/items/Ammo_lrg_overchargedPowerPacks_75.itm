@@ -7,6 +7,6 @@
 	"cost":		"195",
 	"ammoclass":	"AMMO_POWERPACK_OVRCHRG",
 	"ammoquantity":	"75",
-	"itemIcon": "gfx/item_icons/ammo_power_cell.tga",	//needs icon!
+	"itemIcon": "gfx/item_icons/ammo_power_cell_ovrchrg.tga",
 	"itemDescription": "Illegally modified blaster bolt munitions that are more destructive, these munitions are much more volatile and generate more heat than normal standard power packs."
 }

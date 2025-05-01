@@ -13,12 +13,70 @@ tusken
 	playerTeam	TEAM_FREE
 	enemyTeam	TEAM_FREE
 	class		CLASS_TUSKEN
+	sex			male
 	snd			tusken
 	sndcombat	tusken
 	sndextra	tusken
 	yawspeed	90
 	walkSpeed	55
 	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+tuskenf
+{
+	playerModel	tuskenf
+	weapon		WP_TUSKEN_STAFF
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	health 		50
+	rank		crewman
+	playerTeam	TEAM_FREE
+	enemyTeam	TEAM_FREE
+	class		CLASS_TUSKEN
+	sex			female
+	snd			tusken
+	sndcombat	tusken
+	sndextra	tusken
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+tuskenc
+{
+	playerModel	tusken_child
+	weapon		WP_NONE
+	scale 		75
+	health		10
+	snd		tusken
+	sndcombat	tusken
+	reactions	3
+	aim		1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_FREE
+	enemyTeam	TEAM_FREE
+	class		CLASS_JAWA
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	150
 	dismemberProbHead	0
 	dismemberProbArms	10
 	dismemberProbLegs	1

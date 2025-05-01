@@ -175,6 +175,15 @@ void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity
 	}
 
 	pBuff = &buffTable[buffID];
+
+	// having a filter blocks toxin buffs
+	if (pBuff->cancel.filterBlocking)
+	{
+		if (ent->client->ps.buffFilterActive)
+		{
+			return;
+		}
+	}
 	
 	// Try and cancel out any existing buffs first, this will clear out room for the new buff ideally
 	for (i = 0; i < PLAYERBUFF_BITS; i++)
@@ -241,8 +250,25 @@ void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity
 			ent->buffData[i].endTime = level.time + duration;
 			ent->buffData[i].lastDamageTime = level.time;
 
+			//look for shield items
+			qboolean overrides = qfalse;
+			if (ent->client->shieldEquipped)
+			{
+				shieldData_t* shield = nullptr;
+				for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
+				{
+					if (it->equipped && it->id->itemType == ITEM_SHIELD)
+					{
+						shield = it->id->shieldData.pShieldData;
+						break;
+					}
+				}
+				assert(shield);
+				overrides = JKG_IsShieldModOverriden(ent, pBuff->damage.meansOfDeath, shield, shield->blockedMODs);	//check if the shield overrides also cancel this damage type
+			}
+				
 			//check if having a shield blocks the buff
-			if (pBuff->cancel.shieldRemoval && ent->client->ps.stats[STAT_SHIELD] > 0)
+			if ((pBuff->cancel.shieldRemoval || overrides) && ent->client->ps.stats[STAT_SHIELD] > 0)
 			{
 				// Play the shield hit effect
 				gentity_t* evEnt;
@@ -253,6 +279,7 @@ void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity
 				G_RemoveBuff(ent, i);  //--futuza: remove it?  could also just not apply the effects, but leave the debuff on the player...
 				return;
 			}
+			
 
 			//****
 			//
@@ -465,6 +492,16 @@ void G_TickBuffs(gentity_t* ent)
 				continue;
 			}
 
+			// remove toxins and other debuffs from bloodstream
+			if (pBuff->cancel.antitoxRemoval)
+			{
+				if (ent->client->ps.buffAntitoxActive)
+				{
+					G_RemoveBuff(ent, i);
+					continue;
+				}
+			}
+
 			// check for dealing damage
 			if (ent->buffData[i].lastDamageTime + pBuff->damage.damageRate <= level.time)
 			{
@@ -545,10 +582,15 @@ static void DebuffPlayer( gentity_t *player, const damageArea_t *area, int damag
 	int numDebuffs;
 	int ammoType;
     
-    if ( !player || !player->client )
+    if ( !player )
     {
         return;
     }
+
+	if (!player->client)
+	{
+		return;
+	}
 
 	if (!JKG_ClientAlive(player)) {	// Don't allow us to be debuffed if we are dead
 		return;
@@ -562,7 +604,7 @@ static void DebuffPlayer( gentity_t *player, const damageArea_t *area, int damag
 	if (mod > 0 && mod < allMeansOfDamage.size())
 	{
 		meansOfDamage_t means = allMeansOfDamage.at(mod);
-		if (means.modifiers.shieldBlocks && player && player->client && player->client->ps.stats[STAT_SHIELD] > 0)
+		if ( (means.modifiers.shieldBlocks || means.modifiers.shieldProtects) && player->client->ps.stats[STAT_SHIELD] > 0)
 		{	// Don't debuff them if shield blocks this.
 			return;
 		}

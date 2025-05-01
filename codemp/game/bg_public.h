@@ -631,7 +631,7 @@ typedef enum {
 typedef enum {
 	PERS_SCORE,						// !!! MUST NOT CHANGE, SERVER AND GAME BOTH REFERENCE !!!
 	PERS_HITS,						// total points damage inflicted so damage beeps can sound on change
-	PERS_RANK,						// player rank or team rank
+	PERS_RANK,						// player rank or team rank  (in team games, rank is just the order of the teams, 0=red, 1=blue, 2=tied)
 	PERS_TEAM,						// player team
 	PERS_SPAWN_COUNT,				// incremented every respawn
 	PERS_PLAYEREVENTS,				// 16 bits that can be flipped for events
@@ -671,7 +671,6 @@ typedef enum {
 #define EF_ONFIRE			(1<<12)		// JKG: Damage types - on fire
 
 #define	EF_TALK					(1<<13)		// draw a talk balloon
-//#define	EF_CONNECTION			(1<<14)		// draw a connection trouble sprite
 #define EF_ELECTROCUTED          (1 << 14)   // JKG: Damage types - electrocuted
 #define	EF_SPRINTING			(1<<15)		// JKG: sprinting
 
@@ -696,6 +695,7 @@ typedef enum {
 #define EF_JETPACK				(1<<29)		//rww - wearing a jetpack
 #define EF_JETPACK_FLAMING		(1<<30)		//rww - jetpack fire effect
 
+//#define	EF_CONNECTION			(1<<14)		// draw a connection trouble sprite
 #define	EF_CONNECTION			(1<<31)		// we have a bad connection
 
 //These new EF2_??? flags were added for NPCs, they really should not be used often.
@@ -831,6 +831,7 @@ typedef enum {
 	EV_CHANGE_WEAPON,
 	EV_FIRE_WEAPON,
 	EV_ALT_FIRE,
+	EV_DURABILITY_DMG,
 	EV_HEATCRIT,
 	EV_OVERHEATED,
 	EV_HEATCOOLED,
@@ -1009,6 +1010,7 @@ typedef enum {
 	EV_DAMAGEPLUM,
 	EV_RELOAD,
 	EV_GRENADE_COOK,
+	EV_GRENADE_COOKED,
 	EV_EXPLOSIVE_ARM,
 	EV_MISSILE_DIE,
 } entity_event_t;			// There is a maximum of 256 events (8 bits transmission, 2 high bits for uniqueness)
@@ -1050,6 +1052,7 @@ typedef enum {
 	MOD_TELEFRAG,
 	MOD_TEAM_CHANGE,
 	MOD_HEAL,	//heals, not damage
+	MOD_REPAIR,	//heals for droids
 	MOD_SABER,
 	MOD_VIBROBLADE,
 	MOD_MELEE
@@ -1896,6 +1899,7 @@ typedef struct {
 
 	//Misc Stuff
 	unsigned int consumableTime;
+	float fallDamageDelta;
 
 	// Stuff pertaining to stamina drains
 	struct {

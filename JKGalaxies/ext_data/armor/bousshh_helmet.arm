@@ -5,6 +5,16 @@
 	"movemodifier":	1.0,
 	"hp": 			50,
 	"filter":		true,
+	"resistances": [
+        {
+            "means": "MOD_BLASTER",
+            "resistance": 0.9	//10% resistant to blasters
+        },
+		{
+			"means": "MOD_QUARREL",
+			"resistance": 0.9 //10% resistant against crossbows
+		}
+	],
 
 	"visuals": {
 		"model":	"models/players/JKGalaxiesArmor/model.glm*default",

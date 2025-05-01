@@ -93,7 +93,7 @@
         "damage": {
                                "damageradius": { "start": 8,
                                                      "function": [ "constant"] },
-                               "damage":       10,
+                               "damage":       5,
 				"buffs": [
 					{
 						"buff": "standard-stun",
@@ -103,15 +103,15 @@
                         },
         "collisionsize": 8.0,
         "maxchargetime": 500,
-        "chargedamage": 1.5,
+        "chargedamage": 1.25,
         "chargedelay":  500,
         "ammocost":     5,
         "firedelay":    1500,
         "firingtype":   "semi",
-        "range":        1400.0,
+        "range":        650.0,
         "recoil":       0.5,
         "spread":       1.0,
-        "projectilespeed": 3000.0,
+        "projectilespeed": 2500.0,
         "projectileclass": "blaster_proj",
 		"meansofdeath": "MOD_STUNNED",
 		"ammobase": "AMMO_SS_POWERPAK",

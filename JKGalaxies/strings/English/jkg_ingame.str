@@ -275,3 +275,13 @@ LANG_ENGLISH		"died from malpractice."
 
 REFERENCE		SUICIDE_CURED
 LANG_ENGLISH		"tried to self medicate and died from malpractice."
+
+REFERENCE		KILLED_REVIVED
+LANG_ENGLISH		"was revived by"
+
+REFERENCE		DIED_REVIVED
+LANG_ENGLISH		"died from malpractice."
+
+REFERENCE		SUICIDE_REVIVED
+LANG_ENGLISH		"tried to resuscitate themself and died."
+

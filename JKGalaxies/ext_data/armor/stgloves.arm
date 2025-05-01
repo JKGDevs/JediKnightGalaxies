@@ -5,10 +5,12 @@
 	"movemodifier":	1.0,
 
 	"visuals": {
-		"model":	"models/players/stormtrooper/model.glm*default",
-		"modelGroup":	"stormtrooper",
+		"model":	"models/players/stormtrooper_armor/model.glm*default",
+		"modelGroup":	"stormtrooper_armor",
 
 		"armorOnSurfaces": [
+			"l_arm_wristarmor",
+			"r_arm_wristarmor",
 			"l_hand",
 			"l_hand_plate",
 			"r_hand",
@@ -16,7 +18,23 @@
 		],
 
 		"bodyOffSurfaces": [
+			"l_arm_wristarmor",
+			"r_arm_wristarmor",
+			"l_hand_wrist",
+			"r_hand_wrist",
 			"l_hand",
+			"l_handa",
+			"l_handb",
+			"l_handc",
+			"l_handd",
+			"l_hande",
+			"l_handf",
+			"r_handa",
+			"r_handb",
+			"r_handc",
+			"r_handd",
+			"r_hande",
+			"r_handf",
 			"l_hand_plate",
 			"r_hand",
 			"r_hand_plate",

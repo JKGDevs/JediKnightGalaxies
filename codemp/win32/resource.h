@@ -4,14 +4,14 @@
 // Microsoft Visual C++ generated include file.
 // Used by JK2cgame.rc
 //
-#define VERSION_MINOR_RELEASE           3
-#define VERSION_INTERNAL_BUILD          0
+#define VERSION_MINOR_RELEASE_JK2       3
+#define VERSION_INTERNAL_BUILD_JK2      0
 #define IDS_STRING1                     1
 #define IDI_ICON1                       1
 #define IDB_BITMAP1                     1
-#define VERSION_MAJOR_RELEASE           1
-#define VERSION_EXTERNAL_BUILD          1
-#define VERSION_BUILD_NUMBER            91
+#define VERSION_MAJOR_RELEASE_JK2       1
+#define VERSION_EXTERNAL_BUILD_JK2      1
+#define VERSION_BUILD_NUMBER_JK2        91
 #define IDB_BITMAP2                     128
 #define IDC_CURSOR1                     129
 #define IDC_CURSOR2                     130

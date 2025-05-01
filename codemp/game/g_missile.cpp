@@ -672,21 +672,35 @@ killProj:
 		ent->freeAfterEvent = qfalse; //it will free itself
 	}
 
-	if (ent->splashRadius && ent->splashDamage && !ent->genericValue10)
+	//get weapon data
+	weaponData_t* weapon = GetWeaponData(ent->s.weapon, ent->s.weaponVariation);
+	weaponFireModeStats_t* fireMode = &weapon->firemodes[ent->s.firingMode];
+
+	if (!ent->genericValue10)	//no bonk
 	{
-		//to consider here:
-		//reduce splash damage for certain missile types that are fired 
-		//while keeping other types unaltered (eg: rockets shouldn't be affected, energy blasts should)
+		//complex dmg types
+		if (fireMode->primary.radial)
+		{	
+			JKG_DoSplashDamage(&fireMode->primary, trace->endpos, ent, &g_entities[ent->r.ownerNum], NULL, ent->methodOfDeath);
+		}
+		if (fireMode->secondaryDmgPresent && fireMode->secondary.radial)
+		{
+			JKG_DoSplashDamage(&fireMode->secondary, trace->endpos, ent, &g_entities[ent->r.ownerNum], NULL, ent->methodOfDeath);
+		}
 
-		//why call G_RadiusDamage directly instead of JKG_DoSplashDamage()?  This prevents us from being able to do area debuffs etc.  Needs improvement.  --Futuza
-		G_RadiusDamage(trace->endpos, &g_entities[ent->r.ownerNum], ent->splashDamage, ent->splashRadius, NULL, ent, ent->methodOfDeath);
+		//simple dmg types
+		if (ent->splashRadius && ent->splashDamage)
+		{
+			//to consider here:
+			//reduce splash damage for certain missile types that are fired 
+			//while keeping other types unaltered (eg: rockets shouldn't be affected, energy blasts should)
 
-		//VV---to do: test if the below is a suitable replacement---VV
-		/*weaponData_t* weapon = GetWeaponData(ent->s.weapon, ent->s.weaponVariation);
-		weaponFireModeStats_t* fireMode = &weapon->firemodes[ent->s.firingMode];
-		JKG_DoSplashDamage(&fireMode->primary, trace->endpos, ent, &g_entities[ent->r.ownerNum], NULL, ent->methodOfDeath);*/
-
+			//note: for this old method, calculate linear method - however its still a little different
+			G_RadiusDamage(trace->endpos, &g_entities[ent->r.ownerNum], ent->splashDamage, ent->splashRadius, NULL, ent, ent->methodOfDeath);
+		}
 	}
+	
+
 
 	trap->LinkEntity( (sharedEntity_t *)ent );
 }

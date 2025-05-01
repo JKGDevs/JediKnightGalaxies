@@ -1,0 +1,10 @@
+{
+	"name":         "Imperial Guard Shoulder Armor",
+	"internal":     "shoulderpads_sotetrooper",
+	"itemtype":     "armor",
+	"armor":		"soteshoulderpads",
+	"weight":		"1",
+	"cost":			"250",
+	"itemIcon":		"gfx/item_icons/sotetrooper_pauldron.tga",
+	"itemDescription": "The distinctive red armor of the Imperial Guard, is made from the same material as standard issue Stormtrooper gear, but is worn by elite troopers assigned to protect and watch over the Empires wealthiest and powerful elite on Coruscant."
+}

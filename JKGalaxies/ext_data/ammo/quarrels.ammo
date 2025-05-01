@@ -3,7 +3,7 @@
 		"shortname": "Bowcaster Quarrels",
 		"longname": "Wookiee Bowcaster Quarrel Packs",
 		"max": 100,
-		"pricePerUnit": 3.5
+		"pricePerUnit": 1.5
 	},
 	
 	"AMMO_QUARREL_EXPLOSIVE": {
@@ -11,7 +11,7 @@
 		"longname": "Explosive Wookiee Bowcaster Quarrel Packs",
 		"basedOn": "AMMO_QUARREL",
 		"max": 120,
-		"pricePerUnit": 5,
+		"pricePerUnit": 6.5,
 		"overrides": {
 			"Damage": {
 				"multiply": 0.9
@@ -37,7 +37,7 @@
 		"longname": "Splitting Wookiee Bowcaster Quarrel Packs",
 		"basedOn": "AMMO_QUARREL",
 		"max": 120,
-		"pricePerUnit": 7,
+		"pricePerUnit": 2.5,
 		"overrides": {
 			"damage": {
 				"multiply": 0.7
@@ -72,7 +72,7 @@
 		"longname": "Bouncing Wookiee Bowcaster Quarrel Pack",
 		"basedOn": "AMMO_QUARREL",
 		"max": 120,
-		"pricePerUnit": 5,
+		"pricePerUnit": 2,
 		"overrides": {
 			"damage": {
 				"multiply": 0.8

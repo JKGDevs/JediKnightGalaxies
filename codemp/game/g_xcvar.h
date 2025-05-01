@@ -98,7 +98,7 @@ XCVAR_DEF( g_g2TraceLod,				"3",			NULL,				CVAR_NONE,										qtrue )
 XCVAR_DEF( g_gametype,					"0",			NULL,				CVAR_SERVERINFO|CVAR_LATCH,						qfalse )
 XCVAR_DEF( g_gravity,					"800",			NULL,				CVAR_NONE,										qtrue )
 XCVAR_DEF( g_inactivity,				"0",			NULL,				CVAR_NONE,										qtrue )
-XCVAR_DEF( g_knockback,					"1000",			NULL,				CVAR_NONE,										qtrue )
+XCVAR_DEF( g_knockback,					"500",			NULL,				CVAR_NONE,										qtrue )
 XCVAR_DEF( g_locationBasedDamage,		"1",			NULL,				CVAR_NONE,										qtrue )
 XCVAR_DEF( g_log,						"games.log",	NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_logClientInfo,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -173,7 +173,7 @@ XCVAR_DEF( timelimit,					"45",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_NOR
 XCVAR_DEF( jkg_shop_replenish_time,		"300",			NULL,				CVAR_ARCHIVE,									true )
 XCVAR_DEF( jkg_startingCredits,			"500",			NULL,				CVAR_ARCHIVE|CVAR_LATCH|CVAR_SERVERINFO,		false )
 XCVAR_DEF( jkg_bounty,					"225",			NULL,				CVAR_ARCHIVE,									true )
-XCVAR_DEF( jkg_killsPerBounty,			"3",			NULL,				CVAR_ARCHIVE,									true )
+XCVAR_DEF( jkg_killsPerBounty,			"3",			NULL,				CVAR_ARCHIVE,									true )	//how many kills are required before a bounty is placed on the killer
 XCVAR_DEF( jkg_maxKillStreakBounty,		"7",			NULL,				CVAR_ARCHIVE,									true )	//the max number of killstreaks
 XCVAR_DEF( jkg_creditsPerKill,			"150",			NULL,				CVAR_ARCHIVE,									true )
 XCVAR_DEF( jkg_passiveCreditsAmount,	"15",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO|CVAR_LATCH,		true )	//0 >= disables, default: 15
@@ -209,5 +209,5 @@ XCVAR_DEF( jkg_removenpctime_droid,		"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH|CVA
 XCVAR_DEF( jkg_allowDebuffKills,		"1",			NULL,				CVAR_ARCHIVE,									true )	//0 == carebear debuffs, 1 == debuffs are deadly as specified by .wpn, 2 == all damaging debuffs are deadly
 XCVAR_DEF( jkg_allowDodge,				"1",			NULL,				CVAR_ARCHIVE,									true ) //allow roll dodging?
 XCVAR_DEF( jkg_heatDissipateTime,		"100",			NULL,				CVAR_ARCHIVE,									true ) // dissipate rate for heat
-
+XCVAR_DEF( jkg_durability,				"1",			NULL,				CVAR_ARCHIVE|CVAR_LATCH|CVAR_SERVERINFO,		true ) //0 == items do not lose durability (from dmg etc), 1 == items can lose durability
 #undef XCVAR_DEF

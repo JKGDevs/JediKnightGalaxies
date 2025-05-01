@@ -662,6 +662,7 @@ spawn_t	spawns[] = {
 	{ "waypoint_navgoal_4", qtrue,						SP_waypoint_navgoal_4 },
 	{ "waypoint_navgoal_8", qtrue,						SP_waypoint_navgoal_8 },
 	{ "waypoint_small", qtrue,						SP_waypoint_small },
+	{NULL, NULL, NULL}
 };
 
 /*
@@ -689,7 +690,7 @@ qboolean G_IsLogicalEntity(const char *classname) {
 
 	// check normal spawn functions
 	for ( s=spawns ; s->name ; s++ ) {
-		if ( !strcmp(s->name, classname) ) {
+		if ( !Q_stricmp(s->name, classname) ) {
 			// found it
 			if (s->logical) {
 				return qtrue;

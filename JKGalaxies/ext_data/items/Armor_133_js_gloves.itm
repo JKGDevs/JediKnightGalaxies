@@ -1,0 +1,10 @@
+{
+	"name":         "Jensaarai Gauntlets",
+	"internal":      "gloves_jensaarai",
+	"itemtype":     "armor",
+	"armor":		"jsgloves",
+	"weight":		"1",
+	"cost":			"60",
+	"itemIcon":		"gfx/item_icons/sunguard_gloves.tga",
+	"itemDescription": "Missing Description."
+}

@@ -18,8 +18,8 @@
         },
         
         "gunposition":      "6.0 -4.5 -7.5",
-        "ironsightsposition": "6.0 0.0 -6.35",
-        "ironsightsfov": "70",
+        "ironsightsposition": "6.0 0.0 -5.6",
+        "ironsightsfov": "50",
 		"barrelCount": "3",
     
         "firemode0": {
@@ -65,13 +65,13 @@
     },
     
     "firemode0": {
-        "damage":       64,
+        "damage":       48, //64
         "ammocost":     10,
         "firedelay":    800,
         "firingtype":   "semi",
         "range":        8000.0,
         "recoil":       1.4,
-		"splashrange":  25.0,
+		"splashrange":  40.0,
         "spread":       0.0,
         "projectilespeed": 7000.0,
         "projectileclass": "blaster_proj",
@@ -94,7 +94,7 @@
     },
     
     "firemode1": {
-        "damage":       19,
+        "damage":       22,
         "ammocost":     1,
         "firedelay":    200,
         "firingtype":   "semi",
@@ -127,6 +127,7 @@
         "sightsFiring":       { "torso": "BOTH_ATTACK3" },
 	"ready":	{ "torso": "BOTH_BASE_RIFLESTANCE", "legs": "BOTH_STAND1" },
 	"firing":	{ "torso": "BOTH_BASE_RIFLESHOOT" },
+	"sprint":	{ "torso": "BOTH_RIFLERUN" },
         "sprintStyle": "5"
     },
     

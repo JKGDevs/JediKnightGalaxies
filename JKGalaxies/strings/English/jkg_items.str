@@ -152,6 +152,9 @@ LANG_ENGLISH	"Arakyd Mk 1 Anti-Personel \nLaser Trip Mine"
 REFERENCE	MINE_LASERTRIP_MK2
 LANG_ENGLISH	"Arakyd Mk 2 Anti-Personel \nLaser Trip Mine"
 
+REFERENCE	MINE_SEQUENCER
+LANG_ENGLISH	"Proximity-sensor rigged \nSequencer Charge"
+
 
 REFERENCE	PISTOL_SUPPRESSORPISTOL
 LANG_ENGLISH	"Trandoshan Suppressor Pistol"
@@ -192,8 +195,8 @@ LANG_ENGLISH	"Snub-Barrelled \nDE-10 Blaster Pistol"
 REFERENCE	PISTOL_Q2_HOLDOUTPISTOL
 LANG_ENGLISH	"Merr-Sonn Model Q2 \nHold-Out Blaster Pistol"
 
-REFERENCE   PISTOL_WESTAR-34_Pistol
-LANG_ENGLISH    "Mandalorian \nWestar-34 Blaster Pistol"
+REFERENCE   PISTOL_WESTAR-34_PISTOL
+LANG_ENGLISH    "Concordian Crescent Technologies \nWestar-34 Blaster Pistol"
 
 REFERENCE   PISTOL_PULSEREVOLVER
 LANG_ENGLISH    "Arakyd Industries \nPulse Revolver Pistol"

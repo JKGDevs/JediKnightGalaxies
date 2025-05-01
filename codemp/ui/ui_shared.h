@@ -674,6 +674,7 @@ enum jkgInventoryRequest_e
 	INVENTORYREQUEST_OTHERCONTAINERSIZE,
 	INVENTORYREQUEST_LOOKUPTABLE,
 	INVENTORYREQUEST_ICONSHADER,
+	INVENTORYREQUEST_DURABILITY,
 };
 
 enum jkgShopNotify_e
@@ -690,7 +691,7 @@ typedef struct uiCrossoverExports_s
 	void			(*InventoryNotify)( jkgInventoryNotify_e msg );
 	void			(*ShopNotify)( jkgShopNotify_e msg );
 	void			(*ItemsUpdated)();
-	void			(*InventoryPriceCheckResult)(int invID, int price);
+	void			(*InventoryPriceCheckResult)(int invID, int price, int type);
 } uiCrossoverExports_t;
 
 typedef struct cgCrossoverExports_s

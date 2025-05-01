@@ -1600,20 +1600,26 @@ void NPC_BehaviorSet_Jedi( int bState )
 	case BS_STAND_GUARD:
 		if (g_gametype.integer != GT_WARZONE || !NPC_FollowRoutes())
 			if (!NPC_PatrolArea())
+			{	
 				NPC_BSJedi_Default();
 				NPC_BSStandGuard();
+			}
 		break;
 	case BS_PATROL:
 		if (g_gametype.integer != GT_WARZONE || !NPC_FollowRoutes())
 			if (!NPC_PatrolArea())
+			{
 				NPC_BSJedi_Default();
 				NPC_BSPatrol();
+			}
 		break;
 	case BS_HUNT_AND_KILL:
 		if (g_gametype.integer != GT_WARZONE || !NPC_FollowRoutes())
 			if (!NPC_PatrolArea())
+			{
 				NPC_BSJedi_Default();
 				NPC_BSHuntAndKill();
+			}
 		break;
 	case BS_SEARCH:	//# 43: Using current waypoint as a base, search the immediate branches of waypoints for enemies
 		if (g_gametype.integer != GT_WARZONE || !NPC_FollowRoutes())
@@ -1628,32 +1634,42 @@ void NPC_BehaviorSet_Jedi( int bState )
 	case BS_STAND_AND_SHOOT:
 		if (g_gametype.integer != GT_WARZONE || !NPC_FollowRoutes())
 			if (!NPC_PatrolArea())
+			{
 				NPC_BSJedi_Default();
 				NPC_BSRunAndShoot();
+			}
 		break;
 	case BS_ADVANCE_FIGHT://head toward captureGoal, shoot anything that gets in the way
 		if (g_gametype.integer != GT_WARZONE || !NPC_FollowRoutes())
 			if (!NPC_PatrolArea())
+			{
 				NPC_BSJedi_Default();
 				NPC_BSAdvanceFight ();
+			}
 		break;
 	case BS_INVESTIGATE:
 		if (g_gametype.integer != GT_WARZONE || !NPC_FollowRoutes())
 			if (!NPC_PatrolArea())
+			{
 				NPC_BSJedi_Default();
 				NPC_BSST_Investigate();
+			}
 		break;
 	case BS_SLEEP:
 		if (g_gametype.integer != GT_WARZONE || !NPC_FollowRoutes())
 			if (!NPC_PatrolArea())
+			{
 				NPC_BSJedi_Default();
 				NPC_BSST_Sleep();
+			}
 		break;
 	default:
 		if (g_gametype.integer != GT_WARZONE || !NPC_FollowRoutes())
 			if (!NPC_PatrolArea())
+			{
 				NPC_BSJedi_Default();
 				NPC_BehaviorSet_Default( bState );
+			}
 		break;
 	}
 }

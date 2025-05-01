@@ -1570,6 +1570,31 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		cent->currentState.origin[1] -= 10.0f;
 		break;
 
+	case EV_DURABILITY_DMG:
+		DEBUGNAME("EV_DURABILITY_DMG")
+
+			if (es->clientNum == cg.snap->ps.clientNum)
+			{
+				//sound
+				qhandle_t durability = trap->S_RegisterSound(va("sound/items/armor/impacts/broken_impact0%i.mp3", Q_irand(0, 3)));
+				trap->S_StartSound(es->pos.trBase, es->number, CHAN_WEAPON, durability);
+
+				//also do efx armor crumble here
+				/*
+				int dirtPuffFxID = cgs.effects.landingDirt;
+
+				vec3_t fxDir;
+				VectorCopy(es->angles, fxDir);
+
+				if (!fxDir[0] && !fxDir[1] && !fxDir[2])
+				{
+					fxDir[1] = 1;
+				}
+				trap->FX_PlayEffectID(dirtPuffFxID, es->origin, fxDir, -1, -1, false);
+				*/
+			}
+		break;
+
 	case EV_HEATCRIT:
 		DEBUGNAME("EV_HEATCRIT")
 
@@ -2601,6 +2626,14 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		
 		break;
 	}
+	// JKG - launched last cooked grenade in the stack
+	case EV_GRENADE_COOKED:
+		if (cg.jkg_grenadeCookTimer && cent->currentState.number == cg.clientNum)
+		{
+			cg.jkg_grenadeCookTimer = 0;
+		}
+		
+		break;
 	
 	case EV_EXPLOSIVE_ARM:
 	    DEBUGNAME ("EV_EXPLOSIVE_ARM");

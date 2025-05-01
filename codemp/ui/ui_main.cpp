@@ -723,12 +723,12 @@ static const int numNetSources = AS_FAVORITES+UI_MAX_MASTER_SERVERS;	// now hard
 class CaseInsensitiveHash
 {
 public:
-	std::size_t operator()( const std::string& s ) const
+	std::size_t operator()(const std::string& s) const
 	{
 		std::size_t hash = 0;
-		for ( std::size_t i = 0; i < s.size(); i++ )
+		for (std::size_t i = 0; i < s.size(); i++)
 		{
-			int c = std::tolower( s[i] );
+			int c = std::tolower(s[i]);
 			hash += c * (i + 119);
 		}
 
@@ -738,7 +738,7 @@ public:
 
 #include <unordered_map>
 #include <string>
-static std::unordered_map<std::string, std::string, CaseInsensitiveHash> masterServers{ { "masterjk3.ravensoft.com", "Raven Software"}, { "master.jkhub.org", "JKHub.org"} };
+static std::unordered_map<std::string, std::string, CaseInsensitiveHash> masterServers{ { "masterjk3.ravensoft.com", "Ravensoft"}, { "master.jkhub.org", "JKHub.org"} };
 //static std::unordered_map<const char *, const char *, CaseInsensitiveHash> masterServers{ { "masterjk3.ravensoft.com", "Raven Software"}, { "master.jkhub.org", "JKHub.org"} };
 
 static const char *GetNetSourceString(int iSource)
@@ -748,16 +748,24 @@ static const char *GetNetSourceString(int iSource)
 
 	Q_strncpyz( result, GetCRDelineatedString( "MP_INGAME", "NET_SOURCES", UI_SourceForLAN() ), sizeof(result) );
 
+	//LAN is iSource == 0
+
+	if (iSource == UIAS_GLOBAL1)
+	{
+		Q_strncpyz(result, "All Internet", sizeof("All Internet")); //the first source, just combines all masterservers into one list
+		return result;
+	}
+
 	if ( iSource >= UIAS_GLOBAL1 && iSource <= UIAS_GLOBAL5 ) 
 	{
-		if(iSource > 1)
-			iSource--; //offset by one, sv_master0 == all servers  --Futuza: fixme, need to redo the whole ui_server source ordering, this also makes internet sources offset by one, but better than completely broke i guess
+		int adj_index = (iSource-1);	//offset by one, sv_master1 == all servers  --Futuza: rewrite this whoe section, this is so messy
 
 		char masterstr[MAX_CVAR_VALUE_STRING], cvarname[sizeof("sv_master1")];
 
-		Com_sprintf(cvarname, sizeof(cvarname), "sv_master%d", iSource);
+		Com_sprintf(cvarname, sizeof(cvarname), "sv_master%d", adj_index);
 		trap->Cvar_VariableStringBuffer(cvarname, masterstr, sizeof(masterstr));
-		
+
+		//find the nickname of special masters
 		if(*masterstr)
 		{
 			auto search = masterServers.find(masterstr);
@@ -767,10 +775,8 @@ static const char *GetNetSourceString(int iSource)
 				return result;
 			}
 		}
-		//Q_strcat( result, sizeof(result), va( " %d", iSource ) );
+		Q_strcat( result, sizeof(result), va( " %d", iSource ) );	//add which number this is
 
-		if (iSource == 0)
-			Q_strncpyz(result, "All Masters", sizeof("All Masters")); //the first source, just combines all masterservers into one list
 	}
 	return result;
 }
@@ -2040,6 +2046,9 @@ static int UI_OwnerDrawWidth(int ownerDraw, int ownerDrawID, float scale) {
 		case UI_JKG_SHOP_REFRESHTIME:
 			s = JKG_ShopRefreshTimeText();
 			break;
+		case UI_JKG_SHOP_DURAPRICE:
+			s = JKG_ShopDuraPriceText();
+			break;
     default:
       break;
   }
@@ -2515,6 +2524,9 @@ static void UI_OwnerDraw(itemDef_t *item, float x, float y, float w, float h, fl
 		break;
 	case UI_JKG_SHOP_AMMOPRICE:
 		JKG_Shop_ShopAmmoCost(item);
+		break;
+	case UI_JKG_SHOP_DURAPRICE:
+		JKG_Shop_ShopDuraCost(item);
 		break;
 	case UI_JKG_SHOP_ITEMDESC:
 		JKG_Shop_DrawShopDescriptionLine(item, ownerDrawID);
@@ -8382,7 +8394,6 @@ bool IsCursorTouching(rectDef_t *rect)
 
 #include <vector>
 #include <string>
-using namespace std;
 #define NUMBER_CHARS_TOOLTIP_LINE	80
 void RunTooltip(itemDef_t *item, itemDef_t *tooltip) {
 	if(!item) return;
@@ -8395,19 +8406,19 @@ void RunTooltip(itemDef_t *item, itemDef_t *tooltip) {
 	DC->setColor(defaultColor);
 
 	// Render lines
-	vector<string> lines;
-	string stdstringVer = item->tooltip;
+	std::vector<std::string> lines;
+	std::string stdstringVer = item->tooltip;
 
 	size_t previous = 0;
 	while( 1 )
 	{
 		size_t nextLine = stdstringVer.find("\\n", previous);
-		if(nextLine == string::npos) 
+		if(nextLine == std::string::npos) 
 		{ // last line
 			lines.push_back(stdstringVer.substr(previous));
 			break;
 		}
-		string brokenString = stdstringVer.substr(previous, nextLine-1);
+		std::string brokenString = stdstringVer.substr(previous, nextLine-1);
 		previous = nextLine+1;
 		if(brokenString.length() <= NUMBER_CHARS_TOOLTIP_LINE)
 		{
@@ -8424,7 +8435,7 @@ void RunTooltip(itemDef_t *item, itemDef_t *tooltip) {
 				lines.push_back(brokenString.substr(chunk));
 				break;
 			}
-			string chunkStr = brokenString.substr(chunk, chunk + NUMBER_CHARS_TOOLTIP_LINE);
+			std::string chunkStr = brokenString.substr(chunk, chunk + NUMBER_CHARS_TOOLTIP_LINE);
 			chunk += NUMBER_CHARS_TOOLTIP_LINE;
 			lines.push_back(chunkStr);
 		}

@@ -1,0 +1,21 @@
+{
+	"ref":		"sgboots",
+	"slot":		"boots",
+	"armor":		100,
+	"movemodifier":	0.925,
+
+	"visuals": {
+		"model":	"models/players/sunguard/model.glm*default",
+		"modelGroup":	"sunguard",
+
+		"armorOnSurfaces": [
+			"r_leg",
+			"l_leg"
+		],
+
+		"bodyOffSurfaces": [
+			"r_leg",
+			"l_leg"
+		]
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"name":             "Imperial Guard Gloves",
+	"internal":             "gloves_sotetrooper",
+	"itemtype":             "armor",
+	"armor":		"sotegloves",
+	"weight":		"2",
+	"cost":			"75",
+	"itemIcon":		"gfx/item_icons/sotetrooper_gloves.tga",
+	"itemDescription": "The distinctive red armor of the Imperial Guard, is made from the same material as standard issue Stormtrooper gear, but is worn by elite troopers assigned to protect and watch over the Empires wealthiest and powerful elite on Coruscant."
+}

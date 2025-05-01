@@ -1,11 +1,13 @@
 #============================================================================
 # Copyright (C) 2013 - 2015, OpenJK contributors
+# Copyright (C) 2009 - 2024, JKG Team
 # 
-# This file is part of the OpenJK source code.
+# This file is part of the OpenJK/JKG source code.
 # 
 # OpenJK is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# published by the Free Software Foundation.  JKG is based partially
+# on this project and has the same license terms as OpenJK.
 # 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -16,10 +18,10 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
 
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 3.2.0...3.30.5)
 
 # For checks in subdirectories
-set(InOpenJK TRUE)
+set(InJKG TRUE)
 
 option(BuildDestinationExternal "Copy final build files to directory specified by 'Binary Destination'" OFF)
 set(BinaryDestination ${CMAKE_CURRENT_BINARY_DIR} CACHE STRING "Binary Destination")
@@ -123,8 +125,9 @@ message("Architecture is ${Architecture}")
 # Current Git SHA1 hash
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-message("Git revision is ${GIT_SHA1}")
-message("Git refspec is ${GIT_REFSPEC}")
+#this information is shown later on, see codemp\CMakeLists.txt
+#message("Git revision is ${GIT_SHA1}")
+#message("Git refspec is ${GIT_REFSPEC}")
 
 # Binary names
 set(MPEngine "jkgalaxies.${Architecture}")
@@ -139,7 +142,7 @@ set(SharedLib "shared")
 
 # Paths
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
-set(OpenJKLibDir "${MPDir}/libraries")
+set(JKGLibDir "${MPDir}/libraries")
 set(SharedDir ${CMAKE_SOURCE_DIR}/shared)
 
 include(InstallConfig)
@@ -172,7 +175,7 @@ if(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
 	# We don't try to control symbol visibility under MSVC.
-	set(OPENJK_VISIBILITY_FLAGS "")
+	set(JKG_VISIBILITY_FLAGS "")
 
 	# additional flags for debug configuration
 	#set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
@@ -187,7 +190,7 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" S
 	# ZLib explicitly declares symbols hidden, rather than defaulting to hidden.
 	#
 	# Note that -fvisibility=hidden is stronger than -fvisibility-inlines-hidden.
-	set(OPENJK_VISIBILITY_FLAGS "-fvisibility=hidden")
+	set(JKG_VISIBILITY_FLAGS "-fvisibility=hidden")
 
 	# removes the -rdynamic flag at linking (which causes crashes for some reason)
 	set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
@@ -206,7 +209,7 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" S
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 	# enable somewhat modern C++
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 	
 	if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
@@ -288,25 +291,25 @@ endif()
 
 set(JKGDir "${CMAKE_SOURCE_DIR}/JKGalaxies")
 if(UseInternalJPEG)
-  add_subdirectory(${OpenJKLibDir}/jpeg-9a)
+  add_subdirectory(${JKGLibDir}/jpeg-9a)
 else()
   find_package(JPEG REQUIRED)
 endif()
 
 if(UseInternalZlib)
-  add_subdirectory(${OpenJKLibDir}/zlib)
+  add_subdirectory(${JKGLibDir}/zlib)
 else()
   find_package(ZLIB REQUIRED)
 endif()
 
 if(UseInternalPNG)
-  add_subdirectory(${OpenJKLibDir}/libpng)
+  add_subdirectory(${JKGLibDir}/libpng)
 else()
   find_package(PNG REQUIRED)
 endif()
 
 # Always use bundled minizip (sets MINIZIP_{LIBRARIES,INCLUDE_DIR})
-add_subdirectory(${OpenJKLibDir}/minizip)
+add_subdirectory(${JKGLibDir}/minizip)
 
 
 #    Add projects

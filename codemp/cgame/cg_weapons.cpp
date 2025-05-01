@@ -1539,15 +1539,13 @@ void JKG_CG_FillACISlot(int itemNum, int slot)
 		JKG_RemoveACIItemsOfType(ITEM_JETPACK);
 		activateJetpack = true;
 	}
-	else if (cg.playerACI[slot] > 0 && cg.playerACI[slot] < cg.playerInventory->size()) {
-		// Check to see if we're overwriting a shield/jetpack (if so, unequip it)
+
+	// Check to see if we're overwriting a shield/jetpack (if so, unequip it)
+	if (cg.playerACI[slot] > 0 && cg.playerACI[slot] < cg.playerInventory->size()) {
 		itemData_t* itemInThisSlot;
 		itemInThisSlot = (*cg.playerInventory)[cg.playerACI[slot]].id;
-		if (itemInThisSlot->itemType == ITEM_SHIELD) {
-			trap->SendClientCommand("unequipShield");
-		}
-		else if (itemInThisSlot->itemType == ITEM_JETPACK) {
-			trap->SendClientCommand("unequipJetpack");
+		if (itemInThisSlot->itemType == ITEM_SHIELD || itemInThisSlot->itemType == ITEM_JETPACK) {
+			JKG_CG_ClearACISlot(slot);
 		}
 	}
 
@@ -2619,9 +2617,10 @@ void JKG_RenderGenericWeaponWorld ( centity_t *cent, const weaponDrawData_t *wea
 
 		//--futuza: add red hot barrel tips here, eg:
 		//if (cg.snap->ps.heat > cg.snap->ps.heatThreshold)
-
+			//cg.predictedPlayerState.heat > cg.predictedPlayerState.heatThreshold
+		
 		//draw steam efx on barrel end if heat is critical
-		if (cg.snap->ps.heat > cg.snap->ps.heatThreshold)
+		if (isLocalPlayer && cg.snap->ps.heat > cg.snap->ps.heatThreshold)		//check isLocalPlayer so we only draw on our weapon, todo: check on serverside for each player so we can see other players overheating
 		{
 			hasMuzzleLocation = qtrue;
 			JKG_GetMuzzleLocation(cent, angles, flashOrigin, flashDirection);

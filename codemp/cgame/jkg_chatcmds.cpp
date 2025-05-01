@@ -251,7 +251,8 @@ void	CCmd_AddCommand( const char *cmd_name, xccommand_t function ) {
 		return;
 	}
 	// fail if the command already exists
-	for ( cmd = ccmd_functions ; cmd ; cmd=cmd->next ) {
+	for ( cmd = ccmd_functions ; cmd ; cmd=cmd->next ) 
+	{
 		if ( !strcmp( cmd_name, cmd->name ) ) {
 			Com_Printf ("CCmd_AddCommand: %s already defined\n", cmd_name);
 			return;
@@ -260,6 +261,12 @@ void	CCmd_AddCommand( const char *cmd_name, xccommand_t function ) {
 
 	// use a small malloc to avoid zone fragmentation
 	cmd = (ccmd_function_t*)malloc(sizeof(ccmd_function_t));
+	if (!cmd)
+	{
+		Com_Printf("CCmd_AddCommand: null cmd!\n");
+		free(cmd);
+		return;
+	}
 	cmd->name = CopyString( cmd_name );
 	cmd->function = function;
 	cmd->next = ccmd_functions;

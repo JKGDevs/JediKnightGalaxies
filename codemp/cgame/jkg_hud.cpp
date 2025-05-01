@@ -384,13 +384,20 @@ static void CG_DrawForcePower( menuDef_t *menuHUD )
 {
 
 	// This goes in the lower bar on the hud	
-	const int		maxForcePower = 100;
+	int				stamina, maxStamina = 100;
 	vec4_t			calcColor;
 	float			percent;
 	qboolean	flash=qfalse;
 	itemDef_t	*focusItem;
 	vec4_t	opacity;
 	vec4_t	glowColor;
+	playerState_t* ps;
+
+	ps = &cg.snap->ps;
+
+	// What's the maximum stamina/forcepower?
+	maxStamina = ps->stats[STAT_MAX_STAMINA];
+	stamina = cg.predictedPlayerState.forcePower;
 	
 	MAKERGBA( opacity, 1, 1, 1, 1*cg.jkg_HUDOpacity );
 
@@ -456,7 +463,7 @@ static void CG_DrawForcePower( menuDef_t *menuHUD )
 
 	// Work out the bar now
 
-	percent = (float)cg.predictedPlayerState.forcePower / (float)maxForcePower;
+	percent = (float)stamina / (float)maxStamina;
 	//percent *= 0.75f; // Range of the bar is 0 to 0.75f
 
 	focusItem = Menu_FindItemByName(menuHUD, "staminabar");
@@ -474,7 +481,7 @@ static void CG_DrawForcePower( menuDef_t *menuHUD )
 	}
 
 	{
-		char *Force = va("%i / %i", cg.predictedPlayerState.forcePower, maxForcePower);
+		char *Force = va("%i / %i", stamina, maxStamina);
 		VectorCopy4(colorWhite, glowColor);
 		glowColor[3] *= cg.jkg_HUDOpacity;
 		trap->R_Font_DrawString(focusItem->window.rect.x + (focusItem->window.rect.w / 2) - (trap->R_Font_StrLenPixels(Force, 1, 0.6) / 2),
@@ -664,15 +671,15 @@ static void CG_DrawHealth( menuDef_t *menuHUD )
 
 /*
 ================
-CG_DrawArmor
+CG_DrawShield
 ================
 */
-static void CG_DrawArmor( menuDef_t *menuHUD )
+static void CG_DrawShield( menuDef_t *menuHUD )
 {
 	//vec4_t			calcColor;
 	vec4_t			glowColor;
 	playerState_t	*ps;
-	int				armor, maxArmor;
+	int				shield, maxShield;
 	itemDef_t		*focusItem;
 	double			percentage, factor ; //quarterArmor;
 	//int				i,currValue,inc;
@@ -699,8 +706,8 @@ static void CG_DrawArmor( menuDef_t *menuHUD )
 		return;
 	}
 
-	armor = ps->stats[STAT_SHIELD];
-	maxArmor = ps->stats[STAT_MAX_SHIELD];
+	shield = ps->stats[STAT_SHIELD];
+	maxShield = ps->stats[STAT_MAX_SHIELD];
 
 
 	// TEST: just render the whole thing for now, we'll fix it later
@@ -708,7 +715,7 @@ static void CG_DrawArmor( menuDef_t *menuHUD )
 
 	if (focusItem)
 	{
-		percentage = (double)armor / (double)maxArmor;
+		percentage = (double)shield / (double)maxShield;
 		if (percentage > 1) {
 			percentage = 1;
 		} else if (percentage < 0) {
@@ -763,7 +770,7 @@ static void CG_DrawArmor( menuDef_t *menuHUD )
 	}
 
 
-	if (!armor) {
+	if (!shield) {
 		return;
 	}
 
@@ -780,7 +787,7 @@ static void CG_DrawArmor( menuDef_t *menuHUD )
 		}
 		glowColor[3] *= cg.jkg_HUDOpacity;
 		// Center and draw the text, positioning will be finetuned later on :P
-		text = va("%i / %i", armor, maxArmor);
+		text = va("%i / %i", shield, maxShield);
 		x = ((focusItem->window.rect.w/2) - (trap->R_Font_StrLenPixels(text, cgs.media.hudfont1, 0.6f) / 2)) + focusItem->window.rect.x;
 		trap->R_Font_DrawString(
 			x,
@@ -817,14 +824,21 @@ static void CG_DrawTopLeftHUD ( menuDef_t *menuHUD, vec4_t opacity )
 			);			
 	}*/
 
-
 	if (cg.predictedPlayerState.pm_type != PM_SPECTATOR)
 	{
-		CG_DrawArmor(menuHUD);
+		CG_DrawShield(menuHUD);
 		CG_DrawHealth(menuHUD);
 		CG_DrawForcePower(menuHUD);
 		JKG_DrawFiringMode(menuHUD);
 		JKG_DrawAmmoType(menuHUD);
+
+		playerState_t* ps;
+		ps = &cg.predictedPlayerState;
+		static vec4_t fullcolor = { 0.2f, 1, 0.3f, 1 };		//use this color when the resource is full (greenish)
+
+		//if the UI element is supposed to be transparent/hidden, override
+		if(opacity[3] < 1)
+			fullcolor[3] = opacity[3];
 
 		focusItem = Menu_FindItemByName(menuHUD, "frame");
 		if (focusItem)
@@ -842,7 +856,14 @@ static void CG_DrawTopLeftHUD ( menuDef_t *menuHUD, vec4_t opacity )
 		focusItem = Menu_FindItemByName(menuHUD, "hudicon_shield");
 		if (focusItem)
 		{
-			trap->R_SetColor(opacity);	
+			int	shield = ps->stats[STAT_SHIELD];
+			int maxShield = ps->stats[STAT_MAX_SHIELD];
+
+			if(shield > 0 && shield >= maxShield)
+				trap->R_SetColor(fullcolor);
+			else
+				trap->R_SetColor(opacity);
+			
 			CG_DrawPic( 
 				focusItem->window.rect.x, 
 				focusItem->window.rect.y, 
@@ -855,7 +876,14 @@ static void CG_DrawTopLeftHUD ( menuDef_t *menuHUD, vec4_t opacity )
 		focusItem = Menu_FindItemByName(menuHUD, "hudicon_health");
 		if (focusItem)
 		{
-			trap->R_SetColor(opacity);	
+			int	hp = ps->stats[STAT_HEALTH];
+			int maxhp = ps->stats[STAT_MAX_HEALTH];
+
+			if (hp > 0 && hp >= maxhp)
+				trap->R_SetColor(fullcolor);
+			else
+				trap->R_SetColor(opacity);
+
 			CG_DrawPic( 
 				focusItem->window.rect.x, 
 				focusItem->window.rect.y, 
@@ -868,7 +896,14 @@ static void CG_DrawTopLeftHUD ( menuDef_t *menuHUD, vec4_t opacity )
 		focusItem = Menu_FindItemByName(menuHUD, "hudicon_stamina");
 		if (focusItem)
 		{
-			trap->R_SetColor(opacity);	
+			int	stamina = ps->forcePower;
+			int maxstamina = ps->stats[STAT_MAX_STAMINA];
+
+			if (stamina > 0 && stamina >= maxstamina)
+				trap->R_SetColor(fullcolor);
+			else
+				trap->R_SetColor(opacity);
+
 			CG_DrawPic( 
 				focusItem->window.rect.x, 
 				focusItem->window.rect.y, 

@@ -1,0 +1,12 @@
+{
+	"name":             "@JKG_ITEMS_Mine_Sequencer",
+	"internal":             "Mine_Sequencer",
+	"itemtype":             "weapon",
+	"weapon":		"WP_TRIP_MINE",
+	"variation":		"2",
+	"weight":		"1",
+	"cost":		"100",
+	"maxStack":		5,
+	"itemIcon":		"models/weapons/Charge_Sequencer/icon_default",
+	"itemDescription": "A common explosive device that has been rigged with a proximity sensor, the Sequencer Charge will automatically detonate when a target comes in range."
+}

@@ -623,12 +623,22 @@ void laserTrapExplode( gentity_t *self )
 			JKG_DoSplashDamage(&fireMode->secondary, self->r.currentOrigin, self, self->activator, self, JKG_GetMeansOfDamageIndex("MOD_EXPLOSION"));
 		}
 
-		if( self->enemy && self->enemy->client && self->activator != self->enemy && 
-			(!TeamFriendly(self->activator->s.number, self->enemy->s.number) || !OnSameTeam(self->activator, self->enemy)) )
+		if( self->enemy && self->enemy->client && self->activator != self->enemy)
 		{
-			// Give us some credits, we're a good person etc
-			self->enemy->client->ps.credits += 35;
-			trap->SendServerCommand(self->enemy->s.number, "notify 1 \"Destroyed Enemy Equipment: +35 Credits\"");
+			if(!TeamFriendly(self->activator->s.number, self->enemy->s.number) && !OnSameTeam(self->activator, self->enemy))
+			{
+				// Give us some credits, we're a good person etc
+				self->enemy->client->ps.credits += 35;
+				trap->SendServerCommand(self->enemy->s.number, "notify 1 \"Destroyed Enemy Equipment: +35 Credits\"");
+			}
+
+			//they're a bad dog
+			else
+			{
+				trap->SendServerCommand(self->enemy->s.number, "notify 1 \"Destroyed Friendly Equipment!\""); 
+				//trap->SendServerCommand(self->activator->s.number, va("notify 1 \"%s ^7Destroyed Your Equipment!\"", self->activator->client->pers.netname)); //tattle on them
+			}
+			
 		}
 	}
 
@@ -2241,6 +2251,7 @@ gentity_t *WP_FireGenericMissile( gentity_t *ent, int firemode, vec3_t origin, v
 	float		 fMaxRange			 = WP_GetMaxRangeWithDecay(iDamage, fRange, fDecayRate);
 	float		 fSpeed				 = WP_GetWeaponSpeed( ent, firemode );
 	float		 fSplashRange		 = WP_GetWeaponSplashRange( ent, firemode );
+	float		 fArmorPenetration	 = WP_GetWeaponArmorPenetration(ent, firemode);
 	gentity_t	*missile			 = NULL;
 
 	/* Create the missile, fill in the name weapon, owner, methodOfDeath and such */
@@ -2253,6 +2264,7 @@ gentity_t *WP_FireGenericMissile( gentity_t *ent, int firemode, vec3_t origin, v
 	missile->s.time					 = level.time; /* For client-side prediction */
 	missile->parent					 = ent;
 	missile->methodOfDeath			 = iMOD;
+	missile->armorPenetration		 = fArmorPenetration;
 
 	/* Set the appropriate range for the bullet */
 	if ( fRange >= 0.0f )
@@ -2771,6 +2783,13 @@ static void WP_GetWeaponDirection( gentity_t *ent, int firemode, const vec3_t fo
 		{
 			fSpreadModifiers *= weaponAccuracy->inAirModifier;
 			fKnockBack	*= 3.00f;
+
+			//if movement type is jetpack, its even more sloppy
+			if (cl->ps.pm_type == PM_JETPACK)	
+			{
+				fKnockBack *= 2.00f;
+				fSpreadModifiers *= 1.20f;
+			}
 		}
 		/* Client is currently running and not walking and/or crouching, a different slop value */
 		else if ( !bIsCrouching && bIsMoving && !bIsWalking )
@@ -3035,6 +3054,36 @@ float WP_GetWeaponSpeed( gentity_t *ent, int firemode )
 	}
 
 	return 5125.0f;
+}
+
+
+/**************************************************
+* WP_GetWeaponArmorPenetration
+*
+* Gets the weapon's armor penetration for the currently selected
+* weapon with the appropriate mode. This references
+* the weapon table for this information.
+**************************************************/
+float WP_GetWeaponArmorPenetration(gentity_t* ent, int firemode)
+{
+	weaponData_t* thisWeaponData = GetWeaponData(ent->s.weapon, ent->s.weaponVariation);
+	double penetration;
+
+	if (!thisWeaponData)
+	{
+		// Some additional NULL checking here. You can never be too careful.
+		return 0.0f;
+	}
+
+	penetration = thisWeaponData->firemodes[firemode].armorPenetration;
+	JKG_ApplyAmmoOverride(penetration, ammoTable[ent->s.ammoType].overrides.armorPenetration);
+
+	if (penetration)
+	{
+		return penetration;
+	}
+
+	return 0.0f;
 }
 
 /**************************************************

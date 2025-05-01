@@ -1,0 +1,10 @@
+{
+	"name":         "Sunguard Shoulder Armor",
+	"internal":     "shoulderpads_sunguard",
+	"itemtype":     "armor",
+	"armor":		"sgshoulderpads",
+	"weight":		"1",
+	"cost":			"250",
+	"itemIcon":		"gfx/item_icons/sunguard_shoulders.tga",
+	"itemDescription": "These shoulderpads are both ceremonial and functional, marking the wearer as a member of the Sun Guard, a Thyrsian mercenary company cult in service to Emperor Palpatine."
+}

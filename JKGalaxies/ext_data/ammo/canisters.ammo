@@ -4,11 +4,18 @@
 		"shortname": "Explosive Canisters",
 		"longname": "Czerka Arms High Explosive Canisters",
 		"max": 12,
-		"pricePerUnit": 80,
+		"pricePerUnit": 25,
 		"overrides": {
 			"damage": {
 				"set": 40
 			},
+			"buffs": 
+			[
+				{
+					"buff": "standard-fire",
+					"remove": true
+				}
+			],
 			"splashrange": {
 				"set": 400
 			},
@@ -30,7 +37,8 @@
 					"model": "models/ammo/incendcan_proj.md3",
 					"effect": "explosives/shot_mortar",
 					"miss": "explosives/flechettemedium",
-					"hit": "explosives/flechettemedium"
+					"hit": "explosives/flechettemedium",
+					"runsound": "null"
 				}
 			}
 		}
@@ -41,11 +49,22 @@
 		"longname": "Arakyd Industries Incendiary Canisters",
 		"basedOn": "AMMO_EXPLOSIVE_CANISTER",
 		"max": 12,
-		"pricePerUnit": 80,
+		"pricePerUnit": 25,
 		"overrides": {
 			"damage": {
 				"set": 30
 			},
+			"buffs": 
+			[
+				{
+					"buff": "standard-fire",
+					"addbuff": true,
+					"duration": 
+					{
+						"set": 3000
+					}
+				}
+			],
 			"splashrange": {
 				"set": 400
 			},
@@ -70,7 +89,8 @@
 					"model": "models/ammo/incendcan_proj.md3",
 					"effect": "explosives/shot_mortar",
 					"miss": "explosives/burnmedium",
-					"hit": "explosives/burnmedium"
+					"hit": "explosives/burnmedium",
+					"runsound": "null"
 				}
 			}
 		}
@@ -80,12 +100,19 @@
 		"shortname": "Smoke Canisters",
 		"longname": "Czerka Arms Smoke Canisters",
 		"basedOn": "AMMO_EXPLOSIVE_CANISTER",
-		"max": 12,
+		"max": 10,
 		"pricePerUnit": 5,
 		"overrides": {
 			"damage": {
 				"set": 1
 			},
+			"buffs": 
+			[
+				{
+					"buff": "standard-fire",
+					"remove": true
+				}
+			],
 			"splashrange": {
 				"set": 800
 			},

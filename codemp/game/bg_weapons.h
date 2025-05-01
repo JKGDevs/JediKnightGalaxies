@@ -246,6 +246,7 @@ typedef struct weaponFireModeStats_s
 	damageSettings_t   primary;		// For use with the more complex damage type system.
 	damageSettings_t   secondary;	// For secondary damage..
 	qboolean	secondaryDmgPresent;
+	float		armorPenetration;	// How much % of armor is ignored. eg: 0.45 == 45% (MOD_QUARREL has built in armor penetration), range: 0.0 - 1.0
 	char		applyGravity;		// If true, bolt is affected by gravity and will act accordingly. Speed will decide the forward thrust.
 	char		bounceCount;		// The amount of bounces this weapon has, if any.
 	char		hitscan;        	// Is this weapon hitscan?

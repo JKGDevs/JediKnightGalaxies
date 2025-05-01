@@ -1,0 +1,25 @@
+{
+	"ref":		"jsgloves",
+	"slot":		"gloves",
+	"armor":		40,
+	"movemodifier":	1.0,
+
+	"visuals": {
+		"model":	"models/players/jensaarai/model.glm*default",
+		"modelGroup":	"jensaarai",
+
+		"armorOnSurfaces": [
+			"l_arm_wristarmor",
+			"r_arm_wristarmor"
+		],
+
+		"bodyOffSurfaces": [
+			"l_arm_wristarmor",
+			"r_arm_wristarmor",
+			"l_hand_plate",
+			"r_hand_plate",
+			"r_hand_wrist",
+			"l_hand_wrist"
+		]
+	}
+}

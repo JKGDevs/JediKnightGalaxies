@@ -1,0 +1,10 @@
+{
+	"name":        "Shoretrooper Trousers",
+	"internal":     "legs_shoretrooper",
+	"itemtype":     "armor",
+	"armor":		"shlegs",
+	"weight":		"2",
+	"cost":			"350",
+	"itemIcon":		"gfx/item_icons/shoretrooper_legs.tga",
+	"itemDescription": "Based on standard issue Imperial Stormtrooper leggings, they've been adopted for tropical environments and are issued to coastal defender stormtroopers, also called shoretroopers. Tan plastoid alloys protect the wearer's legs."
+}

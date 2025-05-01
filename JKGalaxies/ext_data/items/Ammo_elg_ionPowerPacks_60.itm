@@ -6,6 +6,6 @@
 	"cost":		"50",
 	"ammoclass":	"AMMO_SS_ION_POWERPACK",
 	"ammoquantity":	"60",
-	"itemIcon": "gfx/item_icons/ammo_power_cell.tga",	//needs icon!
+	"itemIcon": "gfx/item_icons/ammo_power_cell_ion.tga",
 	"itemDescription": "Specialized ionized blaster bolt munitions that are effective against droids, electronics and shields. Ion technology saw great advances during the Clone Wars combating the sophisticated Trade Federation combat droids, but remains stagnant today."
 }

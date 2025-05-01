@@ -1,0 +1,10 @@
+{
+	"name":         "Jensaarai Helmet",
+	"internal":     "helmet_jensaarai",
+	"itemtype":     "armor",
+	"armor":		"jshelmet",
+	"weight":		"3",
+	"cost":			"315",
+	"itemIcon":		"gfx/item_icons/sunguard_helmet.tga",
+	"itemDescription": "Missing Description"
+}

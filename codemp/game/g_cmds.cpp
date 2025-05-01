@@ -901,10 +901,20 @@ void Cmd_ItemCheck_f(gentity_t *ent)
 		itemNum = atoi(buffer);
 		if(itemLookupTable[itemNum].itemID)
 		{
-			if(itemLookupTable[itemNum].itemType == ITEM_ARMOR)
+			if(itemLookupTable[itemNum].itemType == ITEM_ARMOR || itemLookupTable[itemNum].itemType == ITEM_CLOTHING)
 			{
 				//Meant to put some sort of check for armor type, but didn't bother.
 				trap->SendServerCommand(ent-g_entities, va("print \"%s (%i) - Armor\n\"", itemLookupTable[itemNum].displayName, itemNum));
+				return;
+			}
+			else if (itemLookupTable[itemNum].itemType == ITEM_SHIELD)
+			{
+				trap->SendServerCommand(ent - g_entities, va("print \"%s (%i) - Shield\n\"", itemLookupTable[itemNum].displayName, itemNum));
+				return;
+			}
+			else if (itemLookupTable[itemNum].itemType == ITEM_JETPACK)
+			{
+				trap->SendServerCommand(ent - g_entities, va("print \"%s (%i) - Jetpack\n\"", itemLookupTable[itemNum].displayName, itemNum));
 				return;
 			}
 			else if(itemLookupTable[itemNum].itemType == ITEM_WEAPON)
@@ -1029,6 +1039,7 @@ void Cmd_BuyItem_f(gentity_t *ent)
 		char* snd;
 
 		trap->SendServerCommand(ent - g_entities, "print \"You do not have enough credits to purchase that item.\n\"");
+		trap->SendServerCommand(ent - g_entities, va("notify 1 \"Not enough credits!\""));
 
 		//select random unhappy vendor sound to play
 		if (CustomVendorSounds(trader, "purchasefail00"))
@@ -1059,6 +1070,14 @@ void Cmd_BuyItem_f(gentity_t *ent)
 				G_Sound(trader, CHAN_AUTO, G_SoundIndex(snd));	//play sound
 			}
 		}
+		return;
+	}
+
+	//no room in inventory to add
+	if (ent->inventory->size() >= MAX_INVENTORY_ITEMS)
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"^1Inventory full! ^7You do not have neough room to purchase that item.\n\"");
+		trap->SendServerCommand(ent - g_entities, va("notify 1 \"Inventory full!\""));
 		return;
 	}
 
@@ -1423,16 +1442,23 @@ int G_ClientNumberFromArg(const char *name)
 /*
 ==================
 Give cheat
+return true if successful, false if unsuccessful
 ==================
 */
 
-void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
+qboolean G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 {
 	gitem_t		*it;
 	int			i;
 	qboolean	give_all = qfalse;
 	gentity_t	*it_ent;
 	trace_t		trace;
+
+	if (!Q_stricmp(name, "give"))
+	{
+		trap->SendServerCommand(ent->s.number, va("print \"Invalid 'give give' command.\nUsage example: 'giveother padawan credits 100'\n\""));
+		return qfalse;
+	}
 
 	if ( !Q_stricmp( name, "all" ) )
 		give_all = qtrue;
@@ -1445,7 +1471,7 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 			ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 
 		if ( !give_all )
-			return;
+			return qtrue;
 	}
 
 	if ( give_all || !Q_stricmp( name, "shield" ) )
@@ -1456,7 +1482,7 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 			ent->client->ps.stats[STAT_SHIELD] = ent->client->ps.stats[STAT_MAX_SHIELD];
 
 		if ( !give_all )
-			return;
+			return qtrue;
 	}
 
 	if ( give_all || !Q_stricmp( name, "stamina" ) )
@@ -1466,8 +1492,8 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 		else
 			ent->client->ps.forcePower = ent->client->ps.stats[STAT_MAX_STAMINA];
 
-		if ( !give_all )
-			return;
+		if (!give_all)
+			return qtrue;
 	}
 
 	if ( !give_all && !Q_stricmp( name, "weapon" ) )
@@ -1478,7 +1504,7 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 			int weaponID = BG_GetWeaponIndex(weapon->weaponBaseIndex, weapon->weaponModIndex);
 			int itemID = BG_GetItemByWeaponIndex(weaponID)->itemID;
 
-			itemInstance_t item = BG_ItemInstance(itemID, 1);
+			itemInstance_t item = BG_ItemInstance(itemID, 1, MAX_DEFAULT_DURABILITY);
 			BG_GiveItem(ent, item);
 			trap->SendServerCommand (ent->s.number, va ("print \"'%s' was added to your inventory.\n\"", itemLookupTable[itemID].displayName));
 			
@@ -1488,12 +1514,13 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 					ent->client->ammoTypes[weaponID][i] = weapon->firemodes[i].ammoDefault->ammoIndex;
 				}
 			}
+			return qtrue;
 	    }
 	    else
 	    {
 	        trap->SendServerCommand (ent->s.number, va ("print \"'%s' does not exist.\n\"", args));
+			return qfalse;
 	    }
-	    return;
 	}
 
 	if ( give_all || !Q_stricmp( name, "ammo" ) )
@@ -1526,54 +1553,59 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 			}
 		}
 		ent->client->ps.stats[STAT_TOTALAMMO] = num;
-		if ( !give_all )
-			return;
+
+		if (!give_all)
+			return qtrue;
 	}
 
 	//Inventory items -- eezstreet/JKG
 	if( !give_all && !Q_stricmp( name, "item" ) )
 	{
+		qboolean returnval = qfalse;
 		int itemID = atoi( args );
 		if(itemID)
 		{
 			if(!itemLookupTable[itemID].itemID)
 			{
 				trap->SendServerCommand(ent - g_entities, va("print \"%i refers to an item that does not exist\n\"", itemID));
-				return;
+				return qfalse;
 			}
-			itemInstance_t item = BG_ItemInstance(itemID, 1);
+			itemInstance_t item = BG_ItemInstance(itemID, 1, MAX_DEFAULT_DURABILITY);
 
 			// If we gave the player an ammo item, we need to actually give them ammo, not the ammo item itself
 			if (item.id->itemType == ITEM_AMMO)
 			{
 				BG_GiveAmmo(ent, BG_GetAmmo(item.id->ammoData.ammoIndex), qfalse, item.id->ammoData.quantity);
+				returnval = qtrue;
 			}
 			else
 			{
 				BG_GiveItem(ent, item);
+				returnval = qtrue;
 			}
 			
 		}
 		else
 		{
-			itemInstance_t item = BG_ItemInstance(args, 1);
+			itemInstance_t item = BG_ItemInstance(args, 1, MAX_DEFAULT_DURABILITY);
 			if (!item.id) {
 				trap->SendServerCommand(ent - g_entities, va("print \"%s refers to an item that does not exist\n\"", args));
-				return;
+				return qfalse;
 			}
 
 			// If we gave the player an ammo item, we need to actually give them ammo, not the ammo item itself
 			if (item.id->itemType == ITEM_AMMO)
 			{
 				BG_GiveAmmo(ent, BG_GetAmmo(item.id->ammoData.ammoIndex), qfalse, item.id->ammoData.quantity);
+				returnval = qtrue;
 			}
 			else
 			{
 				BG_GiveItem(ent, item);
+				returnval = qtrue;
 			}
-			
 		}
-		return;
+		return returnval;
 	}
 
 	if ( give_all || !Q_stricmp( name, "credits" ) || !Q_stricmp( name, "credit" ) ) {
@@ -1583,8 +1615,9 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 			num = Com_Clampi( 0, INT_MAX-2, atoi( args ) ); // putting a minus 2 here for safety
 		ent->client->ps.credits = Com_Clampi( 0, INT_MAX-2, ent->client->ps.credits+num );
 		trap->SendServerCommand( ent->client->ps.clientNum, va("print \"Your new balance is: %i credits\n\"", ent->client->ps.credits ));
-		if ( !give_all )
-			return;
+
+		if (!give_all)
+			return qtrue;
 	}
 
 	if ( give_all || !Q_stricmp( name, "cloak" ) || !Q_stricmp( name, "cloakFuel" ) ) {
@@ -1592,8 +1625,9 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 		if ( argc == 3 )
 			num = Com_Clampi( 0, 100, atoi( args ) );
 		ent->client->ps.cloakFuel = num;
-		if ( !give_all )
-			return;
+
+		if (!give_all)
+			return qtrue;
 	}
 
 	if ( give_all || !Q_stricmp( name, "jetpack" ) || !Q_stricmp( name, "jetpackFuel" ) ) {
@@ -1601,30 +1635,32 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 		if ( argc == 3 )
 			num = Com_Clampi( 0, 100, atoi( args ) );
 		ent->client->ps.jetpackFuel = num;
-		if ( !give_all )
-			return;
+
+		if (!give_all)
+			return qtrue;
 	}
 
 	// spawn a specific item right on the player
 	if ( !give_all ) {
 		it = BG_FindItem( name );
-		if ( !it )
-			return;
+		if (!it)
+			return qfalse;
 
 		it_ent = G_Spawn();
 		VectorCopy( ent->r.currentOrigin, it_ent->s.origin );
 		it_ent->classname = it->classname;
 		G_SpawnItem( it_ent, it );
-		if ( !it_ent || !it_ent->inuse )
-			return;
+		if (!it_ent || !it_ent->inuse)
+			return qfalse;
 		FinishSpawningItem( it_ent );
-		if ( !it_ent || !it_ent->inuse )
-			return;
+		if (!it_ent || !it_ent->inuse)
+			return qfalse;
 		memset( &trace, 0, sizeof( trace ) );
 		Touch_Item( it_ent, ent, &trace );
 		if ( it_ent->inuse )
 			G_FreeEntity( it_ent );
 	}
+	return qtrue;
 }
 
 void Cmd_Give_f( gentity_t *ent )
@@ -1671,7 +1707,10 @@ void Cmd_GiveOther_f( gentity_t *ent )
 
 	trap->Argv( 2, name, sizeof( name ) );
 
-	G_Give( otherEnt, name, ConcatArgs( 3 ), trap->Argc()-1 );
+	if(G_Give( otherEnt, name, ConcatArgs( 3 ), trap->Argc()-1 ))
+		trap->SendServerCommand(ent - g_entities, va("print \"Gave %s^7 %s\n", otherEnt->client->pers.netname, name));
+	else
+		trap->SendServerCommand(ent - g_entities, va("print \"^1Giveother cmd failed, check cmd. ^7Attempted to give %s^7 %s\n", otherEnt->client->pers.netname, name));
 }
 
 /*
@@ -2145,8 +2184,7 @@ void JKG_Cmd_ItemAction_f(gentity_t *ent, int itemNum)
 		return; //NOTENOTE: NPCs can perform item actions. Nifty, eh?
 	}
 
-	if (ent->client->ps.stats[STAT_HEALTH] <= 0 ||
-		ent->client->ps.pm_type == PM_DEAD)
+	if (!JKG_ClientAlive(ent))
 	{
 		// Bugfix: Can no longer use items when dead --eez
 		Com_Printf("Can't use items while dead!\n");
@@ -2158,39 +2196,31 @@ void JKG_Cmd_ItemAction_f(gentity_t *ent, int itemNum)
 		return;
 	}
 
-	if (ent->inventory->size() < 1)
-	{
-		//bugfix: empty inventory == nothing to use  --Futuza
-		return;
-	}
-
-	if (itemNum >= ent->inventory->size())
+	if (ent->inventory->size() < 1 || ent->inventory->size() <= itemNum)
 	{
 		//Nope.
 		return;
 	}
 
-	//if  item is a jetpack
+	//if item is a jetpack
 	if(ent->inventory->at(itemNum).id->itemType == ITEM_JETPACK)
 	{
 		ItemUse_Jetpack(ent);
 		return;
 	}
 
-	//if item is a shield - TODO: add this feature
-	/*if (ent->inventory->at(itemNum).id->itemType == ITEM_SHIELD)
+	//if item is a shield
+	if (ent->inventory->at(itemNum).id->itemType == ITEM_SHIELD)
 	{
-		//call special shield effect
+		ItemUse_Shield(ent);
 		return;
-	}*/
+	}
 
 	//if  item is a consumable
 	if (ent->inventory->at(itemNum).id->itemType == ITEM_CONSUMABLE)
 	{
 		JKG_ConsumeItem_h(ent, itemNum);
 	}
-
-
 }
 
 /*
@@ -2221,6 +2251,53 @@ void Cmd_ResendInv_f(gentity_t* ent) {
 }
 
 /*
+/*
+==================
+Cmd_SetItemDurability_f
+
+==================
+*/
+
+void Cmd_SetItemDurability_f(gentity_t* ent)
+{
+	char arg[4];
+	if (trap->Argc() != 3)
+	{
+		trap->SendServerCommand(ent->s.number, "print \"Usage: /setItemDura <item num> <durability value>\n\"");
+		return;
+	}
+
+	trap->Argv(1, arg, sizeof(arg));
+	int slot = atoi(arg);
+	trap->Argv(2, arg, sizeof(arg));
+	int durability = atoi(arg);
+
+	//check we're valid
+	if (slot < ent->inventory->size() || slot < 0 )
+	{
+		if (ent->inventory->at(slot).id->maxDurability < durability)
+		{
+			durability = ent->inventory->at(slot).id->maxDurability;
+		}
+	}
+	else
+	{
+		trap->SendServerCommand(ent->s.number, va("print \"Requested item num (%i) is not in your inventory.\n\"", slot));
+		return;
+	}
+
+	if (ent->inventory->at(slot).id->itemTier == TIER_LEGENDARY)
+	{
+		trap->SendServerCommand(ent->s.number, va("print \"Durability cannot be adjusted for legendary items.\n\"", slot));
+		return;
+	}
+
+	BG_UpdateItemDurability(ent, slot, durability);
+	trap->SendServerCommand(ent - g_entities, va("durability_update %i %i", slot, durability));
+}
+
+
+/*
 =================
 JKG_Cmd_ShowInv_f
 =================
@@ -2233,20 +2310,22 @@ void Cmd_ShowInv_f(gentity_t *ent)
 	if(!ent->client)
 		return;
 
-	Q_strncpyz (buffer, "Inventory ID | Item Num | Instance Name                                 | Quantity | Weight\n", sizeof (buffer));
-	Q_strcat (buffer, sizeof (buffer), "-------------+----------+----------------------------------------------------------+--------\n");
+	Q_strncpyz (buffer, 
+		" ID | Item Num | Item Name                            | Durability | Quantity | Weight | Equip?\n", sizeof (buffer));
+	Q_strcat (buffer, sizeof (buffer), 
+		"----+------+------------------------------------------+------------+----------+--------+-------+\n");
 	trap->SendServerCommand(ent->s.number, va("print \"%s\n\"", buffer)); //print out
 	memset(buffer, '\0', sizeof(buffer));
 
-
 	for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it) {
-		Q_strcat(buffer, sizeof(buffer), va(S_COLOR_WHITE "%12i | %8i | %-45s | %8i | %6.2f\n", it - ent->inventory->begin(), it->id->itemID, it->id->displayName, it->quantity, it->id->weight));
+
+		Q_strcat(buffer, sizeof(buffer), va(S_COLOR_WHITE "%3i | %4i | %-40s | %4i /%4i | %8i | %6.2f | %5s |\n", it - ent->inventory->begin(), it->id->itemID, it->id->displayName, (it->id->itemTier == TIER_LEGENDARY ? 999 : it->durability), it->id->maxDurability, it->quantity, it->id->weight, (it->equipped == true ? "Y" : "N") ));
 		weight = weight + (it->id->weight * it->quantity);
 		if (it->equipped)
 		{
 			armorweight = armorweight + (it->id->weight * it->quantity);
 		}
-
+		
 		//buffer is about to fill - spit out what we got so far
 		if (buffer[MAX_STRING_CHARS-100] != '\0')
 		{
@@ -2407,12 +2486,29 @@ void Cmd_SellItem_f(gentity_t *ent)
 		Cmd_JetpackUnequipped(ent);
 	}
 
-	else if (item.id->itemType == ITEM_ARMOR && item.equipped) {
+	else if ((item.id->itemType == ITEM_ARMOR || item.id->itemType == ITEM_CLOTHING) && item.equipped) {
 		JKG_ArmorChanged(ent);
 	}
 
+	if (item.durability < item.id->maxDurability)
+	{
+		//durability damage gives us 1/4th the cost + whatever % of 1/4 is left based on durability out of maxdurability
+		int usedCost = item.id->baseCost * 0.25;
+		float depreciation = static_cast<float>(item.durability) / static_cast<float>(item.id->maxDurability);
+		usedCost = usedCost * depreciation;
+		if (item.durability > 0)
+			usedCost = (item.id->baseCost * 0.25) + usedCost;
+		else
+			usedCost = item.id->baseCost * 0.1;	//broken only nets us 10% of original cost
 
-	ent->client->ps.credits += (creditAmount * item.quantity) / 2;
+		//must be at least 1 credit
+		if (usedCost < 1)
+			usedCost = 1;
+
+		ent->client->ps.credits += (usedCost * item.quantity);
+	}
+	else
+		ent->client->ps.credits += (creditAmount * item.quantity) / 2;
 	
 
 	BG_RemoveItemStack(ent, nInvID);
@@ -3225,6 +3321,16 @@ void JKG_BindChatCommands( void )
 	CCmd_AddCommand("saywhisper", CCmd_SayWhisper);
 	CCmd_AddCommand("tell", CCmd_Tell);
 	CCmd_AddCommand("sayteam", CCmd_Say_Team);
+}
+
+void JKG_UnbindChatCommands (void)
+{
+	CCmd_RemoveCommand("say");
+	CCmd_RemoveCommand("sayglobal");
+	CCmd_RemoveCommand("sayact");
+	CCmd_RemoveCommand("saywhisper");
+	CCmd_RemoveCommand("tell");
+	CCmd_RemoveCommand("sayteam");
 }
 
 /*
@@ -4616,6 +4722,61 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent)
 
 /*
 ==================
+Cmd_DuraPriceCheck_f
+
+Checks the price of repairing armor.
+==================
+*/
+static void Cmd_DuraPriceCheck_f(gentity_t* ent)
+{
+	qboolean silent = trap->Argc() > 2;
+	int cost;
+	int invID;
+	char buffer[1024]{ 0 };
+	itemInstance_t* item;
+
+	if (trap->Argc() < 2)
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"usage: /durapricecheck <inventory ID>\n\"");
+		return;
+	}
+
+	trap->Argv(1, buffer, 1024);
+	invID = atoi(buffer);
+
+	if (ent->inventory == nullptr)
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"Your inventory is invalid (null?)\n\"");
+		return;
+	}
+
+	if (invID < 0 || invID >= ent->inventory->size())
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"Invalid item ID.\n\"");
+		return;
+	}
+
+	item = &(*ent->inventory)[invID];
+	if (item->id->itemType != ITEM_ARMOR && item->id->itemType != ITEM_CLOTHING)	//--futuza: for now check the item type, however eventually we'll do this for most item types
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"That is not an armor item.\n\"");
+		return;
+	}
+
+	cost = BG_GetRepairDuraCost(item);
+
+	if (!silent)
+	{
+		trap->SendServerCommand(ent - g_entities, va("print \"It will take %i credits to fully repair that item.\n\"", cost));
+		return;
+	}
+
+	trap->SendServerCommand(ent - g_entities, va("dpc %i %i", invID, cost));
+}
+
+
+/*
+==================
 Cmd_AmmoPriceCheck_f
 
 Checks the price of refilling ammo.
@@ -4817,6 +4978,115 @@ void Cmd_BuyAmmo_f(gentity_t* ent) {
 	trap->SendServerCommand(ent - g_entities, va("apc %i %i", itemSlot, newCost));
 }
 
+void Cmd_BuyRepair_f(gentity_t* ent) 
+{
+	int itemSlot;
+	char argBuffer[MAX_TOKEN_CHARS]{ 0 };
+	float cost = 0, costPerDura = 0;
+	int totalCost = 0, missingDura = 0, unitsRequested = 0;
+
+	gentity_t* trader = ent->client->currentTrader;
+	if (trader == nullptr)
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"You need to be at a vendor in order to buy ammo.\n\"");
+		return;
+	}
+
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand(ent - g_entities, "print \"You need to select an item to buy ammo for.\n\"");
+		return;
+	}
+
+	trap->Argv(1, argBuffer, MAX_TOKEN_CHARS);
+	itemSlot = atoi(argBuffer);
+
+	if (itemSlot < 0 || itemSlot >= ent->inventory->size()) {
+		trap->SendServerCommand(ent - g_entities, "print \"Invalid item selected.\n\"");
+		return;
+	}
+	itemInstance_t& item = ent->inventory->at(itemSlot);
+
+	//--futuza: for now check the item type, however eventually we'll do this for most item types
+	if (item.id->itemType != ITEM_ARMOR && item.id->itemType != ITEM_CLOTHING) {
+		trap->SendServerCommand(ent - g_entities, "print \"That is not an armor item.\n\"");
+		return;
+	}
+
+	if (item.durability >= item.id->maxDurability)
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"This item is already at max durabilty and cannot be repaired further.\n\"");
+		return;
+	}
+	
+	//logic here should be the same as BG_GetRepairDuraCost() in bg_items.cpp
+	costPerDura =  static_cast<float>(item.id->baseCost) / static_cast<float>(item.id->maxDurability);
+	//if our item wasn't broken
+	if (item.durability > 0)
+		costPerDura *= 0.10;	//it only costs 1/10th to repair, otherwise we'll have to pay a lot more
+	else
+	{
+		switch (item.id->itemTier)	//item tier determines cost
+		{
+			case TIER_SCRAP:
+				costPerDura *= 0.3f;
+				break;
+			case TIER_COMMON:
+				costPerDura *= 0.35f;
+				break;
+			case TIER_REFINED:
+				costPerDura *= 0.45f;
+				break;
+			case TIER_ELITE:
+				costPerDura *= 0.6f;
+				break;
+			case TIER_SUPERIOR:
+				costPerDura *= 0.9f;
+				break;
+			default:
+				costPerDura *= 0.4f;
+				break;
+		}
+	}
+
+	if (ent->client->ps.credits < costPerDura) // we don't have enough money to afford one unit of repair
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"You cannot afford repairs for that item.\n\"");
+		return;
+	}
+
+	unitsRequested = missingDura = item.id->maxDurability - item.durability;	//how much durability is damaged, and how much we want to repair
+	cost = costPerDura * static_cast<float>(missingDura);	//the cost to repair it all
+
+	// We can't repair it all the way, so repair as much as we have credits for
+	if (cost > ent->client->ps.credits)
+	{
+		cost = ent->client->ps.credits;
+		unitsRequested = floor(cost / costPerDura);
+		cost = unitsRequested * costPerDura;
+	}
+
+	//if our price is between 0 and 1, just make it cost 1 credit - so players can't scam us out of free repairs
+	if (0 < cost && cost < 1)
+		cost = 1;
+
+	totalCost = floor(cost); //credits are int only, time to act like it
+
+	// Buy the credits and update stats
+	//ent->client->ps.spent += cost;
+	ent->client->ps.credits -= totalCost;
+	ent->inventory->at(itemSlot).durability += unitsRequested;
+	trap->SendServerCommand(ent - g_entities, va("durability_update %i %i", itemSlot, ent->inventory->at(itemSlot).durability));
+	
+	trap->SendServerCommand(ent - g_entities,
+		va("print \"Repaired %i durability, spent %i credits total.\n\"", unitsRequested, totalCost));
+
+
+	G_PreDefSound(ent->r.currentOrigin, PDSOUND_VENDORPURCHASE);
+
+	int newCost = BG_GetRepairDuraCost(&ent->inventory->at(itemSlot));
+	trap->SendServerCommand(ent - g_entities, va("dpc %i %i", itemSlot, newCost));
+}
+
 
 qboolean G_OtherPlayersDueling(void)
 {
@@ -4992,6 +5262,7 @@ static const command_t commands[] = {
 	{ "arbitraryprint",			Cmd_ArbitraryPrint_f,		CMD_NEEDCHEATS },
 	{ "butterfingers",			Cmd_Butterfingers_f,		CMD_NEEDCHEATS | CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
 	{ "buyammo",				Cmd_BuyAmmo_f,				CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
+	{ "buyrepair",				Cmd_BuyRepair_f,				CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
 	{ "buyvendor",				Cmd_BuyItem_f,				CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
 	{ "callvote",				Cmd_CallVote_f,				CMD_NOINTERMISSION },
 	{ "callteamvote",			Cmd_CallTeamVote_f,			CMD_NOINTERMISSION | CMD_NOSPECTATOR },
@@ -5002,9 +5273,11 @@ static const command_t commands[] = {
 	{ "credits",				Cmd_Credits_f,				0 },
 	{ "crystal1",				Cmd_Crystal1_f,				CMD_NEEDCHEATS | CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
 	{ "crystal2",				Cmd_Crystal2_f,				CMD_NEEDCHEATS | CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
+	{ "debugammo",				Cmd_MyAmmo_f,				CMD_NOINTERMISSION | CMD_NOSPECTATOR },	//same as myammo
 	{ "debuginventory",			Cmd_ShowInv_f,				CMD_NOINTERMISSION | CMD_NOSPECTATOR },
 	{ "dismember",				Cmd_Dismember_f,			CMD_NEEDCHEATS | CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
 	{ "dumpweaponlist_sv",		Cmd_DumpWeaponList_f,		0 },
+	{ "durapricecheck",			Cmd_DuraPriceCheck_f,		CMD_NOINTERMISSION },
 	{ "equip",					Cmd_EquipItem_f,			CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
 	{ "equipjetpack",			Cmd_EquipJetpack_f,			CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
 	{ "equipshield",			Cmd_EquipShield_f,			CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
@@ -5028,7 +5301,7 @@ static const command_t commands[] = {
 	{ "knockmedown",			Cmd_KnockMeDown_f,			CMD_NEEDCHEATS | CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
 	{ "levelshot",				Cmd_LevelShot_f,			CMD_NEEDCHEATS },
 	{ "loveandpeace",			Cmd_LoveAndPeace_f,			CMD_NEEDCHEATS | CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
-	{ "myammo",					Cmd_MyAmmo_f,				CMD_NOINTERMISSION | CMD_NOSPECTATOR },
+	{ "myammo",					Cmd_MyAmmo_f,				CMD_NOINTERMISSION | CMD_NOSPECTATOR }, //same as debugammo
 	{ "noclip",					Cmd_Noclip_f,				CMD_NEEDCHEATS | CMD_NOINTERMISSION | CMD_ONLYALIVE },
 	{ "notarget",				Cmd_Notarget_f,				CMD_NEEDCHEATS | CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
 	{ "npc",					Cmd_NPC_f,					CMD_NEEDCHEATS },
@@ -5036,7 +5309,8 @@ static const command_t commands[] = {
 	{ "printweaponlist_sv",		Cmd_PrintWeaponList_f,		0 },
 	{ "printbufflist",			Cmd_PrintBuffList_f,		0 },
 	{ "relax",					Cmd_Relax_f,				CMD_NEEDCHEATS | CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
-	{ "resendInv",				Cmd_ResendInv_f,			0 },	
+	{ "resendInv",				Cmd_ResendInv_f,			0 },
+	{ "setItemDura",			Cmd_SetItemDurability_f,	CMD_NEEDCHEATS | CMD_NOINTERMISSION | CMD_NOSPECTATOR | CMD_ONLYALIVE },
 	{ "say",					Cmd_SayLocal_f,				0 },
 	{ "sayact",					Cmd_SayAct_f,				0 },
 	{ "sayglobal",				Cmd_SayGlobal_f,			0 },

@@ -4,10 +4,8 @@
 #include <unordered_map>
 #include <string>
 
-using namespace std;
-
 static char stylesheet[MAX_QPATH];
-static unordered_map<string, itemDef_t> styleobjects;
+static std::unordered_map<std::string, itemDef_t> styleobjects;
 extern displayContextDef_t *DC;
 
 void JKG_UI_LoadStylesheet( const char *text )
@@ -60,7 +58,7 @@ void JKG_UI_LoadStylesheet( const char *text )
 		{
 			itemDef_t item;
 			const char *textTemp;
-			string name = cJSON_GetItemKey( classObject );
+			std::string name = cJSON_GetItemKey( classObject );
 
 			// fix some junk first off
 			item.typeData.data = NULL;

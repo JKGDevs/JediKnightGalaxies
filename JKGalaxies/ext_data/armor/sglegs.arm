@@ -1,0 +1,33 @@
+{
+	"ref":		"sglegs",
+	"slot":		"legs",
+	"armor":		105,
+	"movemodifier":	0.95,
+
+	"visuals": {
+		"model":	"models/players/sunguard/model.glm*default",
+		"modelGroup":	"sunguard",
+
+		"armorOnSurfaces": [
+			"hips",
+			"hips_belt"
+		],
+
+		"bodyOffSurfaces": [
+			"hips",
+			"hips_lower",
+			"hips_legs",
+			"l_leg_knee",
+			"r_leg_knee",
+			"hips_holster",
+			"hips_augment",
+			"hips_l_packlarge",
+			"hips_l_packwide",
+			"hips_lowerarmor",
+			"hips_r_packsmall",
+			"hips_r_strap",
+			"hips_flaps",
+			"torso_lower"
+		]
+	}
+}

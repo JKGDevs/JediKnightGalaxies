@@ -26,7 +26,8 @@ struct jkgBuffCanceling_t
 	qboolean	waterRemoval;		// if true, swimming around in water removes the buff
 	qboolean	rollRemoval;		// if true, rolling removes the buff
 	qboolean	shieldRemoval;		// if true, if an active shield is equipped (with at least 1 charge) will remove the buff
-	qboolean	filterRemoval;		// if true, if armor with the filter property is equipped will remove the buff
+	qboolean	filterBlocking;		// if true, if armor with the filter property is equipped will prevent the buff from being applied, does not remove previously existing
+	qboolean	antitoxRemoval;		// if true, if armor with the antitox property is equipped will remove (and ignore) the buff
 
 	std::vector<jkgOtherBuffCancel_t> other;
 };
@@ -102,6 +103,7 @@ qboolean JKG_HasResistanceBuff(playerState_t* ps);
 void JKG_RemoveBuffCategory(const char* buffCategory, playerState_t* ps);
 void JKG_CheckWaterRemoval(playerState_t* ps);
 void JKG_CheckRollRemoval(playerState_t* ps);
-void JKG_CheckFilterRemoval(playerState_t* ps);
+void JKG_CheckFilterBlocking(playerState_t* ps);
+void JKG_CheckAntitoxRemoval(playerState_t* ps);
 int  JKG_ResolveBuffName(const char* szBuffName);
 void JKG_GetBuffNames(std::vector<std::string>& outBuffNames);

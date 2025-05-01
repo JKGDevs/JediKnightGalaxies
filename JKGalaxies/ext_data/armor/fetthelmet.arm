@@ -3,6 +3,12 @@
 	"slot":		"head",
 	"armor":		250,
 	"movemodifier":	1.0,
+	"resistances": [            //armor has resistance(s) against specific means/MOD
+        {
+            "means": "MOD_BLASTER",
+            "resistance": 0.65	//35% resistant to blasters, this is made out of Beskar
+        }
+	],
 
 	"visuals": {
 		"model":	"models/players/JKGalaxiesArmor/model.glm*default",

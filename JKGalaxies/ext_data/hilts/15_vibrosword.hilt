@@ -1,0 +1,41 @@
+{
+	"name":			"vibrosword",
+	"fullName":		"Mosquito Vibroblade",
+	"soundOn":		"sound/weapons/sword/draw1.mp3",
+	"soundLoop": 	"null",
+	"saberOff": 	"null",
+	"saberModel": 	"models/weapons/vibroblades/Blade_Mosquito/model.glm",
+	"spinsound": 		"sound/weapons/sword/spin.mp3",
+	"swingsounds":  [ 
+		"sound/weapons/sword/swing1.mp3", 
+		"sound/weapons/sword/swing2.mp3", 
+		"sound/weapons/sword/swing3.mp3" 
+		],
+	"hitSounds": [
+		"sound/weapons/sword/stab1.mp3",
+		"sound/weapons/sword/stab2.mp3",
+		"sound/weapons/sword/stab3.mp3"
+	],
+	"blockSounds": 	[
+		"sound/weapons/sword/stab2.mp3",
+		"sound/weapons/sword/stab2.mp3",
+		"sound/weapons/sword/stab1.mp3"
+	],
+	"bounceSounds": [
+		"sound/weapons/sword/stab1.mp3",
+		"sound/weapons/sword/stab2.mp3",
+		"sound/weapons/sword/stab2.mp3"
+	],
+	"fallSounds": [
+		"sound/weapons/sword/fall1.mp3",
+		"sound/weapons/sword/fall2.mp3",
+		"sound/weapons/sword/fall3.mp3"
+	],
+	"hitPersonEffect": "effects/blood/blood_woundbig.efx",
+	"animSpeedScale":	1.0,
+	"blades": {
+		"blade1": {
+			"length": 0
+		}
+	}
+}

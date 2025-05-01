@@ -284,9 +284,11 @@ void	CCmd_AddCommand( const char *cmd_name, xccommand_t function ) {
 	if (!cmd_name || !function) {	// Dont allow nameless/functionless commands
 		return;
 	}
+
 	// fail if the command already exists
 	for ( cmd = ccmd_functions ; cmd ; cmd=cmd->next ) {
-		if ( !strcmp( cmd_name, cmd->name ) ) {
+
+		if ( !Q_stricmp( cmd_name, cmd->name) ){ //<--fixed?
 			Com_Printf ("CCmd_AddCommand: %s already defined\n", cmd_name);
 			return;
 		}

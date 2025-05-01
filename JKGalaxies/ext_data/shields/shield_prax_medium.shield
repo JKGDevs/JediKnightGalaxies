@@ -1,0 +1,13 @@
+{
+    "ref":			"shield_prax_medium",
+	"capacity":	80,
+	"cooldown":	4000,
+	"regenrate":	286,
+
+	"rechargeSoundEffect":	"sound/shield/shield_recharge2",
+	"brokenSoundEffect":	"sound/shield/shield_broken2",
+	"equippedSoundEffect":	"sound/shield/shield_equipped4",
+	"chargedSoundEffect":	"sound/shield/shield_charged5",
+    "blockedMODs": ["MOD_VIBROBLADE", "MOD_SLUGTHROWER", "MOD_BLEEDING"],
+    "allowedMODs": ["MOD_DISRUPTOR", "MOD_PULSE"]
+}

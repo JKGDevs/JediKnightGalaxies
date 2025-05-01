@@ -7,13 +7,14 @@
 	// fuelRegeneration - scale of how fast fuel gets regenerated
 
 	"ref":			"jetpack_test",
-	"fuelCapacity":		100,
-	"fuelConsumption":	1.0,
-	"thrustConsumption":	2.0,
-	"fuelRegeneration":	1.0,
+	"fuelCapacity":		45,
+	"fuelConsumption":	1.5,
+	"thrustConsumption":	2.7,
+	"fuelRegeneration":	0.5,
 	
 	"movement": {
 		// Movement - done on both client and server
+		// cooldown - how many ms to wait before jetpack can be reactivated
 		// hoverGravity - amount to decay height by while hovering (actual units, not a modifier)
 		// fowardMove - amount to modify forward move by while hovering (not thrusting)
 		// backMove - amount to modify backward move by while hovering (not thrusting)
@@ -21,19 +22,20 @@
 		// downMove - amount to modify downward movement by
 		// thrustFwd/thrustBack/thrustSide - same as above, but when thrusting
 		// thrustUp - amount to modify upward movement by
+		"cooldown": 1000,
 		"hoverGravity":	"-1.0",
 
-		"forwardMove": 1.0,
-		"backMove": 1.0,
-		"sideMode": 1.0,
-		"downMove": 1.0,
+		"forwardMove": 1.5,
+		"backMove": 0.7,
+		"sideMode": 0.7,
+		"downMove": 0.7,
 
-		"thrustFwd": 1.0,
-		"thrustBack": 1.0,
+		"thrustFwd": 2.0,
+		"thrustBack": 0.5,
 		"thrustSide": 1.0,
 		"thrustUp": 1.0,
 
-		"fwdThrustAmt": 2.0,
+		"fwdThrustAmt": 1.75,
 		"loadBearingAllowed": false
 	},
 

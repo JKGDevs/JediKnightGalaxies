@@ -362,6 +362,15 @@ void *Hunk_Alloc( int size, ha_pref preference );
 #define CIN_shader	16
 #define CIN_aspect  32	// JKG specific
 
+//what types of inventory price checks we can do (using InventoryPriceCheckResult in cg_servercmds and jkg_shop)
+typedef enum
+{
+	PRICECHECK_APC,		//ammo price check
+	PRICECHECK_DPC,		//durability price check
+
+	PRICECHECK_MAX
+} PriceCheckTypes_t;
+
 /*
 ==============================================================
 
@@ -1778,6 +1787,8 @@ typedef struct playerState_s {
 
 	int				buffsActive;
 	buffdata_t		buffs[MAX_BUFFS];
+	qboolean		buffFilterActive;	// Prevents 'filterable' buffs (toxins etc) from being applied while wearing protective equipment (gas mask, etc)
+	qboolean		buffAntitoxActive;	// Prevents & actively removes 'antitoxRemoval' buffs (toxins etc) while wearing protective equipment (bloodstream filter, etc)
 	
 	int				saberActionFlags;
 
@@ -2284,6 +2295,7 @@ typedef enum {
 #define QRAND_MAX 32768
 
 void Rand_Init(int seed);
+float Q_flrand(float min, float max);
 float flrand(float min, float max);
 int irand(int min, int max);
 int Q_irandSafe(int value1, int value2);

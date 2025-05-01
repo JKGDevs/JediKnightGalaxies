@@ -36,8 +36,6 @@ enum
 #include <string>
 #include <map>
 
-using namespace std;
-
 #define	MAX_VARIABLES	32
 
 typedef std::map < std::string, std::string >		varString_m;

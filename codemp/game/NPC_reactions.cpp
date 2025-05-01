@@ -370,7 +370,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, i
 		animLength = bgAllAnims[self->localAnimIndex].anims[pain_anim].numFrames * fabs((float)(bgHumanoidAnimations[pain_anim].frameLerp));
 
 		self->painDebounceTime = level.time + animLength;
-		self->client->ps.weaponTime = 0;
+		self->client->ps.weaponTime = 0; //fixes something with npc sabers going crazy, needs experimenting --futuza
 	}
 }
 

@@ -2911,6 +2911,23 @@ models/weapons/grenade_thermal/thermal_det_bronze
     }
 }
 
+// Jawa Ion Gun (Jonthe, Pande)
+
+models/weapons/ion_gun/ion_gun_0
+{
+	q3map_nolightmap
+    {
+        map models/weapons/ion_gun/ion_gun
+        rgbGen lightingDiffuse
+    }
+    {
+        map models/weapons/ion_gun/ion_gun_spec
+        blendFunc GL_SRC_ALPHA GL_ONE
+        detail
+        alphaGen lightingSpecular
+	}
+}
+
 // KYD-21 Blaster Pistol (Silverfang, BlasTech)
 
 models/weapons/kyd-21_pistol/pistol_0

@@ -340,6 +340,32 @@ static int GLua_Player_SendPrint(lua_State *L) {
 	return 0;
 }
 
+static int GLua_Player_SendNotify(lua_State* L)
+{
+	char buff[980] = { 0 };
+	GLua_Data_Player_t* ply = GLua_CheckPlayer(L, 1);
+	int args = lua_gettop(L);
+	const char* res;
+	int i;
+	if (!ply) return 0;
+
+	GLua_Push_ToString(L);
+	for (i = 2; i <= args; i++)
+	{
+		lua_pushvalue(L, -1);
+		lua_pushvalue(L, i);
+		lua_call(L, 1, 1);
+		res = lua_tostring(L, -1);
+		if (res)
+		{
+			Q_strcat(&buff[0], 980, res);
+		}
+		lua_pop(L, 1);
+	}
+	trap->SendServerCommand(ply->clientNum, va("notify 1 \"%s\"", &buff[0]));
+	return 0;
+}
+
 //incomplete function, need to probably request the map list from the server itself with a cmd (function does nothing atm)
 /*static int GLua_Player_GetMapList(lua_State *L) 
 {
@@ -1761,6 +1787,13 @@ static int GLua_Player_ModifyCreditCount(lua_State *L) {
 	ent = &g_entities[ply->clientNum];
 	
 	ent->client->ps.credits += modify;
+
+	std::string msg;
+	if (modify >= 0)
+		msg = ("+ " + std::to_string(modify) + " Credits");
+	else
+		msg = ("- " + std::to_string(modify) + " Credits");
+	trap->SendServerCommand(ply->clientNum, va("notify 1 \"%s\"", msg.c_str()));
 	return 1;
 }
 
@@ -1801,8 +1834,8 @@ static int GLua_Player_PossessingItem(lua_State *L)
 static int GLua_Player_PossessingWeapon(lua_State *L)
 {
 	GLua_Data_Player_t *ply = GLua_CheckPlayer(L,1);
-	int weapon = lua_tointeger(L, 2);
-	int variation = lua_tointeger(L, 3);
+	unsigned int weapon = lua_tointeger(L, 2);
+	unsigned int variation = lua_tointeger(L, 3);
 	gentity_t *ent;
 
 	if(!ply) return 0;
@@ -1847,10 +1880,11 @@ static const struct luaL_reg player_m [] = {
 	{"SendCenterPrint", GLua_Player_SendCenterPrint},
 	{"SendCenterPrintAll", GLua_Player_SendCenterPrintAll},
 	{"SendPrint", GLua_Player_SendPrint},
+	{"SendNotify", GLua_Player_SendNotify},
 	//{"GetMapList", GLua_Player_GetMapList},
 	{"SendCommand", GLua_Player_SendCommand},
 	{"Kill", GLua_Player_Kill},
-	{"Disintegrate", GLua_Player_Disintegrate},
+	{"Disintegrate", GLua_Player_Disintegrate}, //(also kills)
 	{"SetPos", GLua_Player_SetPos},
 	{"GetPos", GLua_Player_GetPos},
 	{"SetOrigin", GLua_Player_SetPos},
@@ -1919,15 +1953,15 @@ static const struct luaL_reg player_m [] = {
 	//{"GetUndying", GLua_Player_GetUndying},
 	//{"SetInvulnerable", GLua_Player_SetInvulnerable},
 	//{"GetInvulnerable", GLua_Player_GetInvulnerable},
-	{"SetFreeze", GLua_Player_SetFreeze},
-	{"GetFreeze", GLua_Player_GetFreeze},
+	//{"SetFreeze", GLua_Player_SetFreeze},
+	//{"GetFreeze", GLua_Player_GetFreeze},
 	{"SetNoMove", GLua_Player_SetNoMove},
 	{"GetNoMove", GLua_Player_GetNoMove},
 	{"ServerTransfer", GLua_Player_ServerTransfer},
 	// stuff for credits --eez
 	{"GetCreditCount", GLua_Player_GetCreditCount},
-	{"SetCreditCount", GLua_Player_SetCreditCount},
-	{"ModifyCreditCount", GLua_Player_ModifyCreditCount},
+	{"SetCreditCount", GLua_Player_SetCreditCount},		   //silently set credit value, no notification
+	{"ModifyCreditCount", GLua_Player_ModifyCreditCount}, //+= credit amount, also notifies
 	// add 6/2/13
 	{"GetCurrentGunAmmoType", GLua_Player_GetCurrentGunAmmoType},
 	//{"GetGunAmmoType", GLua_Player_GetGunAmmoType},	// removed 12/11/2016
@@ -1974,7 +2008,7 @@ static const struct GLua_Prop player_p [] = {
 	{"Gravity", GLua_Player_GetGravity,		GLua_Player_SetGravity},
 	{"Undying", GLua_Player_GetUndying,		GLua_Player_SetUndying},
 	{"Invulnerable", GLua_Player_GetInvulnerable,GLua_Player_SetInvulnerable},
-	{"Freeze", GLua_Player_GetGravity,		GLua_Player_SetGravity},
+	{"Freeze", GLua_Player_GetFreeze,		GLua_Player_SetFreeze},
 	{"InDeathcam", GLua_Player_InDeathcam,	NULL},
 	{"NoDismember", GLua_Player_GetNoDismember, GLua_Player_SetNoDismember},
 	{"NoDisintegrate", GLua_Player_GetNoDisintegrate, GLua_Player_SetNoDisintegrate},

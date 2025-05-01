@@ -6,5 +6,5 @@
 	"weight":		"1",
 	"cost":			"185",
 	"itemIcon":		"gfx/item_icons/bounty_hunter_cape.tga",
-	"itemDescription": "A simple protective cloth cape, made of callacord, microfibers, and leather.  Often worn by those working in dangerous lines of work such as bounty hunting or mercenary work."
+	"itemDescription": "A simple cloth cape made of callacord, microfibers, and leather. It can shelter from the elements, but does little against weapons. Often worn by those in rough lines of work such as bounty hunting or mercenary work."
 }

@@ -60,7 +60,7 @@
         "slot":         1,
         "reloadtime":   1500,
         "flags":        [ "roll" ],
-        "reloadmodifier": 0.6,
+        "reloadmodifier": 0.7,
         "speed": 1
     },
     
@@ -85,8 +85,8 @@
         "spread":       0.0,
         "projectilespeed":1600.0,//7000.0,
         "projectileclass":"flech_proj",
-        "meansofdeath": "MOD_SLUGTHROWER",
-        "splashmeansofdeath": "MOD_SLUGTHROWER",
+        "meansofdeath": "MOD_EXPLOSION",
+        "splashmeansofdeath": "MOD_EXPLOSION",
 	    "ammobase": "AMMO_FWG-5",
 	    "ammodefault": "AMMO_FWG-5",
         "clipSize":              8,

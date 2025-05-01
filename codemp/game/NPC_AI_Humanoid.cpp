@@ -811,7 +811,7 @@ void Boba_FireFlameThrower( gentity_t *self )
 	traceEnt = &g_entities[tr.entityNum];
 	if ( tr.entityNum < ENTITYNUM_WORLD && traceEnt->takedamage )
 	{
-		G_Damage( traceEnt, self, self, dir, tr.endpos, damage, DAMAGE_NO_SHIELD|DAMAGE_NO_KNOCKBACK, MOD_LAVA );
+		G_Damage( traceEnt, self, self, dir, tr.endpos, damage, DAMAGE_NO_KNOCKBACK, MOD_LAVA );
 		//rwwFIXMEFIXME: add DAMAGE_NO_HIT_LOC?
 	}
 }

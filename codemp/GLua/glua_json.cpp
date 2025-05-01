@@ -37,7 +37,7 @@ static void FJSON_PassLastElement( lua_State *L, cJSON *element )
 // Make sure that a cJSON handle is valid
 static bool FJSON_ValidateNode( lua_State *L, int argNumber )
 {
-	int index = luaL_checkint( L, argNumber );
+	std::size_t index = luaL_checkint( L, argNumber );
 	if( index < 0 || index > fJSON.jsonBinding.size() )
 	{
 		return false;

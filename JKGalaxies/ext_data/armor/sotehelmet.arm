@@ -1,0 +1,48 @@
+{
+	"ref":		"sotehelmet",
+	"slot":		"head",
+	"armor":		125,
+	"movemodifier":	1.0,
+
+	"visuals": {
+		"model":	"models/players/sote_trooper/model.glm*default",
+		"modelGroup":	"sote_trooper_armor",
+
+		"armorOnSurfaces": [
+			"head",
+			"head_face_top",
+			"head_face_augment",
+			"head_face_visora",
+			"head_face"
+		],
+
+		"bodyOffSurfaces": [
+			"head",
+			"head_face",
+			"head_eyes",
+			"head_eyes_mouth",
+			"heada_eyes_mouth",
+			"headb_eyes_mouth",
+			"head_helmet",
+			"head_haira",
+			"head_hairb",
+			"head_l_hairback",
+			"heada",
+			"headb",
+			"heada_mouth",
+			"headb_mouth",
+			"heada_teeth",
+			"headb_teeth",
+			"heada_face",
+			"headb_face",
+			"head_com",
+			"head_left",
+			"head_right",
+			"head_face_augment",
+			"head_face_visora",
+			"head_face_visorb",
+			"head_face_visorc",
+			"head_fins"
+		]
+	}
+}

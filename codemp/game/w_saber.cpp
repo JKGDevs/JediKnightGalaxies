@@ -8596,7 +8596,7 @@ void thrownSaberBallistics(gentity_t *saberEnt, gentity_t *saberOwn, qboolean st
 }
 //[/SaberThrowSys]
 
-void JKG_NetworkSaberCrystals( playerState_t *ps, int invId, int weaponId )
+void JKG_NetworkSaberCrystals( playerState_t *ps, std::size_t invId, int weaponId )
 {
 	// I'm being extra cautious with these checks for a reason...we originally networked stuff
 	// going by the weaponId because the stuff sent from the ACI was very inaccurate at times.
@@ -8684,7 +8684,7 @@ void JKG_NetworkSaberCrystals( playerState_t *ps, int invId, int weaponId )
 
 void JKG_DoubleCheckWeaponChange( usercmd_t *cmd, playerState_t *ps )
 {
-	int invSel = cmd->invensel;
+	std::size_t invSel = cmd->invensel;
 
 	gentity_t *ent = &g_entities[ps->clientNum];
 

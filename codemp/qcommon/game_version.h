@@ -29,6 +29,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../win32/AutoVersion.h"
 #include "../git.h"
 
+#define JKG_COPYRIGHT "(C)Jedi Knight Galaxies 2009-2025" //update the current year regularly, due to macro limitations we can't use something like:
+//#define DATE_YEAR (__DATE__ + sizeof(__DATE__) - 5)
+
 /*
 * =====================
 Versioning Explanation
@@ -36,20 +39,27 @@ Versioning Explanation
 Phase.Major.Minor(suffix)
 eg: v3.2.458a
 
-Phase:			This represents an entirely new type of gameplay or design.  v1: JKG Versus, v2: JKG Coop, v3: JKG RPG, v4: JKG LMO
+Phase:			This represents an entirely new type of gameplay or design.  eg: v1: JKG Versus, v2: JKG Coop, v3: JKG RPG, v4: JKG LMO
 				See the readme for more information on game phases (these are similar to expansion packs).
 
 Major:			This represents large new feature sets, bug fixes, improvements etc that still align to the current phase goal.  
 				These are usually based on a Github Issue List Milestone. eg: https://github.com/JKGDevs/JediKnightGalaxies/milestones
+				For example, v1.3 featured new mechanics like: damage types, jetpacks, shields, armor, consumables, debuffs, and ammo.
 
 Minor:			This represents small new feature sets (if any), but is mostly quality of life, security patches, and bug fixes.
+				Minor releases build iteratively on a major release, further refining major milestones. 
+				eg: https://github.com/JKGDevs/JediKnightGalaxies/releases/tag/Version1.3.22
+				For example, v1.3.22 introduced EMP features and improved overheating mechanics, while having several small bug fixes.
 
-suffix:			This represents a small patch or hotfix on the server.  Used for server-side only changes where clients are not required to update.  
-				Uses a lowercase alphabet "number", eg: a, b, c, etc. These should only be used for hotfixes/emergencies.
+Suffix:			This represents a small patch or hotfix on the server.  Used for server-side only changes where clients are NOT required to update.  
+				Uses a lowercase alphabet "number", eg: a, b, c, etc. These should only be used for hotfixes/emergencies.  Left empty by default.
 */
+#define JKG_VERSION_PHASE		1
+#define JKG_VERSION_MAJOR		3
+#define JKG_VERSION_MINOR		24
 
 // Current version of the multi player game
-#define JKG_VERSION "1.3.23"
+#define JKG_VERSION STR(JKG_VERSION_PHASE) "." STR(JKG_VERSION_MAJOR) "." STR(JKG_VERSION_MINOR)
 
 #ifdef _DEBUG
 	#define JK_VERSION "" GIT_BRANCH " / " GIT_HASH " (debug)"

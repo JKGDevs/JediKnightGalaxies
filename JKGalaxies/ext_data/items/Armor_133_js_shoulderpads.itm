@@ -1,0 +1,10 @@
+{
+	"name":         "Jensaarai Shoulder Armor",
+	"internal":     "shoulderpads_jensaarai",
+	"itemtype":     "armor",
+	"armor":		"jsshoulderpads",
+	"weight":		"1",
+	"cost":			"250",
+	"itemIcon":		"gfx/item_icons/sunguard_shoulders.tga",
+	"itemDescription": "Missing Description."
+}

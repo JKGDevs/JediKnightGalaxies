@@ -4,15 +4,6 @@
 	"itemtype":	"shield",
 	"itemIcon":	"gfx/Item_Icons/psd_beltloop_s_glow",
 	"cost":		"1275",
-	
-	"capacity":	75,
-	"cooldown":	0,
-	"regenrate":	666,
-
-	"brokenSoundEffect":	"sound/shield/shield_broken3",
-	"equippedSoundEffect":	"sound/shield/shield_equipped4",
-	"rechargeSoundEffect":	"sound/shield/shield_recharge7",
-	"chargedSoundEffect":	"sound/shield/shield_charged",
-	
+	"shield":	"shield_sorusuub",
 	"itemDescription": "Originally designed to protect Sullustan miners from environmental hazards, this Soru-Suub Corporation shield has gained some reputation among wealthier clients for being very effective for its price. Engineered to operate with reduced radiation."
 }

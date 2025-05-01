@@ -1,0 +1,10 @@
+{
+	"name":         "Sunguard Helmet",
+	"internal":     "helmet_sunguard",
+	"itemtype":     "armor",
+	"armor":		"sghelmet",
+	"weight":		"3",
+	"cost":			"315",
+	"itemIcon":		"gfx/item_icons/sunguard_helmet.tga",
+	"itemDescription": "This helmet is both ceremonial and functional, marking the wearer as a member of the Sun Guard, a Thyrsian mercenary company cult in service to Emperor Palpatine."
+}

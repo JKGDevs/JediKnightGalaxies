@@ -32,6 +32,9 @@ static void JKG_ParseJetpackMovement(cJSON* jsonNode, jetpackData_t& jetpackData
 
 	child = cJSON_GetObjectItem(jsonNode, "loadBearingAllowed");
 	jetpackData.move.loadBearingAllowed = cJSON_ToBooleanOpt(child, false);
+
+	child = cJSON_GetObjectItem(jsonNode, "cooldown");
+	jetpackData.move.cooldown = cJSON_ToIntegerOpt(child, 200);
 	
 	child = cJSON_GetObjectItem(jsonNode, "hoverGravity");
 	jetpackData.move.hoverGravity = cJSON_ToNumberOpt(child, -1.0);

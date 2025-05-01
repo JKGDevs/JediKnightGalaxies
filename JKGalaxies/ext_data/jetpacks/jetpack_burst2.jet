@@ -14,6 +14,7 @@
 	
 	"movement": {
 		// Movement - done on both client and server
+		// cooldown - how many ms to wait before jetpack can be reactivated
 		// hoverGravity - amount to decay height by while hovering (actual units, not a modifier), this value is ignored if upMove is greater than 0
 		// fowardMove - amount to modify forward move by while hovering (not thrusting)
 		// backMove - amount to modify backward move by while hovering (not thrusting)
@@ -21,6 +22,7 @@
 		// downMove - amount to modify downward movement by
 		// thrustFwd/thrustBack/thrustSide - same as above, but when thrusting
 		// thrustUp - amount to modify upward movement by
+		"cooldown": 650,
 		"hoverGravity":	415.0,
 
 		"forwardMove": 3.2,

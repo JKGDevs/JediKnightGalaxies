@@ -1,10 +1,11 @@
 {
-	"name":		"Z-6 Jetpack",
+	"name":		"NJP-375 Jetpack",
 	"internal":	"jetpack_test",
 	"itemtype":	"jetpack",
-	"cost":		1275,
-	"itemTier": 3,
-	"itemIcon":	"gfx/hud/i_icon_jetpack.tga",
+	"cost":		800,
+	"tier": 1,
+	"itemIcon":	"gfx/Item_Icons/njp_jetpack.tga",
 	"jetpack":	"jetpack_test",
-	"itemDescription": "Produced by Mitrinomon Transports, it is a highly favored tool of Mandalorians. It allows for continuous flight for small stretches of time and can quickly accelerate using an afterburner feature. Some models come equipped with an anti-tank missile."
+	"itemDescription": "The Imperial Army commissioned Nanogar Jet Products to provide its ground soldiers with more flexible mobility by modernizing and mass producing a jetpack based on earlier Mitronomon designs for Stormtroopers and Imperial infantry."
 }
+
