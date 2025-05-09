@@ -1,0 +1,11 @@
+{
+	"name":		"24-pack 7.92X57mm AP Slugs",
+	"internal":	"ammo_AP_Slugs_24",
+	"itemtype":	"ammo",
+	"weight":		"0",
+	"cost":		"80",
+	"ammoclass":	"AMMO_MAUSER_AP",
+	"ammoquantity":	"24",
+	"itemIcon": "gfx/item_icons/ammo_metallic_bolts.tga",	//needs icon!
+	"itemDescription": "These slugthrower rounds use a durasteel core, a simple solution to increase their ability to penetrate armor."
+}

@@ -82,8 +82,8 @@
         "projectilespeed": 26000.0,	// 7.92 x 57 mm Mauser velocity 2600 ft/s
         "projectileclass": "blaster_proj",
         "meansofdeath": "MOD_SLUGTHROWER",
-	"ammobase": "AMMO_MAUSER_CLIP",
-	"ammodefault": "AMMO_MAUSER_CLIP",
+	"ammobase": "AMMO_MAUSER", //AMMO_MAUSER_CLIP
+	"ammodefault": "AMMO_MAUSER", //AMMO_MAUSER_CLIP
         "clipSize":              12,
         "accuracy": {
         	"accuracyRating": 33,

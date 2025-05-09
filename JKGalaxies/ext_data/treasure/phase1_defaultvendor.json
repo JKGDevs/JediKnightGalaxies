@@ -2,11 +2,12 @@
 	"classes": {
 		"allvendor":
 		{
-			"numberPicksMin": 144,
-			"numberPicksMax": 145,
+			"numberPicksMin": 194,
+			"numberPicksMax": 195,
 			"uniquePicks": true,
 			"picks": 
 				{
+					"ammo_AP_Slugs_24": 1,
 					"ammo_bouncingQuarrels_40": 1,
 					"ammo_explosiveQuarrel_40": 1,
 					"ammo_explosiveSlugs_60": 1,
@@ -207,11 +208,12 @@
 		},
 		"newitems":
 		{
-			"numberPicksMin": 19,
-			"numberPicksMax": 20,
+			"numberPicksMin": 20,
+			"numberPicksMax": 21,
 			"uniquePicks": true,
 			"picks":
 				{
+					"ammo_AP_Slugs_24": 1,
 					"boots_stormtrooper": 1,
 					"shoulderpads_stormtrooper": 1,
 					"helmet_shoretrooper": 1,
@@ -266,7 +268,7 @@
 		"basicvendor":
 		{
 			"numberPicksMin": 8,
-			"numberPicksMax": 15,
+			"numberPicksMax": 16,
 			"uniquePicks": true,
 			"picks": 
 			{
@@ -304,6 +306,7 @@
 				"boots_bountyhunter": 2,
 				"cape_bountyhunter": 4,
 				"torso_weequay": 4,
+				"ammo_AP_Slugs_24": 4,
 				"ammo_bouncingQuarrels_40": 3,
 				"ammo_explosiveQuarrel_40": 1,
 				"ammo_splittingQuarrels_40": 2,
@@ -465,6 +468,7 @@
 			"uniquePicks": true,
 			"picks":
 			{
+				"ammo_AP_Slugs_24": 4,
 				"ammo_bouncingQuarrels_40": 3,
 				"ammo_explosiveQuarrel_40": 1,
 				"ammo_splittingQuarrels_40": 2,
@@ -560,6 +564,7 @@
 				"helmet_bountyhunter": 1,
 				"gloves_bountyhunter": 2,
 				"legs_bountyhunter": 2,
+				"ammo_AP_Slugs_24": 4,
 				"ammo_splittingQuarrels_40": 3,
 				"ammo_bouncingQuarrels_40": 2,
 				"ammo_explosiveSlugs_60": 1,
@@ -663,6 +668,7 @@
 				"jetpack_jango": 2,
 				"jetpack_burst2": 3,
 				"jetpack_test": 3,
+				"ammo_AP_Slugs_24": 4,
 				"ammo_explosiveQuarrel_40": 2,
 				"ammo_splittingQuarrels_40": 3,
 				"ammo_bouncingQuarrels_40": 4,
@@ -769,6 +775,7 @@
 				"jetpack_boba": 3,
 				"jetpack_burst2": 5,
 				"jetpack_test": 5,
+				"ammo_AP_Slugs_24": 5,
 				"ammo_explosiveQuarrel_40": 3,
 				"ammo_splittingQuarrels_40": 4,
 				"ammo_bouncingQuarrels_40": 4,

@@ -1,0 +1,27 @@
+
+{
+	"AMMO_MAUSER_AP_CLIP": {
+		"shortname": "7.92x57mm x 5 AP Strip Clips",
+		"longname": "7.92x57mm x 5 Mauser Armor Piercing Strip Clips",
+		"basedOn": "AMMO_MAUSER_CLIP",
+		"max": 120,
+		"pricePerUnit": 1.55, //total: 186
+		"overrides": {
+			"armorPenetration": {
+				"add": 0.75
+				}		
+			}
+		},
+	"AMMO_MAUSER_AP": {
+		"shortname": "7.92X57mm AP Slugs",
+		"longname": "7.92x57mm Mauser Armor Piercing Slug Cartridges",
+		"basedOn": "AMMO_MAUSER",
+		"max": 120,
+		"pricePerUnit": 1.8, //total: 216
+		"overrides": {
+			"armorPenetration": {
+				"add": 0.75
+			}	
+		}
+	}
+}

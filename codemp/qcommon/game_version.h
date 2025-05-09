@@ -56,7 +56,7 @@ Suffix:			This represents a small patch or hotfix on the server.  Used for serve
 */
 #define JKG_VERSION_PHASE		1
 #define JKG_VERSION_MAJOR		3
-#define JKG_VERSION_MINOR		24
+#define JKG_VERSION_MINOR		25
 
 // Current version of the multi player game
 #define JKG_VERSION STR(JKG_VERSION_PHASE) "." STR(JKG_VERSION_MAJOR) "." STR(JKG_VERSION_MINOR)

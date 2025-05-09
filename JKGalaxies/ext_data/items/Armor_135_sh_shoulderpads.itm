@@ -5,6 +5,6 @@
 	"armor":		"shshoulderpads",
 	"weight":		"1",
 	"cost":			"250",
-	"itemIcon":		"gfx/item_icons/stormtrooper_pauldron.tga",
+	"itemIcon":		"gfx/item_icons/shoretrooper_shoulders.tga",
 	"itemDescription": "Based on standard issue Imperial Stormtrooper armor, they've been adopted for use in tropical environments and are issued to coastal defender stormtroopers, also called shoretroopers. Tan plastoid alloys protect the wearer's shoulders."
 }

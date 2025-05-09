@@ -349,7 +349,7 @@
 		"longname": "7.92x57mm Mauser Slug Cartridges",
 		"basedOn": "AMMO_MAUSER_CLIP",
 		"max": 120,
-		"pricePerUnit": 1.5 //total: 180
+		"pricePerUnit": 1.25 //total: 150 fixme: should be 1.5 once rifle_dressy uses ammo_mauser_clip as its base
 	},
 
 
