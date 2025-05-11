@@ -1353,13 +1353,13 @@ typedef enum {
 //
 // per-level limits
 //
-#define	MAX_CLIENTS			32		// absolute limit
+#define	MAX_CLIENTS			64		// absolute limit
 #define MAX_RADAR_ENTITIES	MAX_GENTITIES
 #define MAX_TERRAINS		1//32 //rwwRMG: inserted
 #define MAX_LOCATIONS		64
 
 #define	GENTITYNUM_BITS	10		// don't need to send any more
-#define	MAX_GENTITIES	(1<<GENTITYNUM_BITS)
+#define	MAX_GENTITIES	(1<<GENTITYNUM_BITS)	//1024
 // Jedi Knight Galaxies - logical entities
 #define	MAX_LOGICENTITIES	3072
 #define	MAX_ENTITIESTOTAL	(MAX_GENTITIES+MAX_LOGICENTITIES)
