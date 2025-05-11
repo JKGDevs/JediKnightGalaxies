@@ -5265,7 +5265,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	// note, Force Protect doesn't do anything (eez removed the code)
 
 	//does this count as crowd control?
-	if ( knockback > 32 || (means->modifiers.isCC && take > 0))
+	if ( knockback > 149 || (means->modifiers.isCC && take > 0))
 		isCC = qtrue;
 
 #ifndef FINAL_BUILD

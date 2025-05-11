@@ -113,6 +113,13 @@
 		"overrides": {
 			"meansofdeath": "MOD_IONBLASTER",
 			"splashmeansofdeath": "MOD_IONBLASTER",
+			"buffs": 
+			[
+				{
+					"buff": "standard-emp",
+					"remove": true
+				}
+			],
 			"visuals": {
 				"projectile": {
 					"hit": "Blasters/blue_flesh_impact",
@@ -143,6 +150,13 @@
 		"overrides": {
 			"meansofdeath": "MOD_IONBLASTER",
 			"splashmeansofdeath": "MOD_IONBLASTER",
+			"buffs": 
+			[
+				{
+					"buff": "standard-emp",
+					"remove": true
+				}
+			],
 			"visuals": {
 				"projectile": {
 					"hit": "Blasters/blue_flesh_impact",
@@ -173,6 +187,13 @@
 		"overrides": {
 			"meansofdeath": "MOD_IONBLASTER",
 			"splashmeansofdeath": "MOD_IONBLASTER",
+			"buffs": 
+			[
+				{
+					"buff": "standard-emp",
+					"remove": true
+				}
+			],
 			"visuals": {
 				"projectile": {
 					"hit": "Blasters/blue_flesh_impact",
@@ -236,6 +257,13 @@
 		"overrides": {
 			"meansofdeath": "MOD_IONBLASTER",
 			"splashmeansofdeath": "MOD_IONBLASTER",
+			"buffs": 
+			[
+				{
+					"buff": "standard-emp",
+					"remove": true
+				}
+			],
 			"visuals": {
 				"projectile": {
 					"hit": "Blasters/blue_flesh_impact",
@@ -266,6 +294,13 @@
 		"overrides": {
 			"meansofdeath": "MOD_IONBLASTER",
 			"splashmeansofdeath": "MOD_IONBLASTER",
+			"buffs": 
+			[
+				{
+					"buff": "standard-emp",
+					"remove": true
+				}
+			],
 			"visuals": {
 				"projectile": {
 					"hit": "Blasters/blue_flesh_impact",
@@ -296,6 +331,13 @@
 		"overrides": {
 			"meansofdeath": "MOD_IONBLASTER",
 			"splashmeansofdeath": "MOD_IONBLASTER",
+			"buffs": 
+			[
+				{
+					"buff": "standard-emp",
+					"remove": true
+				}
+			],
 			"visuals": {
 				"projectile": {
 					"hit": "Blasters/blue_flesh_impact",

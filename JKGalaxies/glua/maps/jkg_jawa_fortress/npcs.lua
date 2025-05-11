@@ -17,7 +17,7 @@ local npctable = {
     },
 	-- the vendors @ tuskens
     {
-        NPCType = "vendor_medic",
+        NPCType = "vendor_tuskenf",
         NPCScript = "medic_merchant",
         Origin = Vector(-1408, 1536, 100),
         Angles = Vector(0, 90, 0)
