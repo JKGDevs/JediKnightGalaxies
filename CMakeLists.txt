@@ -43,6 +43,8 @@ option(BuildMPCGame "Whether to create projects for the MP clientside gamecode (
 option(BuildMPUI "Whether to create projects for the MP UI code (uix86.dll)" ON)
 option(BuildMPRend2 "Whether to create projects for the EXPERIMENTAL MP rend2 renderer (rd-rend2_x86.dll)" ON)
 option(BuildMPRdVulkan "Whether to create projects for the MP vulkan renderer (rd-vulkan_x86.dll)" ON)
+option(UseAddressSanitizer "Whether to enable runtime address sanitizer" OFF)
+option(UseUndefinedSanitizer "Whether to enable runtime Undefined Behavior sanitizer" OFF)
 
 # Configure the use of bundled libraries.  By default, we assume the user is on
 # a platform that does not require any bundling.
@@ -200,6 +202,16 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" S
 	# removes the -rdynamic flag at linking (which causes crashes for some reason)
 	set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 	set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
+	if(UseAddressSanitizer)
+		# also raise stack size drastically (to 64MiB), since the sanitizer adds overhead to stack frames
+		add_compile_options(-fsanitize=address)
+		add_link_options(-fsanitize=address -z stack-size=4000000)
+	endif()
+	if(UseUndefinedSanitizer)
+		add_compile_options(-fsanitize=undefined)
+		add_link_options(-fsanitize=undefined)
+	endif()
 
 	# additional flags for debug configuration
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
