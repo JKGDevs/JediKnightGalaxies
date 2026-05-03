@@ -16,6 +16,10 @@
 
 		// bodyOffSurfaces says which surfaces to turn off on the player.
 		"bodyOffSurfaces": [
+			"torso_l_shoulder_pad",
+			"torso_r_shoulder_pad",
+			"r_arm_shoulder",
+			"l_arm_shoulder",
 			"shoulders"
 		]
 	}

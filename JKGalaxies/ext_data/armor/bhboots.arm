@@ -15,7 +15,21 @@
 
 		"bodyOffSurfaces": [
 			"r_leg",
-			"l_leg"
+			"l_leg",
+			"r_lega",
+			"l_lega",
+			"r_legb",
+			"l_legb",
+			"r_legc",
+			"l_legc",
+			"r_legd",
+			"l_legd",
+			"r_lege",
+			"l_lege",
+			"r_legf",
+			"l_legf",
+			"r_legg",
+			"l_legg"
 		]
 	}
 }

@@ -15,6 +15,13 @@
 
 		"bodyOffSurfaces": [
 			"hips",
+			"hipsa",
+			"hipsb",
+			"hipsc",
+			"hipsd",
+			"hipse",
+			"hipsf",
+			"hipsg",
 			"hips_lower",
 			"l_leg_knee",
 			"r_leg_knee",
