@@ -1642,7 +1642,7 @@
 	},
 	"Netharite":
 	{
-		//dim white, sharp unstable
+		//dim black, sharp unstable
 		"name": "netharite",
 		"rgb":
 		{
@@ -1659,5 +1659,45 @@
 		"bladeEffect": "black_blade_cheap", //valid blades: black_blade_dull, black_blade_sharp, black_blade_cheap, black_blade_cheap_static
 		"trailEffect": "black_trail",
 		"glowEffect": "black_glow" //valid glows: black_glow, black_glow_static, black_glow_ring
+	},
+	"White Netharite":
+	{
+		//dim black, cheap static, white trail
+		"name": "white-netharite",
+		"rgb":
+		{
+			"r":	255,
+			"g":	255,
+			"b":	255
+		},
+		"bladeEffect": "unstable",
+		"trailEffect": "black_trail",
+		"glowEffect": "black_glow_ring"
+	},
+	"Black Nextor":
+	{
+		//white, cheap, sharp
+		"name": "black-nextor",
+		"rgb":
+		{
+			"r":	255,
+			"g":	255,
+			"b":	255
+		},
+		"bladeEffect": "cheap",
+		"trailEffect": "unstable",
+		"glowEffect": "black_glow"
+	},
+	"Dark Saber":
+	{
+		//dim black, cheap static, white trail
+		"name": "darksaber",
+		"rgb":
+		{
+			"r":	10,
+			"g":	10,
+			"b":	10
+		},
+		"bladeEffect": "black_blade_sharp"
 	}
 }
