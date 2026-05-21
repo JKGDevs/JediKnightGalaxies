@@ -2116,6 +2116,8 @@ void CG_CheckPlayerG2Weapons(playerState_t *ps, centity_t *cent)
 			}
 			cgs.clientinfo[ps->clientNum].saber[0].SetDesiredLength(0, -1);
 			cgs.clientinfo[ps->clientNum].saber[0].SetDesiredLength(0, -1);
+			cgs.clientinfo[ps->clientNum].saber[0].blade[0].trail.lastTime = cg.time;	//prevent undefined behavior on some platforms: explicitly set sabertrail timer
+			//todo?  also handle additional blades?
 		}
 		cent->weapon = ps->weapon;
 	}
