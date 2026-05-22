@@ -150,6 +150,7 @@ The following are miscellaneous modifiers:
  - consumableTime (int): How many ms clients have to wait between using consumables (default 3000ms)
  - fallDamageDelta (float): how much fall dmg is reduced by (see ClientEvents() in g_active.cpp for implementation details)
  - reducedDamagePlumThreshold (float, 0.0 - 1.0): represents a percentage, determines when dmg plums should turn yellow (instead of red) when dmg is reduced (ie: .64 == 64%, or when dmg is reduced to 64% of original/reduced by 36%).
+ - knockbackCCThreshold (unsigned int): how much knockback is required for the damage to automatically count as CC (default 150)
 
  - stamina(object):
   - lossFromRolling (integer): How much stamina is lost from rolling.
@@ -183,7 +184,7 @@ It contains a series of means of damage, each one has the following fields:
   - isEMP (boolean, default false): If true, this damage type can trigger special EMP effects, such as disabling jetpacks.  These effects are defined in game\g_combat.cpp within the G_Damage() function.  These only occur if the target actually takes damage (if a shield protects the target nothing is triggered).
   - shieldBlocks (boolean, default false): If true, this damage type is blocked entirely by shields (shields take 0 dmg from this damage type).
   - shieldProtects (boolean, default false): if true, this damage type cannot be applied as a debuff while protected by a shield (shields still take damage from this damage type).
-  - isCC (boolean, default false): If true, this damage type counts as crowd control and will award assists based on applying crowd control. Note: doing knockback will also count as cc.
+  - isCC (boolean, default false): If true, this damage type counts as crowd control and will award assists based on applying crowd control. Note: doing significant knockback will also count as CC, see knockbackCCThreshold.
   - canRevive (boolean, default false): If true, this damage type can bring the dead back to life!
   - armor (float, default 1.0): Controls how much damage this type does against armor
   - shield (float, default 1.0): Controls how much damage this type does against shields

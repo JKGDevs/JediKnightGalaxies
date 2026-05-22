@@ -32,6 +32,8 @@
 										// dmg plum numbers are yellow instead of red. 
 										// eg: if set to 0.4 (40%) and a weapon dmg was 12, but reduced to 4 it should yellow
 
+	"knockbackCCThreshold":  150, //how much knockback is needed to count for purposes of crowd control (for assists etc)
+
 
 	"stamina" : {
 		// All of these fields are related to stamina, except for stamina drain from sprint, which is a cvar.
