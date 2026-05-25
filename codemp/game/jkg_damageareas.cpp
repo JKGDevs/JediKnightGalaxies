@@ -152,6 +152,7 @@ void G_RemoveBuff(gentity_t* ent, int index)
 	}
 	pBuff->passive.stacks = 0;
 	pBuff->passive.movemodifier_cur = 1.0;
+	pBuff->passive.armorPenetration_cur = 0.0f;
 	pBuff->remove_f = false; //reset flag
 }
 
@@ -359,6 +360,14 @@ void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity
 					Jetpack_Off(ent);
 
 				//todo: tell client to display jetpack is disabled icon
+			}
+
+			//override armor penetration
+			if(pBuff->passive.armorPenetration > 0 && pBuff->passive.armorPenetration_cur < pBuff->passive.maxArmorPenetration)
+			{
+				pBuff->passive.armorPenetration_cur += pBuff->passive.armorPenetration;
+				if(pBuff->passive.armorPenetration_cur > pBuff->passive.maxArmorPenetration)
+					pBuff->passive.armorPenetration_cur = pBuff->passive.maxArmorPenetration;
 			}
 
 			return;

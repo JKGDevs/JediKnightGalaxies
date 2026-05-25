@@ -370,6 +370,31 @@ static qboolean JKG_ParseBuffPassiveData(cJSON* json, jkgBuff_t* pBuff)
 	child = cJSON_GetObjectItem(json, "resistant");
 	pBuff->passive.resistant = cJSON_ToBooleanOpt(child, false);
 
+
+	//penetration debuffs, should be the same as means penetration
+	child = cJSON_GetObjectItem(json, "maxarmorpenetration");				//how much armor penetration can this be maxed out to? (additional stacks will not increase it beyond this point)?
+	pBuff->passive.maxArmorPenetration = cJSON_ToNumberOpt(child, 0.0f);	
+	child = cJSON_GetObjectItem(json, "armorpenetration");					//how much armor penetration, does this debuff add per stack?
+	pBuff->passive.armorPenetration = cJSON_ToNumberOpt(child, 0.0f);	
+
+	if(pBuff->passive.maxArmorPenetration < pBuff->passive.armorPenetration)
+		pBuff->passive.armorPenetration = pBuff->passive.maxArmorPenetration;	//can't be bigger than max
+
+	//validate ranges
+	if(pBuff->passive.maxArmorPenetration > 0.999)		//1.0 ignores all of the target's armor, 0.5 ignores 50% of the armor, 0.1 ignores 10% of the armor, 0.0 is disabled
+		pBuff->passive.maxArmorPenetration = 1.0;
+	
+	if(pBuff->passive.maxArmorPenetration < 0.001f)
+		pBuff->passive.maxArmorPenetration = 0.0f;
+
+	if(pBuff->passive.armorPenetration > 0.999f)
+		pBuff->passive.armorPenetration = 1.0f;
+	
+	if(pBuff->passive.armorPenetration < 0.001f)
+		pBuff->passive.armorPenetration = 0.0f;
+	
+	pBuff->passive.armorPenetration_cur = 0.0f;	//initialize current penetration
+
 	return qtrue;
 }
 

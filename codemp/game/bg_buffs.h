@@ -71,10 +71,13 @@ struct jkgBuffPassive_t
 	unsigned int maxstacks;		// How many times the movemodifier effect can stack (0 is the same as disabling the movement modifier, set to 1 if you want 1 stack)
 	unsigned int stacks;		// How many stacks we currently have
 
+	float maxArmorPenetration;	// Max amount of armor penetration (%) this debuff can reach (not total armor pen, just from debuff)
+	float armorPenetration;		//% of penetration to increase per stack (eg: 12 means +12% each stack)
+	float armorPenetration_cur;	// current % of armor penetration (eg: 49% means armor is nearly halved)
+	
 	qboolean empstaggered;		//are your electronics shorted out? (prevents jetpack activation/other things not yet implemented, like maybe hud shutoff?)
 	qboolean resistant;			//does the buff give you resistance? (reduces incoming damage by 50%)
 	qboolean knockdown;			//knock the player over if true
-
 };
 
 /*

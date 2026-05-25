@@ -387,6 +387,45 @@
 			}
 		}
 	},
+
+	//"shreds" the opponent's armor value
+	"standard-shred": {
+		"category": "armor",
+		"priority": 25,
+
+		"canceling": {
+			"noBuffStack": false,
+			"noCategoryStack": false
+		},
+
+		"damage": {
+			"damage": 1,
+			"percentage": false,
+			"means": "MOD_BLEEDING",
+			"damagerate": 1000,
+			"deadly": false
+		},
+
+		"passive": {
+			"maxarmorpenetration" : 0.8,		//maximum penetration possible from stacks
+			"armorpenetration" : 0.2			//how much penetration each stack will add (eg: .2 stacks == 20%)
+		},
+
+		"visuals": {
+			//red shimmer effect?
+			"shader": {
+				"shader": "gfx/PlayerOverlays/cartoon", //placeholder
+				"shaderRGBA": [ 225, 30, 20, 200 ],
+				"shaderLen": 100000
+			}
+			
+			/*"efx": {
+				"effect": "player/poison",
+				"bolt": "lower_lumbar",
+				"debounce": 200
+			}*/
+		}
+	},
 	
 	//removes poison & heals
 	"standard-antidote":

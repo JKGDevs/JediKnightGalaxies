@@ -4098,7 +4098,7 @@ bool G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 	//	1. Check the hit location
 	//	2. Adjust damage based on hit location
 	//	3. Adjust damage based on resistances on equipped armor to means of damage
-	//	4. Check for armor penetration
+	//	4. Check for armor penetration (include shred debuffs)
 	//	5. Adjust damage based on equipped armor at hit location
 	//	6. Adjust damage based on durability
 
@@ -4237,6 +4237,21 @@ bool G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 						}
 					}
 
+					
+					//check active buffs on target
+					playerState_t* ps = ent->playerState;
+					for (int i = 0; i < PLAYERBUFF_BITS; i++)
+					{
+						if (ps->buffsActive & (1 << i))
+						{
+							//check for debuffs that will affect penetration ("shred"), and add it to penetration
+							jkgBuff_t *pOtherBuff = &buffTable[ps->buffs[i].buffID];
+							penetration += pOtherBuff->passive.armorPenetration_cur;
+							if(penetration >= 1.0f)
+								penetration = 1.0f;
+						}
+					}
+
 					//calculate penetration (reduction of armor)
 					int ehp = pArm->armor;
 					if (means->modifiers.armorPenetration > 0.0f && means->modifiers.armorPenetration <= 1.0f || (penetration > 0.0f && penetration <= 1.0f))
@@ -4246,6 +4261,8 @@ bool G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 						if (ehp < 0)
 							ehp = 0;
 					}
+
+					
 
 					// apply damage reduction based on armor value
 					modifier = (ent->client->ps.stats[STAT_MAX_HEALTH] / (float)(ent->client->ps.stats[STAT_MAX_HEALTH] + ehp)); // calculate damage resistance based on value of armor
