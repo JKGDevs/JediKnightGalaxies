@@ -123,7 +123,7 @@ Each object, whose name is the buff linkage (example, "standard-fire": {} can be
   - shader (object): Contains information about fullbody shader effects applied to the player. Contains the following fields:
    - shader (string): The shader to apply to the player.
    - shaderRGBA (array of integer): The RGBA (red/green/blue/alpha transparency) of the shader applied.
-   - shaderLen (integer): How many milliseconds to play the fullbody effect for.
+   - shaderLen (integer): How many milliseconds to play the fullbody effect for. A negative value will loop the shader until the buff ends.
 
 ### constants.json
 Defines several constants. These could be cvars, but I decided not to, in order to keep the cvar space empty.
