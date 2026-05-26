@@ -636,7 +636,8 @@
 			"organic": 1.0,
 			"shield": 0.85,
 			"droid": 0.9,
-			"armorPenetration": 0.20	//crossbows penetrate 20% of target's armor
+			"armorPenetration": 0.20,	//crossbows penetrate 20% of target's armor
+			"isCC": true //because they add a armor-shred debuff
 		},
 
 		"dismemberment": {

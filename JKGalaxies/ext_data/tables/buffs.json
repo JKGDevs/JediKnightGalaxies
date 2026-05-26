@@ -393,37 +393,35 @@
 		"category": "armor",
 		"priority": 25,
 
+		"damage": {
+			"damage": 1,
+			"means": "MOD_QUARREL",
+			"damagerate": 4000,
+			"deadly": false
+		},
+
 		"canceling": {
 			"noBuffStack": false,
 			"noCategoryStack": false
 		},
 
-		"damage": {
-			"damage": 1,
-			"percentage": false,
-			"means": "MOD_BLEEDING",
-			"damagerate": 1000,
-			"deadly": false
-		},
-
 		"passive": {
-			"maxarmorpenetration" : 0.8,		//maximum penetration possible from stacks
-			"armorpenetration" : 0.2			//how much penetration each stack will add (eg: .2 stacks == 20%)
+			"maxarmorpenetration" : 0.5,		//maximum penetration possible from stacks
+			"armorpenetration" : 0.15			//how much penetration each stack will add (eg: .2 stacks == 20%)
 		},
 
 		"visuals": {
-			//red shimmer effect?
 			"shader": {
-				"shader": "gfx/PlayerOverlays/cartoon", //placeholder
+				"shader": "gfx/PlayerOverlays/metal",
 				"shaderRGBA": [ 225, 30, 20, 200 ],
-				"shaderLen": 100000
-			}
+				"shaderLen": -1
+			},
 			
-			/*"efx": {
-				"effect": "player/poison",
+			"efx": {
+				"effect": "JKG/armor_shred",
 				"bolt": "lower_lumbar",
 				"debounce": 200
-			}*/
+				}
 		}
 	},
 	

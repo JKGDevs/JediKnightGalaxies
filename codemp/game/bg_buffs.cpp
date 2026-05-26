@@ -440,6 +440,8 @@ static qboolean JKG_ParseBuffVisuals(cJSON* json, jkgBuff_t* pBuff)
 
 		subchild = cJSON_GetObjectItem(child, "shaderLen");
 		pBuff->visuals.shaderLen = cJSON_ToIntegerOpt(subchild, 400);
+		if (pBuff->visuals.shaderLen < 0)
+			pBuff->visuals.shaderLen = -1;	//negative values == loop forever (until debuff finishes)
 	}
 	else
 	{

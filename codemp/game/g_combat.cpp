@@ -4107,6 +4107,8 @@ bool G_LocationBasedDamageModifier(gentity_t *ent, vec3_t point, int mod, int df
 	qboolean headshot = false;
 	float modifier = 1.0f;	//how much to modify damage by
 	int take = *damage;		//keep track of original damage
+	if (penetration < 0.0f) //make sure this is always positive
+		penetration = 0.0f;
 
 	if (!g_locationBasedDamage.integer)
 	{ //then leave it alone
@@ -5286,8 +5288,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	// note, Force Protect doesn't do anything (eez removed the code)
 
 	//does this count as crowd control?
-	if ( knockback >= bgConstants.knockbackCCThreshold || (means->modifiers.isCC && take > 0))
+	if (knockback >= bgConstants.knockbackCCThreshold || (means->modifiers.isCC && take > 0))
+	{
+		//todo: add a way to check if a debuff applied by the attacker isCC?
 		isCC = qtrue;
+	}
 
 #ifndef FINAL_BUILD
 	if ( g_debugDamage.integer ) {

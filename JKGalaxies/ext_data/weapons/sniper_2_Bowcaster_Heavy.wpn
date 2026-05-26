@@ -58,7 +58,15 @@
     },
     
     "firemode0": {
-        "damage":       60,
+        "damage": {
+            "damage": 60,
+            "buffs": [
+			    {
+				    "buff": "standard-shred",
+				    "duration": 5000
+			    }
+		    ]
+        },
         "ballistic":    true,
         "maxchargetime":1000,
         "chargedamage": 2.5,

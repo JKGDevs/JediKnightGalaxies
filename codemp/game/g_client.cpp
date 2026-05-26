@@ -3700,7 +3700,7 @@ void JKG_HandleDisconnectDistribution(gentity_t *ent)
 	if (value < 2) value = 1; //we're always worth at least a single credit
 
 #ifdef _DEBUG
-	Com_Printf(va("%s's total networth: %i.\n", ent->client->pers.netname, value));
+	Com_Printf(va("%s^7's total networth: %i.\n", ent->client->pers.netname, value));
 #endif
 
 	//distribute

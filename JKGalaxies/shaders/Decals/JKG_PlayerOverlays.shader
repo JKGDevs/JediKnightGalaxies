@@ -234,4 +234,23 @@ gfx/PlayerOverlays/EMP_screenflash3
     }
 }
 
-// Last modified by: BlasTech on 2010-11-22
+gfx/PlayerOverlays/metal
+{
+	polygonOffset
+	q3map_nolightmap
+	sort	decal
+    {
+        map textures/common/metalflake_rust
+        blendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA
+        rgbGen identity
+    }
+    {
+        map envmap_spec
+        blendFunc GL_DST_COLOR GL_ONE
+        detail
+        tcGen environment
+    }
+}
+
+// Last modified by: Futuza on 2026-05-2026
+// Previous update by: BlasTech on 2010-11-22

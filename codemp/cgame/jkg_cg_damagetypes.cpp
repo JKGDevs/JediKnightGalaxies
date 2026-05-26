@@ -12,7 +12,7 @@ static void JKG_ShaderBuffRefEntity(refEntity_t* refEntity, debuffVisualsData_t*
 		// don't use shader data
 		return;
 	}
-	if (entData->debuffStartTime + buffData->visuals.shaderLen < cg.time)
+	if (entData->debuffStartTime + buffData->visuals.shaderLen < cg.time && buffData->visuals.shaderLen >= 0)
 	{
 		// expired
 		return;
