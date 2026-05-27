@@ -81,6 +81,7 @@
         "firedelay":    1300,
         "firingtype":   "semi",
         "range":        10000.0,
+        "decayRate":    0.75,
         "recoil":       2.4,
         "spread":       0.0,
 		"splashrange":	30,

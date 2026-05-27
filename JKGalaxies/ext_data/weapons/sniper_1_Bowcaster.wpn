@@ -87,6 +87,7 @@
         "firedelay":    1600,
         "firingtype":   "burst",
         "range":        9000.0,
+        "decayRate":    0.75,
         "recoil":       1.4,
         "shotsperburst": 4,
         "spread":       0.5,

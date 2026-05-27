@@ -88,6 +88,7 @@
         "firedelay":    200,
         "firingtype":   "semi",
         "range":        5000.0,
+        "decayRate":    0.75,
         "recoil":       2.5,
         "spread":       0.85,
         "projectilespeed": 8000.0,
