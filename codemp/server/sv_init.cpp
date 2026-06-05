@@ -454,6 +454,7 @@ void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload
 	qboolean	isBot;
 	char		systemInfo[16384];
 	const char	*p;
+	const int WARMUP_FRAMES = 4; //how many frames to run the server for when starting up
 
 	SV_StopAutoRecordDemos();
 
@@ -622,7 +623,7 @@ Ghoul2 Insert End
 	sv_gametype->modified = qfalse;
 
 	// run a few frames to allow everything to settle
-	for ( i = 0 ;i < 3 ; i++ ) {
+	for ( i = 0 ;i < WARMUP_FRAMES ; i++ ) {
 		//rww - RAGDOLL_BEGIN
 		re->G2API_SetTime(sv.time,0);
 		//rww - RAGDOLL_END
