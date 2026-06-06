@@ -3879,7 +3879,7 @@ void ClientDisconnect( int clientNum ) {
 		level.intermissiontime = 0;
 	}
 
-	if (ent->ghoul2 && trap->G2API_HaveWeGhoul2Models(ent->ghoul2))
+	if (ent->ghoul2 && trap->G2_HaveWeGhoul2Models(ent->ghoul2))
 	{
 		trap->G2API_CleanGhoul2Models(&ent->ghoul2);
 	}
