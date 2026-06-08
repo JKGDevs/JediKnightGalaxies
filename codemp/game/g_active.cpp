@@ -2103,7 +2103,7 @@ void ClientThink_real( gentity_t *ent ) {
 	}
 	
 	//regen shield (if equipped)
-	if (ent->client->shieldEquipped && ent->client->ps.stats[STAT_SHIELD] <= ent->client->ps.stats[STAT_MAX_SHIELD] && JKG_ClientAlive(ent)) 
+	if (ent->client->shieldEquipped && JKG_ClientAlive(ent)) 
 	{
 		if(ent->client->ps.stats[STAT_SHIELD] < ent->client->ps.stats[STAT_MAX_SHIELD]) //if not full
 		{

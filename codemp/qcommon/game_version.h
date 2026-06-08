@@ -54,6 +54,7 @@ Minor:			This represents small new feature sets (if any), but is mostly quality 
 
 Suffix:			This represents a small patch or hotfix on the server.  Used for server-side only changes where clients are NOT required to update.  
 				Uses a lowercase alphabet "number", eg: a, b, c, etc. These should only be used for hotfixes/emergencies.  Left empty by default.
+				Alternatively, if this is an internal build, it will be set to 'dev' (JK_VERSION is more relevant than GAMEVERSION).
 */
 #define JKG_VERSION_PHASE		1
 #define JKG_VERSION_MAJOR		3
@@ -72,7 +73,7 @@ Suffix:			This represents a small patch or hotfix on the server.  Used for serve
 	
 #else
 	#define JK_VERSION "" GIT_BRANCH " / " GIT_HASH " (internal)"
-	#define JKG_VERSION_SUFFIX "r"
+	#define JKG_VERSION_SUFFIX "dev"
 #endif
 
 #define	GAMEVERSION	"Jedi Knight Galaxies v" JKG_VERSION JKG_VERSION_SUFFIX

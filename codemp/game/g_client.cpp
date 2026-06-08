@@ -2665,8 +2665,8 @@ as well, such as
 JKG_HandleDisconnectDistribution()
 
 Keep in mind these are estimates, 
-as underdog bonuses, can double passive income, 
-when a team is losing - and so the rate of change
+as underdog bonuses can double passive income 
+when a team is losing, so the rate of change
 can change over time.
 ===========
 */
@@ -3255,11 +3255,23 @@ void ClientSpawn(gentity_t *ent, qboolean respawn) {
 						ent->client->ps.credits = jkg_startingCredits.integer;
 						//ent->client->ps.spent = 0;
 						int delta = level.time - level.startTime; // how long has the match been going?
-						client->ps.credits += JKG_CalcPassiveIncome(client, delta); //award missing passive credits if enabled
-						int money = JKG_CalcUnderdogIncome(client, delta); //underdog reward if you join the losing team late
+						int money = JKG_CalcPassiveIncome(client, delta); //award missing passive credits if enabled
+						if(money > 0)
+						{
+							ent->client->ps.credits += money;
+							#ifdef _DEBUG
+							trap->SendServerCommand(ent->s.number, va("notify 1 \"Salary: +%i Credits\"", money));		//only show on debug builds
+							//consider a sound here
+							#endif
+						}
 
-						trap->SendServerCommand(ent->s.number, va("notify 1 \"Underdog Bonus: +%i Credits\"", money));
-						client->ps.credits += money;
+						money = JKG_CalcUnderdogIncome(client, delta); //underdog reward if you join the losing team late
+						if(money > 0)
+						{
+							ent->client->ps.credits += money;
+							trap->SendServerCommand(ent->s.number, va("notify 1 \"Underdog Bonus: +%i Credits\"", money));
+							//consider a sound here
+						}
 
 						BG_GiveItem(ent, item, true);
 
@@ -3682,7 +3694,7 @@ void JKG_HandleDisconnectDistribution(gentity_t *ent)
 				if (usedCost < 1)
 					usedCost = 1;
 
-				int percent = (static_cast<float>(it->durability) / it->id->maxDurability) * 100;
+				//int percent = (static_cast<float>(it->durability) / it->id->maxDurability) * 100; //only relevant in jkg_shop.cpp section
 				equipment_value +=  usedCost * it->quantity;
 			}
 			else
