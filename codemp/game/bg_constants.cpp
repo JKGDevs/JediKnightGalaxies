@@ -141,7 +141,7 @@ static void ParseConstantsFile ( const char *fileText )
 		bgConstants.knockbackCCThreshold = cJSON_ToIntegerOpt(jsonNode, 150);
 		if (bgConstants.knockbackCCThreshold < 25 || bgConstants.knockbackCCThreshold > 999)
 		{
-			Com_Printf(S_COLOR_YELLOW "Warning: in constants.json: knockbackCCThreshold = %i, value beyond recommended range (25–999)\n", bgConstants.knockbackCCThreshold);
+			Com_Printf(S_COLOR_YELLOW "Warning: in constants.json: knockbackCCThreshold = %i, value beyond recommended range (25ï¿½999)\n", bgConstants.knockbackCCThreshold);
 		}
 
 		jsonNode = cJSON_GetObjectItem(json, "stamina");
@@ -172,6 +172,16 @@ static void ParseConstantsFile ( const char *fileText )
 
 			childNode = cJSON_GetObjectItem(jsonNode, "minKickThreshold");
 			bgConstants.staminaDrains.minKickThreshold = cJSON_ToInteger(childNode);
+		}
+
+		jsonNode = cJSON_GetObjectItem(json, "force");
+		if(jsonNode)
+		{
+			cJSON* childNode = cJSON_GetObjectItem(jsonNode, "minBlockLightningThreshold");
+			bgConstants.staminaDrains.force.minBlockLightningThreshold = cJSON_ToInteger(childNode);
+
+			childNode = cJSON_GetObjectItem(jsonNode, "lossFromProjBlock");
+			bgConstants.staminaDrains.force.lossFromProjBlock = cJSON_ToInteger(childNode);
 		}
 
 		jsonNode = cJSON_GetObjectItem(json, "damage");

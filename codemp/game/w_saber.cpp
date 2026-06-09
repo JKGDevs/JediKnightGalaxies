@@ -8357,7 +8357,7 @@ qboolean WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qb
 		if(self->s.eType == ET_PLAYER)
 		{
 			qboolean projBlockMode = self->client->ps.saberActionFlags & ( 1 << SAF_PROJBLOCKING );
-			int forcePowerUsed = 10; // FIXME: make this gun-dependant
+			int forcePowerUsed = bgConstants.staminaDrains.force.lossFromProjBlock; // FIXME: make this gun-dependant
 
 			// shouldn't be able to block period if we aren't in block mode --eez
 			if( !(self->client->ps.saberActionFlags & (1 << SAF_BLOCKING)) && !(self->client->pers.cmd.buttons & BUTTON_IRONSIGHTS) )

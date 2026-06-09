@@ -1675,59 +1675,91 @@ void ForceLightning( gentity_t *self )
 //JKG Saber block lightning function.
 qboolean JKG_SaberBlockLightning (gentity_t *attacker, gentity_t *defender, vec3_t impactPoint, int damage)
 {//Do a check of saberActionFlags to see if we can block lightning with Saber Defense powerlevel
-	qboolean BlockLightning = qtrue;
-	// If you don't have a saber, you shouldn't be blocking!
-	if( defender->s.weapon != WP_SABER ) 
-		{
-			return qfalse;
-		} 
 
+	//todo: determine blocking position by impactPoint, also probably don't need damage passed in here... --futuza
+
+	// If you don't have a saber, you shouldn't be blocking!
+	if( defender->s.weapon != WP_SABER || defender->client->ps.weapon != WP_SABER) //--futuza: not sure if these are guaranteed to be the same
+		return qfalse;
+
+	//Our sabers off or busy flying around	// this check is a bit invalid..possibly.
+	if(defender->client->ps.saberHolstered == 2 || defender->client->ps.saberInFlight) 
+		return qfalse;
+		
+	//got blockpoints?
+	if(defender->client->ps.blockPoints < 1) // changed from 100, this would always fail otherwise --eez					
+		return qfalse;
+
+
+	qboolean blocked = qfalse;  //did we block?
+
+	//holding down block button
 	if(!(defender->client->ps.saberActionFlags & ( 1 << SAF_BLOCKING ) ) )
 	{// Button for Blocking Lightning Attacks
 		
+		//NPCs instincts are random
 		if(defender->s.eType == ET_NPC)
-		{//NPC's just randomly block to make up for them not intelligently blocking
-			defender->client->ps.saberBlocked = BLOCKED_TOP;
-			return qtrue;
-		}
-		else
 		{
-			return qfalse;
+			//Oh, maxi big da Force... 
+			switch(defender->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE])
+			{
+				case 0:
+					break;
+				case 1:
+				if(Q_irand(1,10) > 5) //50% block rate
+					{
+						defender->client->ps.saberBlocked = BLOCKED_TOP;
+						blocked = qtrue;
+					}
+					break;
+				case 2:
+				if(Q_irand(1,100) > 25) //75% block rate
+					{
+						defender->client->ps.saberBlocked = BLOCKED_TOP;
+						blocked = qtrue;
+					}
+					break;
+				case 3:
+					if(Q_irand(1,10) > 1) //90% block rate
+					{
+						defender->client->ps.saberBlocked = BLOCKED_TOP;
+						blocked = qtrue;
+					}
+					break;
+				default:
+					defender->client->ps.saberBlocked = BLOCKED_TOP;
+					blocked = qtrue;
+					break;
+			}
 		}
+		return blocked;
 	}
 
-	if(defender->client->ps.weapon != WP_SABER  //we are not using our saber
-		|| defender->client->ps.saberHolstered == 2 //Our sabers off	// this check is a bit invalid..possibly.
-		|| defender->client->ps.saberInFlight)  //saber not in a fight
-	{//If we are not useing our sabers then make a Knockdown.
-		BlockLightning = qfalse;
-	}	
-	//check to see if we have any Blockpoints to block lightning with
-	if(defender->client->ps.blockPoints < 0) // changed from 100, this would always fail otherwise --eez
+	// The attackers lightning level is compared to the defenders saber defence level
+	if( attacker->client->ps.fd.forcePowerLevel[FP_LIGHTNING] <= defender->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] 
+		|| defender->client->ps.forcePower >= bgConstants.staminaDrains.force.minBlockLightningThreshold )	//pay cost in skill or forcePower
 	{
-		// We don't have any block points
-		return qfalse;
-	}
-	//I put this code below all the other stuff, because they are tests that will go before our level check. Having no block points, or not having a lightsaber.
+		blocked = qtrue;
+		defender->client->ps.saberBlocked = BLOCKED_TOP; // This sets the blocked type, basically just copied this from eezstreets code below. I have no idea how this system works, so i'm just taking his word for it.
 
-	// The attackers lightning level is compared to the defenders saber defence level.
-	// If the lightning level is lower or equal to the defence level, the defender will block the lightning attack.
-	if( attacker->client->ps.fd.forcePowerLevel[FP_LIGHTNING] <= defender->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] )
-	{
-		BlockLightning = defender->client->ps.saberBlocked = BLOCKED_TOP; // This sets the blocked type, basically just copied this from eezstreets code below. I have no idea how this system works, so i'm just taking his word for it.
-
-		defender->client->blockingLightningAccumulation += 0.50 * attacker->client->ps.fd.forcePowerLevel[FP_LIGHTNING]; // You'll just have to try and change this number around a bit. Though there's a chance that it's not executing this code at all so...
+		defender->client->blockingLightningAccumulation += (0.50 * attacker->client->ps.fd.forcePowerLevel[FP_LIGHTNING]); // You'll just have to try and change this number around a bit. Though there's a chance that it's not executing this code at all so...
 		if(defender->client->blockingLightningAccumulation > 1.0f)
 		{
 			defender->client->ps.blockPoints -= 1;
 			defender->client->blockingLightningAccumulation = 0;
-		}
+		
+			//if we're a noob jedi, we lose fp
+			if( attacker->client->ps.fd.forcePowerLevel[FP_LIGHTNING] > defender->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] )
+			{
+				defender->client->ps.forcePower -= 10;
+				if(defender->client->ps.forcePower < 0)
+					defender->client->ps.forcePower = 0;
+			}
 
-		return qtrue; // Then return true to tell the calling function that we blocked the lightning
+		}
 	}
 	
-	return qfalse; // If we didn't, we return false.
-
+	return blocked;
 }
 
 

@@ -51,6 +51,12 @@
 		"minKickThreshold": 10
 	},
 
+    "force" : {
+        //all of these are a subsection of stamina, that deal specficially with forcepowers
+        "minBlockLightningThreshold" : 10,
+		"lossFromProjBlock": 10
+    },
+
 	"damage": {
 		// How much to modify damage by when hitting various body parts
 		"headModifier": 1.3,

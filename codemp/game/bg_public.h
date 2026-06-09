@@ -1915,7 +1915,16 @@ typedef struct {
 		int minJumpThreshold;
 		int minPunchThreshold;
 		int minKickThreshold;
+
+		//stuff pertaining to the force
+		struct {
+			int lossFromProjBlock;
+			int minBlockLightningThreshold;
+		} force;
+
 	} staminaDrains;
+
+	
 
 	struct {
 		float headModifier;
