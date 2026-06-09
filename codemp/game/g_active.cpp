@@ -1963,6 +1963,119 @@ void G_PM_SwitchWeaponFiringMode(playerState_t *ps, int newweapon, int newvariat
 	ent->client->ps.firingMode = ent->client->firingModes[ BG_GetWeaponIndexFromClass(newweapon, newvariation) ];
 }
 
+
+/*
+==============
+JKG_RegenHealth
+
+Called by ClientThink if the ent is alive.  
+Regenerates hp.
+==============
+*/
+void JKG_RegenHealth(gentity_t *ent)
+{
+	if(!ent || !ent->client)
+		return;
+
+	//healing enabled
+	if (jkg_healthRegen.value <= 0) 
+		return;
+	
+	// Automatically regenerate health
+	if (ent->lastHealTime < level.time && (ent->damagePlumTime + jkg_healthRegenDelay.value) < level.time)
+	{
+		int maxHealth = ent->client->ps.stats[STAT_MAX_HEALTH];
+		int pctage = (maxHealth < 100) ? jkg_healthRegen.value : (maxHealth / 100) * jkg_healthRegen.value;		// Add 1% (or 1 HP, whichever is higher)
+		ent->health = ent->client->ps.stats[STAT_HEALTH] = (((ent->health + pctage) > maxHealth) ? maxHealth : ent->health + pctage);
+		ent->lastHealTime = level.time + jkg_healthRegenSpeed.value;
+	}
+}
+
+
+/*
+==============
+JKG_RegenShield
+
+Called by ClientThink if the ent is alive.  
+Regenerates shield if equipped.
+==============
+*/
+void JKG_RegenShield(gentity_t *ent)
+{
+	//safety check
+	if(!ent || !ent->client)
+		return;
+
+	//no shield equipped
+	if(!ent->client->shieldEquipped)
+		return;
+
+	// if not full
+	if (ent->client->ps.stats[STAT_SHIELD] < ent->client->ps.stats[STAT_MAX_SHIELD]) 
+	{
+		if (ent->client->shieldRechargeLast + ent->client->shieldRechargeTime < level.time)
+		{
+			if (ent->client->shieldRegenLast + ent->client->shieldRegenTime < level.time)
+			{
+				ent->client->ps.stats[STAT_SHIELD]++;
+				ent->client->shieldRegenLast = level.time + ent->client->shieldRegenTime;
+			}
+
+			if (!ent->client->shieldRecharging)
+			{
+				// In the previous frame, our shield was not recharging
+				ent->client->shieldRecharging = qtrue;
+
+				// Play the sound effect for the shield recharging, if one exists
+				for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
+				{
+					if (it->equipped && it->id->itemType == ITEM_SHIELD)
+					{
+						if (it->id->shieldData.pShieldData->rechargeSoundEffect[0])
+						{
+							G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->id->shieldData.pShieldData->rechargeSoundEffect));
+
+							// Play the effect for shield recharging
+							gentity_t *evEnt;
+							evEnt = G_TempEntity(ent->r.currentOrigin, EV_SHIELD_RECHARGE);
+							evEnt->s.otherEntityNum = ent->s.number;
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	// if full
+	else 
+	{
+		if (ent->client->shieldRecharging)
+		{
+			// In the previous frame, our shield was recharging - we need to turn charging off
+			ent->client->shieldRecharging = qfalse;
+
+			// Play the sound effect for the shield recharging, if one exists
+			for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
+			{
+				if (it->equipped && it->id->itemType == ITEM_SHIELD)
+				{
+					if (it->id->shieldData.pShieldData->rechargeSoundEffect[0])
+					{
+						G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->id->shieldData.pShieldData->chargedSoundEffect));
+
+						// Play the effect for shield recharging
+						gentity_t *evEnt;
+						evEnt = G_TempEntity(ent->r.currentOrigin, EV_SHIELD_RECHARGE); //--futuza: we are reusing the shield recharge effect, but a new one would be nice
+						evEnt->s.otherEntityNum = ent->s.number;
+					}
+					break;
+				}
+			}
+		}
+	}
+}
+
 /*
 ==============
 ClientThink
@@ -2090,83 +2203,11 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	}
 
-	// Automatically regenerate health
-	if (jkg_healthRegen.value > 0 && JKG_ClientAlive(ent)) 
+	//if alive
+	if(JKG_ClientAlive(ent))
 	{
-		if (ent->lastHealTime < level.time && (ent->damagePlumTime + jkg_healthRegenDelay.value) < level.time)
-		{
-			int maxHealth = ent->client->ps.stats[STAT_MAX_HEALTH];
-			int pctage = (maxHealth < 100) ? jkg_healthRegen.value : (maxHealth / 100) * jkg_healthRegen.value;		// Add 1% (or 1 HP, whichever is higher)
-			ent->health = ent->client->ps.stats[STAT_HEALTH] = (((ent->health + pctage) > maxHealth) ? maxHealth : ent->health + pctage);
-			ent->lastHealTime = level.time + jkg_healthRegenSpeed.value;
-		}
-	}
-	
-	//regen shield (if equipped)
-	if (ent->client->shieldEquipped && JKG_ClientAlive(ent)) 
-	{
-		if(ent->client->ps.stats[STAT_SHIELD] < ent->client->ps.stats[STAT_MAX_SHIELD]) //if not full
-		{
-			if (ent->client->shieldRechargeLast + ent->client->shieldRechargeTime < level.time)
-			{
-				if (ent->client->shieldRegenLast + ent->client->shieldRegenTime < level.time)
-				{
-					ent->client->ps.stats[STAT_SHIELD]++;
-					ent->client->shieldRegenLast = level.time + ent->client->shieldRegenTime;
-				}
-
-				if (!ent->client->shieldRecharging)
-				{
-					// In the previous frame, our shield was not recharging
-					ent->client->shieldRecharging = qtrue;
-
-					// Play the sound effect for the shield recharging, if one exists
-					for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
-					{
-						if (it->equipped && it->id->itemType == ITEM_SHIELD)
-						{
-							if (it->id->shieldData.pShieldData->rechargeSoundEffect[0])
-							{
-								G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->id->shieldData.pShieldData->rechargeSoundEffect));
-
-								// Play the effect for shield recharging
-								gentity_t* evEnt;
-								evEnt = G_TempEntity(ent->r.currentOrigin, EV_SHIELD_RECHARGE);
-								evEnt->s.otherEntityNum = ent->s.number;
-							}
-							break;
-						}
-					}
-				}
-			}
-		}
-
-		else	//if full
-		{
-			if (ent->client->shieldRecharging)
-			{
-				// In the previous frame, our shield was recharging - we need to turn charging off
-				ent->client->shieldRecharging = qfalse;
-
-				// Play the sound effect for the shield recharging, if one exists
-				for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
-				{
-					if (it->equipped && it->id->itemType == ITEM_SHIELD)
-					{
-						if (it->id->shieldData.pShieldData->rechargeSoundEffect[0])
-						{
-							G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->id->shieldData.pShieldData->chargedSoundEffect));
-
-							// Play the effect for shield recharging
-							gentity_t* evEnt;
-							evEnt = G_TempEntity(ent->r.currentOrigin, EV_SHIELD_RECHARGE);		//--futuza: we are reusing the shield recharge effect, but a new one would be nice
-							evEnt->s.otherEntityNum = ent->s.number;
-						}
-						break;
-					}
-				}
-			}
-		}
+		JKG_RegenHealth(ent); //regen health
+		JKG_RegenShield(ent); //regen shield (if equipped)
 	}
 
 	// mark the time, so the connection sprite can be removed
@@ -3113,7 +3154,7 @@ void ClientThink_real( gentity_t *ent ) {
 	// Copy the ammo from the client ammo table into their networked stat
 	int weaponClass = BG_GetWeaponIndex(ent->client->ps.weapon, ent->client->ps.weaponVariation);
 	weaponData_t* weaponData = GetWeaponData(ent->client->ps.weapon, ent->client->ps.weaponVariation);
-	int inventoryItem = pmove.cmd.invensel;
+	std::size_t inventoryItem = pmove.cmd.invensel;
 	if (inventoryItem > 0 && inventoryItem < ent->inventory->size()) {
 		// If we're using a weapon that uses stack quantity instead of ammo for its firing mode, we need to copy the quantity to the ammo
 		if (weaponData->numFiringModes > 0 && weaponData->firemodes[0].useQuantity) {
@@ -3660,7 +3701,7 @@ void ClientEndFrame( gentity_t *ent ) {
 	int			i;
 	qboolean isNPC = qfalse;
 	usercmd_t clientcmd;
-	int selectedItem;
+	std::size_t selectedItem;
 
 	trap->GetUsercmd(ent->s.number, &clientcmd);
 
