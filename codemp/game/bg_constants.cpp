@@ -141,7 +141,7 @@ static void ParseConstantsFile ( const char *fileText )
 		bgConstants.knockbackCCThreshold = cJSON_ToIntegerOpt(jsonNode, 150);
 		if (bgConstants.knockbackCCThreshold < 25 || bgConstants.knockbackCCThreshold > 999)
 		{
-			Com_Printf(S_COLOR_YELLOW "Warning: in constants.json: knockbackCCThreshold = %i, value beyond recommended range (25�999)\n", bgConstants.knockbackCCThreshold);
+			Com_Printf(S_COLOR_YELLOW "Warning: in constants.json: knockbackCCThreshold = %i, value beyond recommended range (25-999)\n", bgConstants.knockbackCCThreshold);
 		}
 
 		jsonNode = cJSON_GetObjectItem(json, "stamina");
