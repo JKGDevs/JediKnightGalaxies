@@ -1130,7 +1130,7 @@ static int GLua_Player_HasNoDebuff(lua_State *L)
 extern void G_BuffEntity(gentity_t* ent, gentity_t* buffer, int buffID, float intensity, int duration);
 static int GLua_Player_AddBuff(lua_State* L) 
 {
-	//L1 = Player (required), L2 = Buffname (required), L3 = duration, L4 = intensity
+	//L1 = CallingPlayer, L2 = Player (required), L3 = Buffname (required), L4 = duration, L5 = intensity
 	if (lua_isnoneornil(L, 3)) return luaL_error(L, "No buff name provided");
 	GLua_Data_Player_t* ply = GLua_CheckPlayer(L, 2);
 	if (!ply) return 0;
@@ -1881,6 +1881,47 @@ static int GLua_Player_PossessingWeapon(lua_State *L)
 	return 1;
 }
 
+static int GLua_Player_PossessingEquipItemType(lua_State *L)
+{
+	//L1 = Player to Check, L2 = item type to check
+	if (lua_isnoneornil(L, 2)) return luaL_error(L, "No item type provided");
+
+	GLua_Data_Player_t* ply = GLua_CheckPlayer(L, 1);
+	jkgItemType_t itemtype;
+	gentity_t *ent;
+	
+	if (lua_isstring(L,2)) {
+		itemtype = BG_GetIndexFromItemTypeString(lua_tostring(L,2));
+	}
+	else if(lua_isnumber(L,2)) {
+		itemtype = static_cast<jkgItemType_t>(lua_tointeger(L,2));
+	}
+	else
+	{
+		return luaL_error(L, "Invalid item type specified.");
+	}
+
+	if(itemtype <= ITEM_UNKNOWN)
+	{
+		return luaL_error(L, "Unknown item type specified.");
+	}
+
+	if(!ply) return 0;
+
+	ent = &g_entities[ply->clientNum];
+	if(!ent) return 0;
+
+	itemData_t* it = BG_FindEquippedItemType(ent, itemtype);
+	if(it)
+	{
+		lua_pushboolean(L, 1);
+		return 1;
+	}
+
+	lua_pushboolean(L, 0);
+	return 1;
+}
+
 /**************************************************
 * player_m
 *
@@ -1993,6 +2034,7 @@ static const struct luaL_reg player_m [] = {
 	//{"GetGunAmmoType", GLua_Player_GetGunAmmoType},	// removed 12/11/2016
 	{"PossessingItem", GLua_Player_PossessingItem},
 	{"PossessingWeapon", GLua_Player_PossessingWeapon},
+	{"PossessingEquipItemType", GLua_Player_PossessingEquipItemType},
 	// add 8/18/13
 	{"SetAccount", GLua_Player_SetAccount},
 	{"GetAccount", GLua_Player_GetAccount},

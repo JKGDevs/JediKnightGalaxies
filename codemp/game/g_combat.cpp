@@ -2554,7 +2554,7 @@ void ShieldHitEffect(gentity_t* targ, vec3_t dir, int take)
 
 			itemShieldData_t* shdInfo = nullptr;
 			// Play the sound on the server, since clients don't know about other clients's inventories
-			auto it = BG_FindEquippedItemType(targ, ITEM_SHIELD);
+			itemData_t* it = BG_FindEquippedItemType(targ, ITEM_SHIELD);
 			shdInfo = &it->shieldData; //grab this for later
 			if (shdInfo->pShieldData->brokenSoundEffect[0]) {
 					G_Sound(targ, CHAN_AUTO, G_SoundIndex(shdInfo->pShieldData->brokenSoundEffect));
@@ -5207,7 +5207,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		if(client->shieldEquipped)
 		{
 			shieldData_t* shield = nullptr;
-			auto it = BG_FindEquippedItemType(targ, ITEM_SHIELD);
+			itemData_t* it = BG_FindEquippedItemType(targ, ITEM_SHIELD);
 			shield_name = it->displayName;
 			
 			assert(shield);

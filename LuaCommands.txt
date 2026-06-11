@@ -295,6 +295,7 @@ player:GetCurrentGunAmmoType():number - retrieves the ammo ID of the currently e
 
 player:PossessingItem(itemid:number):bool - returns true if we are possessing the item, returns false otherwise
 player:PossessingWeapon(weapon: number, variation:number):bool - returns true if we are possessing this weapon in our inventory, returns false otherwise
+player:PossessingEquipItemType(itemtype:string/int):bool - returns true if we have this type of item in our inventory and equipped, otherwise returns false.  eg: ply:PossessingEquipItemType("shield")
 
 player:SetAdminAccount(account:string):nil - Sets our current admin account to a certain value
 player:GetAdminAccount():string - Gets our current admin account

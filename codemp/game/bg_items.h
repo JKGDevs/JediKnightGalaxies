@@ -239,6 +239,7 @@ itemData_t* BG_FindItemDataByName(const char* internalName);
 itemInstance_t BG_ItemInstance(itemData_t* pItemData, const int quantity, const int durability);
 itemInstance_t BG_ItemInstance(const char* internalName, const int quantity, const int durability);
 itemInstance_t BG_ItemInstance(const int itemID, const int quantity, const int durability);
+jkgItemType_t BG_GetIndexFromItemTypeString(const char* name);
 int BG_FirstStack(const std::vector<itemInstance_t>& container, const int itemID);
 int BG_NextStack(const std::vector<itemInstance_t>& container, const int itemID, const int prevStack);
 int BG_GetRepairDuraCost(itemInstance_t* item);

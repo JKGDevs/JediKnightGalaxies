@@ -222,6 +222,39 @@ itemData_t* BG_FindItemDataByName(const char* internalName) {
 
 /*
 ==============
+BG_GetIndexFromItemTypeString
+
+Return the itemType's index
+==============
+*/
+jkgItemType_t BG_GetIndexFromItemTypeString(const char* str)
+{
+	jkgItemType_t itemType = ITEM_UNKNOWN;
+
+	if (Q_stricmp(str, "armor") == 0)
+		itemType = ITEM_ARMOR;
+	else if (Q_stricmp(str, "weapon") == 0)
+		itemType = ITEM_WEAPON;
+	else if (Q_stricmp(str, "tool") == 0)
+		itemType = ITEM_TOOL;
+	else if (Q_stricmp(str, "clothing") == 0)
+		itemType = ITEM_CLOTHING;
+	else if (Q_stricmp(str, "consumable") == 0)
+		itemType = ITEM_CONSUMABLE;
+	else if (Q_stricmp(str, "shield") == 0)
+		itemType = ITEM_SHIELD;
+	else if (Q_stricmp(str, "jetpack") == 0)
+		itemType = ITEM_JETPACK;
+	else if (Q_stricmp(str, "ammo") == 0)
+		itemType = ITEM_AMMO;
+	else
+		itemType = ITEM_UNKNOWN;
+
+	return itemType;
+}
+
+/*
+==============
 BG_FindEquippedItemType
 
 Searches a clients inventory
@@ -1412,25 +1445,7 @@ static bool BG_LoadItem(const char *itemFilePath, itemData_t *itemData)
 #endif
 
 	jsonNode = cJSON_GetObjectItem(json, "itemtype");
-	str = cJSON_ToString(jsonNode);
-	if (Q_stricmp(str, "armor") == 0)
-		itemData->itemType = ITEM_ARMOR;
-	else if (Q_stricmp(str, "weapon") == 0)
-		itemData->itemType = ITEM_WEAPON;
-	else if (Q_stricmp(str, "tool") == 0)
-		itemData->itemType = ITEM_TOOL;
-	else if (Q_stricmp(str, "clothing") == 0)
-		itemData->itemType = ITEM_CLOTHING;
-	else if (Q_stricmp(str, "consumable") == 0)
-		itemData->itemType = ITEM_CONSUMABLE;
-	else if (Q_stricmp(str, "shield") == 0)
-		itemData->itemType = ITEM_SHIELD;
-	else if (Q_stricmp(str, "jetpack") == 0)
-		itemData->itemType = ITEM_JETPACK;
-	else if (Q_stricmp(str, "ammo") == 0)
-		itemData->itemType = ITEM_AMMO;
-	else
-		itemData->itemType = ITEM_UNKNOWN;
+	itemData->itemType = BG_GetIndexFromItemTypeString(cJSON_ToString(jsonNode)); //convert name to index
 
 	jsonNode = cJSON_GetObjectItem(json, "tier");
 	item = cJSON_ToIntegerOpt(jsonNode, TIER_COMMON);
