@@ -2554,13 +2554,10 @@ void ShieldHitEffect(gentity_t* targ, vec3_t dir, int take)
 
 			itemShieldData_t* shdInfo = nullptr;
 			// Play the sound on the server, since clients don't know about other clients's inventories
-			for (auto it = targ->inventory->begin(); it != targ->inventory->end(); ++it) {
-				if (it->equipped && it->id->itemType == ITEM_SHIELD) {
-					shdInfo = &it->id->shieldData; //grab this for later
-					if (shdInfo->pShieldData->brokenSoundEffect[0]) {
-						G_Sound(targ, CHAN_AUTO, G_SoundIndex(shdInfo->pShieldData->brokenSoundEffect));
-					}
-				}
+			auto it = BG_FindEquippedItemType(targ, ITEM_SHIELD);
+			shdInfo = &it->shieldData; //grab this for later
+			if (shdInfo->pShieldData->brokenSoundEffect[0]) {
+					G_Sound(targ, CHAN_AUTO, G_SoundIndex(shdInfo->pShieldData->brokenSoundEffect));
 			}
 
 			//other overload effects
@@ -5210,15 +5207,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		if(client->shieldEquipped)
 		{
 			shieldData_t* shield = nullptr;
-			for (auto it = targ->inventory->begin(); it != targ->inventory->end(); ++it)
-			{
-				if (it->equipped && it->id->itemType == ITEM_SHIELD)
-				{
-					shield = it->id->shieldData.pShieldData;
-					shield_name = it->id->displayName;
-					break;
-				}
-			}
+			auto it = BG_FindEquippedItemType(targ, ITEM_SHIELD);
+			shield_name = it->displayName;
+			
 			assert(shield);
 			modIsBlocked = JKG_IsShieldModOverriden(targ, mod, shield, shield->blockedMODs);
 			modIsAllowed = JKG_IsShieldModOverriden(targ, mod, shield, shield->allowedMODs);

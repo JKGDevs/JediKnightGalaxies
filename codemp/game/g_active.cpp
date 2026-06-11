@@ -2025,23 +2025,18 @@ void JKG_RegenShield(gentity_t *ent)
 			{
 				// In the previous frame, our shield was not recharging
 				ent->client->shieldRecharging = qtrue;
+				itemData_t* it = BG_FindEquippedItemType(ent, ITEM_SHIELD);
 
-				// Play the sound effect for the shield recharging, if one exists
-				for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
+				if(it)
 				{
-					if (it->equipped && it->id->itemType == ITEM_SHIELD)
-					{
-						if (it->id->shieldData.pShieldData->rechargeSoundEffect[0])
-						{
-							G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->id->shieldData.pShieldData->rechargeSoundEffect));
-
-							// Play the effect for shield recharging
-							gentity_t *evEnt;
-							evEnt = G_TempEntity(ent->r.currentOrigin, EV_SHIELD_RECHARGE);
-							evEnt->s.otherEntityNum = ent->s.number;
-						}
-						break;
-					}
+					// Play the sound effect for the shield recharging, if one exists
+					if (it->shieldData.pShieldData->rechargeSoundEffect[0])
+						G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->shieldData.pShieldData->rechargeSoundEffect));
+					
+					// Play the effect for shield recharging
+					gentity_t *evEnt;
+					evEnt = G_TempEntity(ent->r.currentOrigin, EV_SHIELD_RECHARGE);
+					evEnt->s.otherEntityNum = ent->s.number;
 				}
 			}
 		}
@@ -2054,23 +2049,18 @@ void JKG_RegenShield(gentity_t *ent)
 		{
 			// In the previous frame, our shield was recharging - we need to turn charging off
 			ent->client->shieldRecharging = qfalse;
+			itemData_t* it = BG_FindEquippedItemType(ent, ITEM_SHIELD);
 
-			// Play the sound effect for the shield recharging, if one exists
-			for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
+			if(it)
 			{
-				if (it->equipped && it->id->itemType == ITEM_SHIELD)
-				{
-					if (it->id->shieldData.pShieldData->rechargeSoundEffect[0])
-					{
-						G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->id->shieldData.pShieldData->chargedSoundEffect));
+				// Play the sound effect for the shield recharged, if one exists
+				if (it->shieldData.pShieldData->rechargeSoundEffect[0])
+					G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->shieldData.pShieldData->chargedSoundEffect));
 
-						// Play the effect for shield recharging
-						gentity_t *evEnt;
-						evEnt = G_TempEntity(ent->r.currentOrigin, EV_SHIELD_RECHARGE); //--futuza: we are reusing the shield recharge effect, but a new one would be nice
-						evEnt->s.otherEntityNum = ent->s.number;
-					}
-					break;
-				}
+				// Play the effect for shield recharging
+				gentity_t *evEnt;
+				evEnt = G_TempEntity(ent->r.currentOrigin, EV_SHIELD_RECHARGE); //--futuza: we are reusing the shield recharge effect, but a new one would be nice
+				evEnt->s.otherEntityNum = ent->s.number;
 			}
 		}
 	}

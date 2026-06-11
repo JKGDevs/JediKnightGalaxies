@@ -219,6 +219,58 @@ itemData_t* BG_FindItemDataByName(const char* internalName) {
 	return nullptr;
 }
 
+
+/*
+==============
+BG_FindEquippedItemType
+
+Searches a clients inventory
+for an equipped item of a specific type
+eg: searches for an equipped shield
+if found returns the itemData id,
+otherwise returns nullptr
+==============
+*/
+#ifdef _GAME
+itemData_t* BG_FindEquippedItemType(gentity_t* ent, jkgItemType_t itemtype)
+{
+	if(!ent || !ent->client)
+	{
+		#ifdef _DEBUG
+			Com_Printf("ERROR: NULL ent passed to JKG_CheckForEquippedItemType()!\n");
+		#endif
+		return nullptr;
+	}
+
+	//someone specified we check for an invalid itemtype
+	if(itemtype < ITEM_UNKNOWN || itemtype >= NUM_ITEM_TYPES)
+	{
+		Com_Printf("ERROR: Invalid itemtype passed to JKG_CheckForEquippedItemType().\n");
+		return nullptr;
+	}
+
+	if(!ent->inventory)
+	{
+		Com_Printf("ERROR: This client doesn't have an inventory! Someone call the ISB!\n");
+		return nullptr;
+	}
+
+	//nothing in inventory
+	if(ent->inventory->size() < 1)
+		return nullptr;
+		
+    for (auto it = ent->inventory->begin(); it != ent->inventory->end(); ++it)
+    {
+        if (it->equipped && it->id->itemType == itemtype)
+        {
+            return it->id;
+        }
+    }
+
+    return nullptr;
+}
+#endif
+
 /*
 ====================
 BG_SendItemPacket
