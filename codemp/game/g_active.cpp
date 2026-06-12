@@ -2054,7 +2054,7 @@ void JKG_RegenShield(gentity_t *ent)
 			if(it)
 			{
 				// Play the sound effect for the shield recharged, if one exists
-				if (it->shieldData.pShieldData->rechargeSoundEffect[0])
+				if (it->shieldData.pShieldData->chargedSoundEffect[0])
 					G_Sound(ent, CHAN_AUTO, G_SoundIndex(it->shieldData.pShieldData->chargedSoundEffect));
 
 				// Play the effect for shield recharging
