@@ -4507,7 +4507,14 @@ void JKG_ApplyEMPDamageEffects(gentity_t* target, meansOfDamage_t* means, const 
 		/*
 			todo: other effects for other equipment here
 			eg: short out cloaking devices, specific types of shields, etc
-		  */
+		*/
+
+		// disable cloak
+		/*if (target->client->ps.powerups[PW_CLOAKED])
+		{ 
+			NPC_Humanoid_Decloak(target);	//--futuza: todo, move this to a more generally useful place that npcs and players can both use
+			target->client->cloakToggleTime = level.time + Q_irand(3000, 10000);
+		}*/
 	}
 }
 

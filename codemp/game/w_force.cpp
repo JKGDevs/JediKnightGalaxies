@@ -1835,6 +1835,7 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 						traceEnt->client->ps.electrifyTime = level.time + 800;
 					}
 
+					//--futuza: wait what?  Why are we doing this now instead of in JKG_SaberBlockLightning?
 					if ( traceEnt->client->ps.weapon == WP_SABER )
 					{//saber can block lightning
 						int rSaberNum = 0;

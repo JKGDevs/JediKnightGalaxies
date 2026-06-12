@@ -32,12 +32,14 @@ typedef enum jkgItemType_e
     ITEM_UNKNOWN,
     ITEM_WEAPON,
 	ITEM_TOOL,			// Very similar to weapon, things like pickaxe, drills, hydrospanners, etc.
-    ITEM_ARMOR,
+    ITEM_ARMOR,			// Classified as "armor" in the filter
     ITEM_CLOTHING,		// Classified as "armor" in the filter
 	ITEM_CONSUMABLE,
 	ITEM_SHIELD,		// Classified as "armor" in the filter
 	ITEM_JETPACK,		// Classified as "armor" in the filter
 	ITEM_AMMO,			// Not acquirable by the player.
+
+						//when adding new types don't forget to update BG_GetIndexFromItemTypeString()
 
 	NUM_ITEM_TYPES
 } jkgItemType_t;
