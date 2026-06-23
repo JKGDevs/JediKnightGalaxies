@@ -31,6 +31,7 @@
             ],
             "projectilefx": "blasters/shot_Stunblast_medium",
             "hit":          { "impactfx": "saber/ignitionflare_blue" },
+            "crosshairShader": "gfx/2d/crosshaira",
 	    "displayName":  "Stun"
         },
         
@@ -50,6 +51,7 @@
             "hit":          { "impactfx": "explosives/shot_flaregun.efx" },
             "deathfx": "explosives/flaregun",
 	    "animType":     "1",
+        "crosshairShader": "gfx/2d/crosshaira",
 	    "displayName":  "Flare"
         },
 		
@@ -67,6 +69,7 @@
             "miss":         { "impactfx": "weapons/blaster_impact_red_big_fire" },
             "hit":          { "impactfx": "blasters/red_flesh_impact" },
             "deathfx": "blasters/shot_redorange_vaporize",
+            "crosshairShader": "gfx/2d/crosshaira",
 			"displayName": "Blaster"
         }
     },

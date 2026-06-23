@@ -36,6 +36,7 @@
             "miss":         { "impactfx": "weapons/blaster_impact_red_medium_fire" },
             "hit":          { "impactfx": "blasters/red_flesh_impact" },
             "deathfx": "blasters/shot_red_vaporize",
+            "crosshairShader": "gfx/2d/crosshaira",
 	    "displayName":  "Auto"
         },
         
@@ -53,6 +54,7 @@
             "miss":         { "impactfx": "weapons/blaster_impact_red_medium_fire" },
             "hit":          { "impactfx": "blasters/red_flesh_impact" },
             "deathfx": "blasters/shot_red_vaporize",
+            "crosshairShader": "gfx/2d/crosshaira",
 	    "displayName":  "Semi"
         },
 		
@@ -70,6 +72,7 @@
             "miss":         { "impactfx": "weapons/blaster_impact_red_medium_fire" },
             "hit":          { "impactfx": "blasters/red_flesh_impact" },
             "deathfx": "blasters/shot_red_vaporize",
+            "crosshairShader": "gfx/2d/crosshaira",
 			"displayName":  "Burst"
         }
     },
